@@ -2,7 +2,6 @@ I can't take credit for all of this. The vim files are a combination of
 work by tpope, scrooloose, and many hours of scouring blogs, vimscripts,
 and other places for the cream of the crop of vim awesomeness.
 
- * http://ethanschoonover.com/solarized - a scientifically calibrated color scheme
  * https://github.com/astrails/dotvim
  * https://github.com/carlhuda/janus
  * https://github.com/tpope
