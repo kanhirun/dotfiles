@@ -1,16 +1,37 @@
 " Create your own text objects
 Bundle "kana/vim-textobj-user"
 
-" Adds ruby blocks (do-end) to text objects
+" Adds ruby blocks (do-end) as text objects
 Bundle "nelstrom/vim-textobj-rubyblock"
 
+" Adds indent blocks (great for yaml) as text objects
+" Do `vai/vii` to select around an indent block
 "Bundle "austintaylor/vim-indentobject"
+
+" Adds ruby symbols (i.e. :symbol) as text objects
 "Bundle "bootleq/vim-textobj-rubysymbol"
+
+" Add `c` (word) and `C` (WORD) for handling columns/blocks
 "Bundle "coderifous/textobj-word-column.vim"
+
+" Add date representations as text objects
+" Do `da` (date), `df` (date full) to manipulate date
 "Bundle "kana/vim-textobj-datetime"
+
+" Adds `e` for entire document. Do `vae` to visual around entire document
 "Bundle "kana/vim-textobj-entire"
+
+" Adds `f` textobj. Do `vaf` to select a function.
 "Bundle "kana/vim-textobj-function"
+
+" Adds `_` textobj
 "Bundle "lucapette/vim-textobj-underscore"
+
 "Bundle "nathanaelkane/vim-indent-guides"
+
+" Adds javascript functions
 "Bundle "thinca/vim-textobj-function-javascript"
+
+" Adds funcargs as an "a" object
+" Do vaa/via, caa/cia, daa/dia, etc..
 "Bundle "vim-scripts/argtextobj.vim"
