@@ -14,9 +14,10 @@ set rtp+=~/.vim/bundle/vundle/
 set rtp+=~/.vim/vundles/ "Submodules
 call vundle#rc()
 
-" ruby.vim
 " let Vundle manage Vundle (required)
 Bundle "gmarik/vundle"
+
+" ruby.vim
 Bundle "tpope/vim-rails.git"
 " Adds Ruby text objects
 Bundle "vim-ruby/vim-ruby.git"
