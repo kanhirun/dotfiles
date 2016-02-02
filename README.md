@@ -59,7 +59,6 @@ Recommended Cmd-Escape, which is really Cmd-Capslock.
 #### In iTerm, uncheck "Use Lion-style full screen" on General
 This will give you fast full screen windows that are switchable without switching to spaces.
 
-#### in MacVim, uncheck Prefer native fullscreen under Advanced settings
 Same as iTerm. The Lion style spaces navigation slows everything down for no reason.
 
 ### Upgrading
@@ -81,7 +80,6 @@ Read on to learn what YADR provides!
 Homebrew is _the missing package manager for OSX_. Installed automatically.
 
 We automatically install a few useful packages including ctags, git, hub, and the silver searcher ('ag')
-Note that our autocomplete plugin requires a MacVim that supports Lua. The installer knows how to install it, but if you had one installed before, you may need to manually remove your old MacVim.
 
 ### ZSH
 
