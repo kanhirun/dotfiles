@@ -174,7 +174,7 @@ def install_homebrew
     'brew', 'install',
     'zsh',
     'ctags',
-    'git'
+    'git', '--with-pcre',
     'hub',
     'tmux',
     'reattach-to-user-namespace',
