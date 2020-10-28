@@ -11,3 +11,7 @@ let NERDTreeMinimalMenu=1
 
 " This setting is used to change the size of the NERDTree when it is loaded.
 let g:NERDTreeWinSize=45
+
+" This setting is used to specify which files the NERDTree should ignore. It
+" must be a list of regular expressions. 
+let NERDTreeIgnore=[]
