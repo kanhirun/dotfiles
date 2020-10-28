@@ -78,6 +78,48 @@ Plug 'seagoj/last-position.vim' " remembers cursor across vim sessions
 
 call plug#end()
 
+" ================ Custom Settings ==================
+
+" Removes highlights
+nmap <silent> // :noh<CR>
+
+" Show only 5 autocomplete suggestions at most
+set pumheight=5
+
+"When typing a string, your quotes auto complete. Move past the quote
+"while still in insert mode by hitting Ctrl-a. Example:
+"
+" type 'foo<c-a>
+"
+" the first quote will autoclose so you'll get 'foo' and hitting <c-a> will
+" put the cursor right after the quote
+imap <C-a> <esc>wa
+
+" Show the line ruler
+set colorcolumn=90
+
+" Set the width based on a derived value, &colorcolumn-1
+" This way, in vsplit, the natural boundaries act as your line ruler.
+let &winwidth=&colorcolumn
+
+" TODO: Saves command or keymap into .exrc
+" I'm not sure how to do this just yet, but it is very useful
+" nnoremap <leader><leader> :vsp .projections.json
+
+" Copy the filename to clipboard, pronounced as 'yank file'
+nmap <leader>yf :let @+=expand("%")<CR>
+
+" Make 0 go to the first character rather than the beginning
+" of the line. When we're programming, we're almost always
+" interested in working with text rather than empty space. If
+" you want the traditional beginning of line, use ^
+nnoremap 0 ^
+nnoremap ^ 0
+
+" Quickly edit special files
+command! Vimrc :edit ~/.config/nvim/init.vim
+command! Exrc  :edit .exrc
+
 " ================ Turn Off Swap Files ==============
 
 set noswapfile
