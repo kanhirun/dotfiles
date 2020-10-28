@@ -5,6 +5,7 @@ brew "pyenv-virtualenv"
 brew "rbenv"
 
 brew "git", args: ["--with-pcre"]
+brew "gh"
 brew "gibo"   # .gitignore generator
 
 brew "coreutils"
