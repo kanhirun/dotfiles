@@ -19,7 +19,7 @@ let NERDTreeIgnore=[]
 
 " Yank a dirnode to copy its path to clipboard
 call NERDTreeAddKeyMap({
-      \ 'key': 'y',
+      \ 'key': 'yy',
       \ 'callback': 'NERDTreeYankPathToClipboardHandler',
       \ 'quickhelpText': 'yanks the path to @+',
       \ 'scope': 'Node' })
