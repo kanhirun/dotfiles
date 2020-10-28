@@ -45,9 +45,7 @@ let g:python3_host_prog = '/Users/Feynman/.pyenv/versions/3.6.2/Python.framework
 set exrc
 
 " =============== Plugin Initialization ===============
-" This loads all the plugins specified in ~/.vim/plugins.vim
-" Use Vim-Plug to manage plugins for lazy-loading, and parallel install
-"
+
 call plug#begin('~/.config/nvim/bundle')
 
 " file search, :FZF
