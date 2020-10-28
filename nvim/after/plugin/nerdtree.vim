@@ -15,3 +15,17 @@ let g:NERDTreeWinSize=45
 " This setting is used to specify which files the NERDTree should ignore. It
 " must be a list of regular expressions. 
 let NERDTreeIgnore=[]
+
+
+" Yank a dirnode to copy its path to clipboard
+call NERDTreeAddKeyMap({
+      \ 'key': 'y',
+      \ 'callback': 'NERDTreeYankPathToClipboardHandler',
+      \ 'quickhelpText': 'yanks the path to @+',
+      \ 'scope': 'Node' })
+
+function! NERDTreeYankPathToClipboardHandler(dirnode)
+  let dirpath = a:dirnode.path.str()
+  echo 'copied: ' . dirpath
+  let @+ = dirpath
+endfunction

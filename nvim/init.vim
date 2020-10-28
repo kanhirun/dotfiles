@@ -104,9 +104,6 @@ let &winwidth=&colorcolumn
 " I'm not sure how to do this just yet, but it is very useful
 " nnoremap <leader><leader> :vsp .projections.json
 
-" Copy the filename to clipboard, pronounced as 'yank file'
-nmap <leader>yf :let @+=expand("%")<CR>
-
 " Make 0 go to the first character rather than the beginning
 " of the line. When we're programming, we're almost always
 " interested in working with text rather than empty space. If
