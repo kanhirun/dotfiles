@@ -2,6 +2,9 @@
 nmap <C-\>      :NERDTreeToggle<CR>
 nmap <C-w><C-\> :NERDTreeFind<CR>
 
+" Ignores confirmation warning when deleting files
+let NERDTreeAutoDeleteBuffer=1
+
 " This setting makes NERDTree use a smaller, more compact menu for adding,
 " copying, deleting nodes.
 let NERDTreeMinimalMenu=1
