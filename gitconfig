@@ -1,0 +1,30 @@
+[alias]
+  a  = add --all
+  ap = add --patch
+  b  = branch
+  co = checkout
+  d  = diff -U1
+  ds = diff --staged
+  l  = log
+  r  = reset
+  s  = status
+  ci = commit
+
+  # Shows the graph of all branches
+  ll = log --graph --oneline --all --decorate=short -10
+
+  # Quickly amend, use `git amend --edit` to change the message
+  amend = commit --amend --no-edit
+
+[push]
+  default = current
+[merge]
+  tool = opendiff
+[rebase]
+  autosquash = true
+[core]
+  editor = nvim
+[user]
+  name     = Kel Kanhirun
+  email    = kel.kanhirun@gmail.com
+  initials = kk
