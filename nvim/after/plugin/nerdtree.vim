@@ -2,4 +2,5 @@
 nmap <C-\>      :NERDTreeToggle<CR>
 nmap <C-w><C-\> :NERDTreeFind<CR>
 
-let g:NERDTreeWinSize=50
+" This setting is used to change the size of the NERDTree when it is loaded.
+let g:NERDTreeWinSize=45
