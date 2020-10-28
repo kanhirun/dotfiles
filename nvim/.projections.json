@@ -1,3 +1,4 @@
 {
-  "after/plugin/*.vim": { "type": "plugin" }
+  "after/plugin/*.vim": { "type": "settings" },
+  "init.vim":           { "type": "settings" }
 }
