@@ -17,7 +17,7 @@ let g:NERDTreeWinSize=45
 let NERDTreeIgnore=[]
 
 
-" Yank a dirnode to copy its path to clipboard
+" Yank a dirnode to copy its path to clipboard (.git/refs/heads/tips/10afea9)
 call NERDTreeAddKeyMap({
       \ 'key': 'yy',
       \ 'callback': 'NERDTreeYankPathToClipboardHandler',
