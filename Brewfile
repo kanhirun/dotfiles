@@ -12,8 +12,8 @@ brew "coreutils"
 brew "watch"
 brew "watchman"
 
-# Move through folders faster than `cd`
-brew "z"
+# Move through 'frecent' files, faster than `cd`
+brew "fasd"
 
 # rename files and directories quickly
 brew "rename"
