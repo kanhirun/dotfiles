@@ -35,8 +35,10 @@ if which hub >/dev/null; then eval "$(hub alias -s)"; fi
 # - To edit the previous command, use `fc`
 autoload -U     edit-command-line
 zle      -N     edit-command-line
-bindkey  '^xe'  edit-command-line
-bindkey  '^x^e' edit-command-line
+
+# Use emacs mode for zsh line editor (zle)
+# do `bindkey` to show list of commands
+bindkey -e
 
 # ITerm2 Shell Integration
 test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
