@@ -12,7 +12,7 @@ brew "coreutils"
 brew "watch"
 brew "watchman"
 
-# Move through 'frecent' files, faster than `cd`
+# Move through 'frecent' files, faster than `cd` (.git/refs/heads/upgr/z-to-fasd)
 brew "fasd"
 
 # rename files and directories quickly
