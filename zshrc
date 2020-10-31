@@ -14,7 +14,6 @@ fi
 export VISUAL=nvim
 export EDITOR=nvim
 export DEFAULT_USER=$USER                          # Turns on a feature for the ZSH theme, `agnoster`.
-export PYTHON_CONFIGURE_OPTS="--enable-framework"  # Fixes an issue for installing YouCompleteMe
 export PATH="$HOME/.fastlane/bin:$PATH"
 
 # Avoid duplicate history
