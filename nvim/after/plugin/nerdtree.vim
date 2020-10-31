@@ -14,7 +14,7 @@ let g:NERDTreeWinSize=45
 
 " This setting is used to specify which files the NERDTree should ignore. It
 " must be a list of regular expressions. 
-let NERDTreeIgnore=[]
+let NERDTreeIgnore=[ 'bundle$', 'node_modules$', '__pycache__$' ]
 
 
 " Yank a dirnode to copy its path to clipboard (.git/refs/heads/tips/10afea9)
