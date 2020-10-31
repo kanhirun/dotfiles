@@ -9,4 +9,4 @@ let g:UltiSnipsJumpBackwardTrigger = '<c-z>'
 
 let g:UltiSnipsSnippetsDir = "~/.config/nvim/ultisnips"
 
-command! Snippets :UltiSnipsEdit<CR>
+command! Snippets call UltiSnips#Edit(<q-bang>, <q-args>)
