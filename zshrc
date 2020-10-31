@@ -27,7 +27,6 @@ if which rbenv >/dev/null; then eval "$(rbenv init -)"; fi
 if which pyenv >/dev/null; then eval "$(pyenv init -)"; fi
 if which nodenv >/dev/null; then eval "$(nodenv init -)"; fi
 if which jenv >/dev/null; then eval "$(jenv init -)"; fi
-if which hub >/dev/null; then eval "$(hub alias -s)"; fi
 
 # Use <C-x-e> to edit the current command
 # - To edit the previous command, use `fc`
