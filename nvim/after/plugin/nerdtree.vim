@@ -25,7 +25,7 @@ call NERDTreeAddKeyMap({
       \ 'scope': 'Node' })
 
 function! NERDTreeYankPathToClipboardHandler(dirnode)
-  let dirpath = a:dirnode.path.str()
-  echo 'copied: ' . dirpath
+  let l:dirpath = a:dirnode.path.str()
+  echo 'copied: ' . l:dirpath
   let @+ = dirpath
 endfunction
