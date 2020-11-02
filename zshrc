@@ -22,11 +22,16 @@ setopt hist_ignore_all_dups
 # Use fzf (if it exists) for fuzzy searching
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
-if which fasd >/dev/null; then eval "$(fasd --init auto)"; fi
-if which rbenv >/dev/null; then eval "$(rbenv init -)"; fi
-if which pyenv >/dev/null; then eval "$(pyenv init -)"; fi
-if which nodenv >/dev/null; then eval "$(nodenv init -)"; fi
-if which jenv >/dev/null; then eval "$(jenv init -)"; fi
+if which fasd >/dev/null; then 
+  eval "$(fasd --init auto)"
+  alias j='fasd_cd -d'
+fi
+
+if which rbenv >/dev/null;     then eval "$(rbenv init -)"; fi
+if which pyenv >/dev/null;     then eval "$(pyenv init -)"; fi
+if which nodenv >/dev/null;    then eval "$(nodenv init -)"; fi
+if which jenv >/dev/null;      then eval "$(jenv init -)"; fi
+if which asciinema >/dev/null; then alias asci=asciinema; fi
 
 # Use <C-x-e> to edit the current command
 # - To edit the previous command, use `fc`
@@ -46,12 +51,6 @@ bindkey "^R" history-incremental-search-backward
 # Allows overwrites when using UNIX redirect
 #   For example, `cat some_text > existing_file` (without emitting file permission errors)
 setopt clobber
-
-# Quickly jump into a file
-alias j='fasd_cd -d'
-
-# Quickly "kracks" open a file
-alias k='fasd -e nvim -a'
 
 # Prints the name of the connected network
 function whereami() {
