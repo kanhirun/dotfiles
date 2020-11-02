@@ -25,6 +25,8 @@ brew "jq"
 
 brew "neovim"
 
+brew "asciinema"
+
 # -- apps --
 
 cask "hammerspoon"
