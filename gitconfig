@@ -8,6 +8,7 @@
   l  = log
   r  = reset
   s  = status
+  st = stash
   ci = commit
 
   # Shows the graph of all branches
