@@ -114,8 +114,8 @@ nnoremap 0 ^
 nnoremap ^ 0
 
 " Quickly edit special files
-command! Vimrc :edit ~/.config/nvim/init.vim
-command! Exrc  :edit .exrc
+command! Vimrc   :edit ~/.config/nvim/init.vim
+command! Scratch :edit .exrc
 
 " ================ Turn Off Swap Files ==============
 
