@@ -1,0 +1,5 @@
+- [ ] Play with 'vim-todo-lists'
+  - [ ] add :Todo for quick access
+    - [ ] Can I open this in 'context' mode? at least vsp?
+  - [ ] try building a 'bulletjournal'-style version, with '>' support
+      - [ ] use 2020- format to sort, picking latest (or shim it)

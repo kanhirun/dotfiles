@@ -76,6 +76,8 @@ Plug 'seagoj/last-position.vim' " remembers cursor across vim sessions
 
 Plug 'srydell/vim-skeleton' " uses ultisnips, projectionist for dynamic templates
 
+Plug 'aserebryakov/vim-todo-lists'
+
 call plug#end()
 
 " ================ Custom Settings ==================
