@@ -1,7 +1,4 @@
-
-" ====================================================
-" SirVer/ultisnips
-" ====================================================
+" Try :UltiSnipsEdit! to view all matching snippets
 
 let g:UltiSnipsExpandTrigger       = '<c-l>'
 let g:UltiSnipsJumpForwardTrigger  = '<c-b>'
