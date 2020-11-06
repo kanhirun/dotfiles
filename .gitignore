@@ -3,3 +3,4 @@ nvim/bundle/
 .netrwhist
 
 !.projections.json
+!*.todo.md
