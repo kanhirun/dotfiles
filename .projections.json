@@ -1,0 +1,4 @@
+{
+  "nvim/after/plugin/*.vim": { "type": "settings" },
+  "nvim/init.vim":           { "type": "settings" }
+}
