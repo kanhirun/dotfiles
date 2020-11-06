@@ -5,6 +5,7 @@
     "type": "plugin"
   },
 
+  "my.todo.md": { "type": "todo" },
   "*.todo.md": {
     "alternate": "{}.vim",
     "type": "todo"
