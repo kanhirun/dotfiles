@@ -1,3 +1,5 @@
 nvim/bundle/
 
 .netrwhist
+
+!.projections.json
