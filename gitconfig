@@ -24,6 +24,7 @@
   autosquash = true
 [core]
   editor = nvim
+  excludesfile = ~/.gitignore
 [user]
   name     = Kel Kanhirun
   email    = kel.kanhirun@gmail.com

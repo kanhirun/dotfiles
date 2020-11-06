@@ -1,0 +1,9 @@
+# A vimrc used per project that acts like a semi-permanent scratch buffer
+.exrc
+
+# Used in vim plugin
+# https://github.com/tpope/vim-projectionist
+.projections.json
+
+# My default location for asciinema casts
+.casts/
