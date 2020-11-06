@@ -9,4 +9,6 @@ let g:UltiSnipsJumpBackwardTrigger = '<c-z>'
 
 let g:UltiSnipsSnippetsDir = "~/.config/nvim/ultisnips"
 
+let g:UltiSnipsEditSplit = 'context'
+
 command! Snippets call UltiSnips#Edit(<q-bang>, <q-args>)
