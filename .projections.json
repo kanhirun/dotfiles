@@ -1,4 +1,12 @@
 {
-  "nvim/after/plugin/*.vim": { "type": "settings" },
-  "nvim/init.vim":           { "type": "settings" }
+  "nvim/init.vim": { "type": "init" },
+  "nvim/after/plugin/*.vim": {
+    "alternate": "nvim/after/plugin/{}.todo.md",
+    "type": "plugin"
+  },
+
+  "*.todo.md": {
+    "alternate": "{}.vim",
+    "type": "todo"
+  }
 }
