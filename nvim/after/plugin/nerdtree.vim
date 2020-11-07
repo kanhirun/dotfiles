@@ -1,6 +1,5 @@
 " Show the current file relative to the parent dir
-nmap <C-\>      :NERDTreeFind<CR>
-nmap <C-w><C-\> :NERDTreeToggle<CR>
+nmap <C-\> : call NERDTreeToggleFind()<CR>
 
 " Ignores confirmation warning when deleting files
 let NERDTreeAutoDeleteBuffer=1
@@ -28,4 +27,12 @@ function! NERDTreeYankPathToClipboardHandler(dirnode)
   let l:dirpath = a:dirnode.path.str()
   echo 'copied: ' . l:dirpath
   let @+ = dirpath
+endfunction
+
+function! NERDTreeToggleFind()
+  if exists("g:NERDTree") && g:NERDTree.IsOpen()
+    exe 'NERDTreeClose'
+    return
+  endif
+  exe 'NERDTreeFind'
 endfunction
