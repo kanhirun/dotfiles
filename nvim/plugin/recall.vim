@@ -32,9 +32,15 @@ function! Recall(search, cmd, flag)
   exe a:cmd . " " . l:found
 endfunction
 
-" Jogs the user's memory with 'frecent' files with scores
+" Jogs the user's memory with 'frecent' files
 function! RecallCompletion(arglead, cmdline, cursorpos)
-  return ['foo', 'bar', 'baz']
+  if a:arglead == ''
+    let l:paths = system('fasd -tlR | head -2')
+  elseif
+    let l:paths = system('fasd -lfR ' . a:arglead . ' | head -2')
+  endif
+
+  return split(l:paths, '\n')
 endfunction
 
 function! AddRecallIf()
@@ -63,7 +69,7 @@ augroup recall
   autocmd BufDelete * call DeleteRecall()
 augroup END
 
-command! -nargs=* R  call Recall(<q-args>, 'edit', 'f')
+command! -nargs=* -complete=customlist,RecallCompletion R call Recall(<q-args>, 'edit', 'f')
 command! -nargs=* RV call Recall(<q-args>, 'vsp', 'f')
 command! -nargs=* RS call Recall(<q-args>, 'sp', 'f')
 command! -nargs=* RT call Recall(<q-args>, 'tabe', 'f')
