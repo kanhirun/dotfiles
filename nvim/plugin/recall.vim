@@ -1,13 +1,11 @@
 " recall.vim
 "   1. bring (a fact, event, or situation) back into one's mind; remember.
 
-function! Recall(search, cmd, flag)
+function! Recall(search, cmd)
   " TODO: Use inputsave(), instead of b: flag
   let b:search = a:search
   let b:cmd    = a:cmd
-  let b:flag   = a:flag
 
-  " Special handling of empty, and '-' 
   if b:search == ''
     let l:list   = split(system('fasd -l | tail -3'), "\n")
     let l:choice = inputlist(l:list)
@@ -22,11 +20,12 @@ function! Recall(search, cmd, flag)
     return
   endif
 
-  let l:found  = system("fasd -" . a:flag . " ". b:search)
+  let l:found = system("fasd -a " . b:search)
 
-  if a:flag == 'd'
+  if isdirectory(l:found)
     exe "NERDTreeClose"
     exe 'cd ' . l:found
+    exe 'NERDTree ' . l:found
   endif
 
   exe a:cmd . " " . l:found
@@ -56,11 +55,7 @@ function! AddRecallIf()
 endfunction
 
 function! DeleteRecall()
-  let curr = expand("%")
-
-  silent exe "!fasd -D " . curr
-
-  " call Recall(b:cmd, b:flag)
+  silent exe "!fasd -D " . expand("%")
 endfunction
 
 augroup recall
@@ -69,9 +64,7 @@ augroup recall
   autocmd BufDelete * call DeleteRecall()
 augroup END
 
-command! -nargs=* -complete=customlist,RecallCompletion R call Recall(<q-args>, 'edit', 'f')
-command! -nargs=* RV call Recall(<q-args>, 'vsp', 'f')
-command! -nargs=* RS call Recall(<q-args>, 'sp', 'f')
-command! -nargs=* RT call Recall(<q-args>, 'tabe', 'f')
-command! -nargs=* RD call Recall(<q-args>, 'NERDTree', 'd')
-" nnoremap <leader><leader> :call DeleteRecall()<CR>
+command! -nargs=* -complete=customlist,RecallCompletion R  call Recall(<q-args>, 'edit')
+command! -nargs=* -complete=customlist,RecallCompletion RV call Recall(<q-args>, 'vsp')
+command! -nargs=* -complete=customlist,RecallCompletion RS call Recall(<q-args>, 'sp')
+command! -nargs=* -complete=customlist,RecallCompletion RT call Recall(<q-args>, 'tabe')
