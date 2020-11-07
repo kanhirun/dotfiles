@@ -104,10 +104,6 @@ set colorcolumn=90
 " This way, in vsplit, the natural boundaries act as your line ruler.
 let &winwidth=&colorcolumn
 
-" TODO: Saves command or keymap into .exrc
-" I'm not sure how to do this just yet, but it is very useful
-" nnoremap <leader><leader> :vsp .projections.json
-
 " Make 0 go to the first character rather than the beginning
 " of the line. When we're programming, we're almost always
 " interested in working with text rather than empty space. If
