@@ -8,10 +8,27 @@ function! Recall(search, cmd, flag)
   let b:cmd    = a:cmd
   let b:flag   = a:flag
 
+  " Special handling of empty, and '-' 
   if b:search == ''
-    let l:list = split(system('fasd -s | tail -10'), '\n')  " save this for triaging
-    let l:path = inputlist(l:list)
-    echo l:path
+    let l:list   = split(system('fasd -l | awk "{print $2}"| tail -3'), "\n")
+    let l:choice = inputlist(l:list)
+    let l:file   = l:list[len(l:list) - l:choice]
+
+    if isdirectory(l:file)
+      exe 'NERDTree ' . l:file
+      return
+    endif
+
+    exe a:cmd . " " . l:file
+
+    return
+  elseif b:search == '-'
+    let l:latest = system("fasd -rl | tail -1")
+    if isdirectory(l:latest)
+      exe 'NERDTree ' . l:latest
+      return
+    endif
+    exe a:cmd . " " . l:latest
     return
   endif
 
@@ -56,9 +73,9 @@ augroup recall
   autocmd BufDelete * call DeleteRecall()
 augroup END
 
-command! -nargs=1 R  call Recall(<q-args>, 'edit', 'f')
-command! -nargs=1 RV call Recall(<q-args>, 'vsp', 'f')
-command! -nargs=1 RS call Recall(<q-args>, 'sp', 'f')
-command! -nargs=1 RT call Recall(<q-args>, 'tabe', 'f')
-command! -nargs=1 RD call Recall(<q-args>, 'NERDTree', 'd')
+command! -nargs=* R  call Recall(<q-args>, 'edit', 'f')
+command! -nargs=* RV call Recall(<q-args>, 'vsp', 'f')
+command! -nargs=* RS call Recall(<q-args>, 'sp', 'f')
+command! -nargs=* RT call Recall(<q-args>, 'tabe', 'f')
+command! -nargs=* RD call Recall(<q-args>, 'NERDTree', 'd')
 " nnoremap <leader><leader> :call DeleteRecall()<CR>
