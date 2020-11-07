@@ -3,14 +3,13 @@
 
 function! Recall(search, cmd, flag)
   " TODO: Use inputsave(), instead of b: flag
-  " let b:search = input("Recall: ", "", "customlist,RecallCompletion")
   let b:search = a:search
   let b:cmd    = a:cmd
   let b:flag   = a:flag
 
   " Special handling of empty, and '-' 
   if b:search == ''
-    let l:list   = split(system('fasd -l | awk "{print $2}"| tail -3'), "\n")
+    let l:list   = split(system('fasd -l | tail -3'), "\n")
     let l:choice = inputlist(l:list)
     let l:file   = l:list[len(l:list) - l:choice]
 
@@ -20,15 +19,6 @@ function! Recall(search, cmd, flag)
     endif
 
     exe a:cmd . " " . l:file
-
-    return
-  elseif b:search == '-'
-    let l:latest = system("fasd -rl | tail -1")
-    if isdirectory(l:latest)
-      exe 'NERDTree ' . l:latest
-      return
-    endif
-    exe a:cmd . " " . l:latest
     return
   endif
 
