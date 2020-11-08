@@ -2,7 +2,6 @@
 "   1. bring (a fact, event, or situation) back into one's mind; remember.
 
 function! Recall(search, cmd)
-  " TODO: Use inputsave(), instead of b: flag
   let b:search = a:search
   let b:cmd    = a:cmd
 
