@@ -12,7 +12,7 @@
   ci = commit
 
   # Shows the graph of all branches
-  ll = log --graph --oneline --all --decorate=short -10
+  ll = log --graph --oneline --all --decorate=short -30
 
   # Quickly amend, use `git amend --edit` to change the message
   amend = commit --amend --no-edit
