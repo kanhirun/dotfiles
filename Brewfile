@@ -25,6 +25,8 @@ brew "jq"
 
 brew "neovim"
 
+brew "direnv"
+
 brew "asciinema"
 
 # -- apps --
