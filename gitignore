@@ -7,6 +7,3 @@
 
 # My default location for asciinema casts
 .casts/
-
-# Ignores todo files
-*.todo.md

@@ -1,5 +1,9 @@
-- [ ] Play with 'vim-todo-lists'
-  - [ ] add :Todo for quick access
-    - [ ] Can I open this in 'context' mode? at least vsp?
-  - [ ] try building a 'bulletjournal'-style version, with '>' support
-      - [ ] use 2020- format to sort, picking latest (or shim it)
+# aging.vim
+
+- Shows how old line numbers are based on git history
+    - good for refactoring
+    - good for quickly scanning a file
+
+# recall.vim
+
+- [ ] Add a fasd wrapper over vim completions, composability win
