@@ -32,6 +32,7 @@ if which pyenv >/dev/null;     then eval "$(pyenv init -)"; fi
 if which nodenv >/dev/null;    then eval "$(nodenv init -)"; fi
 if which jenv >/dev/null;      then eval "$(jenv init -)"; fi
 if which asciinema >/dev/null; then alias asci=asciinema; fi
+if which direnv >/dev/null; then eval "$(direnv hook zsh)"; fi
 
 # Use <C-x-e> to edit the current command
 # - To edit the previous command, use `fc`
