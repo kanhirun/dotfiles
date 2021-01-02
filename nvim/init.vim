@@ -44,6 +44,9 @@ let g:python3_host_prog = '~/.pyenv/versions/3.7.4/bin/python3'
 " https://andrew.stwrt.ca/posts/project-specific-vimrc/
 set exrc
 
+set foldmethod=indent
+set nofoldenable
+
 " =============== Plugin Initialization ===============
 
 call plug#begin('~/.config/nvim/bundle')
