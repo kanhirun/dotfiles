@@ -1,4 +1,9 @@
 {
   "nvim/init.vim": { "type": "plugin" },
-  "nvim/after/plugin/*.vim": { "type": "plugin" }
+  "nvim/after/plugin/*.vim": { "type": "plugin" },
+
+  "nvim/ultisnips/*.snippets": {
+    "alternate": "nvim/after/plugin/coc-snippets.vim",
+    "type": "snippet"
+  }
 }
