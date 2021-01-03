@@ -49,6 +49,11 @@ set nofoldenable
 
 " =============== Plugin Initialization ===============
 
+" See also: coc-settings.json
+let g:coc_global_extensions = [
+\ 'coc-snippets'
+\]
+
 call plug#begin('~/.config/nvim/bundle')
 
 " file search, :FZF
@@ -65,7 +70,6 @@ Plug 'junegunn/vim-easy-align'
 
 " autocomplete
 Plug 'neoclide/coc.nvim', { 'branch': 'release' }
-Plug 'SirVer/ultisnips'
 
 " task runners
 Plug 'janko-m/vim-test'   " test runner, :TestNearest
