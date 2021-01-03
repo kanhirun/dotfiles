@@ -9,7 +9,7 @@
   r  = reset
   s  = status
   st = stash
-  ci = commit
+  ci = commit --verbose
 
   # Shows the graph of all branches
   ll = log --graph --oneline --all --decorate=short -30
