@@ -1,7 +1,7 @@
 [alias]
   a  = add --all
   ap = add --patch
-  b  = branch
+  b  = branch -vv
   co = checkout
   d  = diff -U1
   ds = diff --staged
