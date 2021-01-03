@@ -1,6 +1,4 @@
 {
-  "nvim/init.vim": { "type": "init" },
-  "nvim/after/plugin/*.vim": {
-    "type": "plugin"
-  }
+  "nvim/init.vim": { "type": "plugin" },
+  "nvim/after/plugin/*.vim": { "type": "plugin" }
 }
