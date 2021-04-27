@@ -1,7 +1,7 @@
 " GoTo code navigation.
 nmap <silent><nowait> gd <Plug>(coc-definition)
 nnoremap <C-w>gd :call CocAction('jumpDefinition', 'vsplit')<CR>
-nnoremap <C-t>gd :call CocAction('jumpDefinition', 'tab')<CR>
+nnoremap <C-t>gd :call CocAction('jumpDefinition', 'tab drop')<CR>
 nnoremap <C-x>gd :call CocAction('jumpDefinition', 'split')<CR>
 nmap <silent><nowait> gy <Plug>(coc-type-definition)
 nmap <silent><nowait> gi <Plug>(coc-implementation)
