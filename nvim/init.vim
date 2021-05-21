@@ -38,7 +38,8 @@ let mapleader="\<Space>"
 
 " Tells neovim where my python executable is located
 " Avoids pyenv shim to stabilize vim plugins
-let g:python3_host_prog = '~/.pyenv/versions/3.7.4/bin/python3'
+let g:python_host_prog  = '~/.pyenv/shims/python2'
+let g:python3_host_prog = '~/.pyenv/shims/python3'
 
 " Enables project-level vimrc, try creating an .exrc file
 " https://andrew.stwrt.ca/posts/project-specific-vimrc/
