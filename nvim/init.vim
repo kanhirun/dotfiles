@@ -37,7 +37,7 @@ colorscheme monokai
 let mapleader="\<Space>"
 
 " Tells neovim where my python executable is located
-" Avoids pyenv shim to stabilize vim plugins
+" To get `python2`, `python3` working, do `pyenv global 3.x 2.x`
 let g:python_host_prog  = '~/.pyenv/shims/python2'
 let g:python3_host_prog = '~/.pyenv/shims/python3'
 
