@@ -2,6 +2,9 @@
     "coc.preferences.enableFloatHighlight": false,
     "coc.preferences.jumpCommand": "drop",
     "diagnostic.enableMessage": "jump",
-    "diagnostic.level": "warning"
+    "diagnostic.level": "warning",
+    "list.source.symbols.excludes": [
+        "**/node_modules/**/*"
+    ]
 }
 
