@@ -3,6 +3,7 @@
     "coc.preferences.jumpCommand": "drop",
     "diagnostic.enableMessage": "jump",
     "diagnostic.level": "warning",
+    "python.analysis.stubPath": "/Users/Feynman/workspace/basketballVideoAnalysis/court-detection/typings",
     "list.source.symbols.excludes": [
         "**/node_modules/**/*"
     ]

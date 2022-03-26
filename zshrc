@@ -57,3 +57,5 @@ setopt clobber
 function whereami() {
   /System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport -I | sed -e "s/^  *SSID: //p" -e d
 }
+
+export PATH="$PATH:$HOME/bin"
