@@ -57,6 +57,7 @@ let g:coc_global_extensions = [
 call plug#begin('~/.config/nvim/bundle')
 
 " file search, :FZF
+" TODO: Explore nucleo for improved perf (https://github.com/helix-editor/nucleo)
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } } | Plug 'junegunn/fzf.vim'
 
 " file navigation, :NERDTreeFind
