@@ -76,7 +76,7 @@ Plug 'neoclide/coc.nvim', { 'branch': 'release' }
 Plug 'janko-m/vim-test'   " test runner, :TestNearest
 Plug 'tpope/vim-dispatch' " job runner,  :Start and :Dispatch
 
-" just for the look and feel
+" ui/ux
 Plug 'tpope/vim-fugitive'       " improves git usage in vim
 Plug 'sheerun/vim-polyglot'     " provides syntax highlights for many languages
 Plug 'airblade/vim-gitgutter'   " see git changes on signcolumn (+, ~, -)
