@@ -59,3 +59,10 @@ function whereami() {
 }
 
 export PATH="$PATH:$HOME/bin"
+
+autoload -U +X bashcompinit && bashcompinit
+complete -o nospace -C /usr/local/bin/terraform terraform
+
+eval "$(direnv hook zsh)"
+
+export PATH="$PATH:/Applications/Docker.app/Contents/Resources/bin/"
