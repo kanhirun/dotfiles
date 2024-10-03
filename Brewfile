@@ -15,9 +15,6 @@ brew "watchman"
 # Move through 'frecent' files, faster than `cd` (.git/refs/heads/upgr/z-to-fasd)
 brew "fasd"
 
-# rename files and directories quickly
-brew "rename"
-
 # formats console output (i.e. JSON, tree)
 brew "tree"
 brew "pstree"
@@ -32,6 +29,6 @@ brew "asciinema"
 # -- apps --
 
 cask "hammerspoon"
-cask "iterm2"
+cask "warp"
 cask "postman"
 cask "ngrok"
