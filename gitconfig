@@ -19,6 +19,8 @@
 
 [push]
   default = current
+[pull]
+  rebase = true
 [merge]
   tool = opendiff
 [rebase]
@@ -30,3 +32,8 @@
   name     = Kel Kanhirun
   email    = kel@native.dev
   initials = kk
+[filter "lfs"]
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true
