@@ -29,7 +29,6 @@ set hidden
 
 " Turn on syntax highlighting
 syntax on
-colorscheme monokai
 
 " Change leader to <Space> because the backslash is too far away
 " The mapleader has to be set before plugin manager starts loading all
@@ -77,6 +76,9 @@ Plug 'janko-m/vim-test'   " test runner, :TestNearest
 Plug 'tpope/vim-dispatch' " job runner,  :Start and :Dispatch
 
 " ui/ux
+" use github colorscheme for reading PRs naturally
+Plug 'projekt0n/github-nvim-theme', { 'branch': 'main' } 
+
 Plug 'tpope/vim-fugitive'       " improves git usage in vim
 Plug 'sheerun/vim-polyglot'     " provides syntax highlights for many languages
 Plug 'airblade/vim-gitgutter'   " see git changes on signcolumn (+, ~, -)
@@ -88,6 +90,8 @@ call plug#end()
 
 " ================ Custom Settings ==================
 
+" Color schemes should be loaded after plug#end()
+colorscheme github_dark_high_contrast
 " Removes highlights
 nmap <silent> // :noh<CR>
 
