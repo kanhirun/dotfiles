@@ -22,11 +22,6 @@ setopt hist_ignore_all_dups
 # Use fzf (if it exists) for fuzzy searching
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
-if which fasd >/dev/null; then 
-  eval "$(fasd --init auto)"
-  alias j='fasd_cd -d'
-fi
-
 if which rbenv >/dev/null;     then eval "$(rbenv init -)"; fi
 if which pyenv >/dev/null;     then eval "$(pyenv init -)"; fi
 if which nodenv >/dev/null;    then eval "$(nodenv init -)"; fi
@@ -62,7 +57,5 @@ export PATH="$PATH:$HOME/bin"
 
 autoload -U +X bashcompinit && bashcompinit
 complete -o nospace -C /usr/local/bin/terraform terraform
-
-eval "$(direnv hook zsh)"
 
 export PATH="$PATH:/Applications/Docker.app/Contents/Resources/bin/"

@@ -1,6 +1,9 @@
 # Unset the default fish greeting text which messes up Zellij
 set fish_greeting
 
+# Add local bin to PATH
+fish_add_path $HOME/.local/bin
+
 if status is-interactive
     export ZELLIJ_CONFIG_DIR=$HOME/.config/zellij
 
@@ -9,6 +12,8 @@ if status is-interactive
     end
 end
 
-eval "$(zoxide init fish --cmd j)"
-
+zoxide init fish --cmd j | source
+pyenv init - | source
+nodenv init - | source
+direnv hook fish | source
 starship init fish | source
