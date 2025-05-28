@@ -10,45 +10,14 @@ return {
   { 'numToStr/Comment.nvim' },
 
   -- test runner
-  -- https://github.com/nvim-neotest/neotest
+  -- https://github.com/vim-test/vim-test
   {
-    "nvim-neotest/neotest",
-    dependencies = {
-      "nvim-neotest/nvim-nio",
-      "nvim-lua/plenary.nvim",
-      "antoinemadec/FixCursorHold.nvim",
-      "nvim-treesitter/nvim-treesitter",
-      -- Test adapters
-      "nvim-neotest/neotest-python",
-      "nvim-neotest/neotest-jest",
-      "rouge8/neotest-rust",
-    },
+    "vim-test/vim-test",
     config = function()
-      require("neotest").setup({
-        adapters = {
-          require("neotest-python")({
-            dap = { justMyCode = false },
-          }),
-          require("neotest-jest")({
-            jestCommand = "npm test --",
-            jestConfigFile = "jest.config.js",
-            env = { CI = true },
-            cwd = function(path)
-              return vim.fn.getcwd()
-            end,
-          }),
-          require("neotest-rust"),
-        },
-      })
-
-      vim.keymap.set('n', '<leader>s', function() require("neotest").run.run() end, { silent = true, desc = "Run nearest test" })
-      vim.keymap.set('n', '<leader>t', function() require("neotest").run.run(vim.fn.expand("%")) end, { silent = true, desc = "Run file tests" })
-      vim.keymap.set('n', '<leader>a', function() require("neotest").run.run(vim.fn.getcwd()) end, { silent = true, desc = "Run all tests" })
-      vim.keymap.set('n', '<leader>l', function() require("neotest").run.run_last() end, { silent = true, desc = "Run last test" })
-      
-      -- Additional neotest keymaps for enhanced functionality
-      vim.keymap.set('n', '<leader>to', function() require("neotest").output.open({ enter = true, auto_close = true }) end, { silent = true, desc = "Show test output" })
-      vim.keymap.set('n', '<leader>ts', function() require("neotest").summary.toggle() end, { silent = true, desc = "Toggle test summary" })
+      vim.keymap.set('n', '<leader>s', ':TestNearest<CR>', { silent = true, desc = "Run nearest test" })
+      vim.keymap.set('n', '<leader>t', ':TestFile<CR>', { silent = true, desc = "Run file tests" })
+      vim.keymap.set('n', '<leader>a', ':TestSuite<CR>', { silent = true, desc = "Run all tests" })
+      vim.keymap.set('n', '<leader>l', ':TestLast<CR>', { silent = true, desc = "Run last test" })
     end
   },
 }
