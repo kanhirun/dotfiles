@@ -1,5 +1,9 @@
 # brew "fzf"  -- Installed via vim packages
 
+# A minimal, fast, and customizable cross-shell prompt
+# https://github.com/starship/starship
+brew "starship"
+
 brew "pyenv"
 brew "pyenv-virtualenv"
 brew "rbenv"
@@ -12,8 +16,9 @@ brew "coreutils"
 brew "watch"
 brew "watchman"
 
-# Move through 'frecent' files, faster than `cd` (.git/refs/heads/upgr/z-to-fasd)
-brew "fasd"
+# A smarter 'cd', inspired by 'z' and 'autojump'
+# https://github.com/ajeetdsouza/zoxide
+brew "zoxide"
 
 # formats console output (i.e. JSON, tree)
 brew "tree"
