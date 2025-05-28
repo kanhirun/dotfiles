@@ -10,3 +10,5 @@ if status is-interactive
 end
 
 eval "$(zoxide init fish --cmd j)"
+
+starship init fish | source

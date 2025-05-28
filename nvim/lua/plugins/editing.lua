@@ -9,6 +9,8 @@ return {
 
   { 'numToStr/Comment.nvim' },
 
+  -- test runner
+  -- https://github.com/nvim-neotest/neotest
   {
     "nvim-neotest/neotest",
     dependencies = {
@@ -39,7 +41,6 @@ return {
         },
       })
 
-      -- Preserve your existing keymaps with neotest equivalents
       vim.keymap.set('n', '<leader>s', function() require("neotest").run.run() end, { silent = true, desc = "Run nearest test" })
       vim.keymap.set('n', '<leader>t', function() require("neotest").run.run(vim.fn.expand("%")) end, { silent = true, desc = "Run file tests" })
       vim.keymap.set('n', '<leader>a', function() require("neotest").run.run(vim.fn.getcwd()) end, { silent = true, desc = "Run all tests" })
