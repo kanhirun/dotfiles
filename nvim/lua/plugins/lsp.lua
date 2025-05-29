@@ -17,11 +17,11 @@ return {
         end
 
         map('<leader>rn', vim.lsp.buf.rename, '[R]e[n]ame')
-        map('<leader>ga', vim.lsp.buf.code_action, '[C]ode [A]ction', { 'n', 'x' })
-        map('<leader>gr', require('telescope.builtin').lsp_references, '[G]oto [R]eferences')
-        map('<leader>gi', require('telescope.builtin').lsp_implementations, '[G]oto [I]mplementation')
-        map('<leader>gd', require('telescope.builtin').lsp_definitions, '[G]oto [D]efinition')
-        map('<leader>gD', vim.lsp.buf.declaration, '[G]oto [D]eclaration')
+        map('<leader>k', vim.lsp.buf.code_action, '[C]ode [A]ction', { 'n', 'x' })
+        map('gr', require('telescope.builtin').lsp_references, '[G]oto [R]eferences')
+        map('gi', require('telescope.builtin').lsp_implementations, '[G]oto [I]mplementation')
+        map('gd', require('telescope.builtin').lsp_definitions, '[G]oto [D]efinition')
+        map('gD', vim.lsp.buf.declaration, '[G]oto [D]eclaration')
         map('<leader>gs', require('telescope.builtin').lsp_document_symbols, '[D]ocument [S]ymbols')
         map('<leader>gS', require('telescope.builtin').lsp_dynamic_workspace_symbols, '[W]orkspace [S]ymbols')
         map('<leader>gt', require('telescope.builtin').lsp_type_definitions, '[G]oto [T]ype Definition')
@@ -98,7 +98,11 @@ return {
 
     local servers = {
       pyright = {},
-      ts_ls = {},
+      denols = {
+        root_dir = require("lspconfig").util.root_pattern({"deno.json", "deno.jsonc"}),
+        single_file_support = false,
+        settings = {},
+      },
       lua_ls = {
         settings = {
           Lua = {
