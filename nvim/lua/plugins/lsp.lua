@@ -11,17 +11,26 @@ return {
     vim.api.nvim_create_autocmd('LspAttach', {
       group = vim.api.nvim_create_augroup('kickstart-lsp-attach', { clear = true }),
       callback = function(event)
+
+        -- ===========
+        -- Keymaps
+        -- ==========
+
         local map = function(keys, func, desc, mode)
           mode = mode or 'n'
           vim.keymap.set(mode, keys, func, { buffer = event.buf, desc = 'LSP: ' .. desc })
         end
 
+        map('g]', vim.diagnostic.goto_next, '[G]oto Next Error')
+        map('g[', vim.diagnostic.goto_prev, '[G]oto Previous Error')
+
         map('<leader>rn', vim.lsp.buf.rename, '[R]e[n]ame')
         map('<leader>k', vim.lsp.buf.code_action, '[C]ode [A]ction', { 'n', 'x' })
+        map('gD', vim.lsp.buf.declaration, '[G]oto [D]eclaration')
+
         map('gr', require('telescope.builtin').lsp_references, '[G]oto [R]eferences')
         map('gi', require('telescope.builtin').lsp_implementations, '[G]oto [I]mplementation')
         map('gd', require('telescope.builtin').lsp_definitions, '[G]oto [D]efinition')
-        map('gD', vim.lsp.buf.declaration, '[G]oto [D]eclaration')
         map('<leader>gs', require('telescope.builtin').lsp_document_symbols, '[D]ocument [S]ymbols')
         map('<leader>gS', require('telescope.builtin').lsp_dynamic_workspace_symbols, '[W]orkspace [S]ymbols')
         map('<leader>gt', require('telescope.builtin').lsp_type_definitions, '[G]oto [T]ype Definition')
@@ -33,6 +42,13 @@ return {
             return client.supports_method(method, { bufnr = bufnr })
           end
         end
+
+        -- Show diagnostic when cursor is over it
+        vim.api.nvim_create_autocmd("CursorHold", {
+          callback = function()
+            vim.diagnostic.open_float(nil, { focus = false })
+          end
+        })
 
         local client = vim.lsp.get_client_by_id(event.data.client_id)
         if client and client_supports_method(client, vim.lsp.protocol.Methods.textDocument_documentHighlight, event.buf) then
@@ -78,20 +94,7 @@ return {
           [vim.diagnostic.severity.INFO] = '󰋽 ',
           [vim.diagnostic.severity.HINT] = '󰌶 ',
         },
-      } or {},
-      virtual_text = {
-        source = 'if_many',
-        spacing = 2,
-        format = function(diagnostic)
-          local diagnostic_message = {
-            [vim.diagnostic.severity.ERROR] = diagnostic.message,
-            [vim.diagnostic.severity.WARN] = diagnostic.message,
-            [vim.diagnostic.severity.INFO] = diagnostic.message,
-            [vim.diagnostic.severity.HINT] = diagnostic.message,
-          }
-          return diagnostic_message[diagnostic.severity]
-        end,
-      },
+      } or {}
     }
 
     local capabilities = require('blink.cmp').get_lsp_capabilities()
