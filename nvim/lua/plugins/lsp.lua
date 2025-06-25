@@ -43,13 +43,6 @@ return {
           end
         end
 
-        -- Show diagnostic when cursor is over it
-        vim.api.nvim_create_autocmd("CursorHold", {
-          callback = function()
-            vim.diagnostic.open_float(nil, { focus = false })
-          end
-        })
-
         local client = vim.lsp.get_client_by_id(event.data.client_id)
         if client and client_supports_method(client, vim.lsp.protocol.Methods.textDocument_documentHighlight, event.buf) then
           local highlight_augroup = vim.api.nvim_create_augroup('kickstart-lsp-highlight', { clear = false })
