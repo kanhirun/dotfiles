@@ -27,7 +27,8 @@ return {
           ["g\\"] = { "actions.toggle_trash", mode = "n" },
         }
       })
-      vim.keymap.set('n', '<C-\\>', ':Oil<CR>', { desc = 'Open File Explorer' })
+      vim.keymap.set('n', '-', ':Oil<CR>', { noremap = true, desc = 'Open File Explorer' })
+      vim.keymap.set('n', '<C-\\>', ':leftabove vsplit | Oil<CR>', { noremap = true, desc = 'Open File Explorer in vertical split' })
     end
   }
 }

@@ -10,10 +10,17 @@ if [[ -s "${ZDOTDIR:-$HOME}/.zprezto/init.zsh" ]]; then
   source "${ZDOTDIR:-$HOME}/.zprezto/init.zsh"
 fi
 
-# Use nvim instead of nano
+# ========================
+# Environment Variables
+# ========================
+
+# Uses nvim as default editor
 export VISUAL=nvim
 export EDITOR=nvim
 export DEFAULT_USER=$USER                          # Turns on a feature for the ZSH theme, `agnoster`.
+
+# PNPM setup
+export PNPM_HOME="$HOME/Library/pnpm"
 
 # Avoid duplicate history
 export HISTCONTROL=ignoreboth:erasedups

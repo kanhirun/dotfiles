@@ -10,8 +10,5 @@ vim.keymap.set('n', '^', '0', { noremap = true })
 -- Move past quotes in insert mode
 vim.keymap.set('i', '<C-a>', '<Esc>wa', { noremap = true })
 
--- Oil file explorer
-vim.keymap.set('n', '<C-\\>', ':Oil<CR>', { noremap = true, silent = true })
-
 -- ================ Custom Commands =======================
 vim.api.nvim_create_user_command('Projections', 'edit .projections.json', {})

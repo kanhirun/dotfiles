@@ -94,10 +94,20 @@ return {
 
     local servers = {
       pyright = {},
-      denols = {
-        root_dir = require("lspconfig").util.root_pattern({"deno.json", "deno.jsonc"}),
-        single_file_support = false,
-        settings = {},
+      ts_ls = {
+        root_dir = require("lspconfig").util.root_pattern({"tsconfig.json", "package.json"}),
+        settings = {
+          typescript = {
+            preferences = {
+              includePackageJsonAutoImports = "auto",
+            },
+          },
+        },
+        init_options = {
+          preferences = {
+            organizeImportsOnFormat = true,
+          },
+        },
       },
       lua_ls = {
         settings = {
