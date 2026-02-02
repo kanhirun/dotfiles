@@ -21,7 +21,7 @@ return {
   config = function()
     require('telescope').setup {
       defaults = {
-        file_ignore_patterns = { 'node_modules', '.next', 'generated' }
+        file_ignore_patterns = { 'node_modules', 'generated' }
       },
       extensions = {
         ['ui-select'] = {
