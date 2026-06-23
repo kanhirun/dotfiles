@@ -7,6 +7,7 @@ brew "starship"
 brew "pyenv"
 brew "pyenv-virtualenv"
 brew "rbenv"
+brew "direnv"
 
 brew "git", args: ["--with-pcre"]
 brew "gh"
@@ -26,8 +27,6 @@ brew "pstree"
 brew "jq"
 
 brew "neovim"
-
-brew "direnv"
 
 brew "asciinema"
 
