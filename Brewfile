@@ -33,6 +33,5 @@ brew "asciinema"
 # -- apps --
 
 cask "hammerspoon"
-cask "warp"
 cask "postman"
 cask "ngrok"
