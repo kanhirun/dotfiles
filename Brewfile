@@ -4,15 +4,17 @@
 # https://github.com/starship/starship
 brew "starship"
 
+# version managers
 brew "pyenv"
 brew "pyenv-virtualenv"
 brew "rbenv"
 brew "direnv"
 
+# tools
 brew "git", args: ["--with-pcre"]
 brew "gh"
+brew "pgcli"  # psql wrapper with autocompletion
 brew "gibo"   # .gitignore generator
-
 brew "coreutils"
 brew "watch"
 brew "watchman"
