@@ -11,7 +11,6 @@ brew "rbenv"
 brew "direnv"
 
 # tools
-brew "git", args: ["--with-pcre"]
 brew "gh"
 brew "pgcli"  # psql wrapper with autocompletion
 brew "gibo"   # .gitignore generator
