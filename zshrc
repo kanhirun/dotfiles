@@ -18,6 +18,8 @@ case ":$PATH:" in
 esac
 # pnpm end
 
+export PATH="$HOME/.local/bin:$PATH"
+
 # edit-and-execute-command
 # raycast://extensions/raycast/raycast-ai/ai-chat?context=%7B%22id%22:%2218F860A7-0A96-4B58-9C94-65D4470CF830%22%7D
 autoload -U edit-command-line
