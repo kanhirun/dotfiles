@@ -92,10 +92,12 @@ return {
 
     local capabilities = require('blink.cmp').get_lsp_capabilities()
 
+    -- NOTE: mason-lspconfig v2 dropped `handlers`/`setup_handlers`. Servers are now
+    -- configured with `vim.lsp.config()` and started with `vim.lsp.enable()`; the
+    -- tables below are merged on top of nvim-lspconfig's own `lsp/<name>.lua`.
     local servers = {
       pyright = {},
       ts_ls = {
-        root_dir = require("lspconfig").util.root_pattern({"tsconfig.json", "package.json"}),
         settings = {
           typescript = {
             preferences = {
@@ -118,24 +120,60 @@ return {
           },
         },
       },
+      gopls = {
+        settings = {
+          gopls = {
+            gofumpt = true,
+            usePlaceholders = true,
+            completeUnimported = true,
+            staticcheck = true,
+            -- Telescope's workspace-symbol picker leans on this
+            symbolMatcher = 'fuzzy',
+            analyses = {
+              nilness = true,
+              unusedparams = true,
+              unusedwrite = true,
+              useany = true,
+            },
+            hints = {
+              assignVariableTypes = true,
+              compositeLiteralFields = true,
+              compositeLiteralTypes = true,
+              constantValues = true,
+              functionTypeParameters = true,
+              parameterNames = true,
+              rangeVariableTypes = true,
+            },
+          },
+        },
+      },
     }
 
-    local ensure_installed = vim.tbl_keys(servers or {})
+    -- gopls is deliberately not mason-managed: it comes from goenv so it always
+    -- matches the active Go toolchain (mason's copy would shadow it on $PATH).
+    local ensure_installed = vim.tbl_filter(function(name)
+      return name ~= 'gopls'
+    end, vim.tbl_keys(servers or {}))
     vim.list_extend(ensure_installed, {
       'stylua',
     })
     require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
     require('mason-lspconfig').setup {
+      -- mason-tool-installer above handles installation
       ensure_installed = {},
-      automatic_installation = false,
-      handlers = {
-        function(server_name)
-          local server = servers[server_name] or {}
-          server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
-          require('lspconfig')[server_name].setup(server)
-        end,
-      },
+      automatic_enable = true,
     }
+
+    -- blink.cmp does not register its capabilities globally, so do it here
+    vim.lsp.config('*', { capabilities = capabilities })
+
+    for server, config in pairs(servers) do
+      vim.lsp.config(server, config)
+    end
+
+    -- Start anything already on $PATH (mason's automatic_enable only covers
+    -- servers it installed itself, which misses e.g. a goenv/asdf-managed gopls)
+    vim.lsp.enable(vim.tbl_keys(servers))
   end,
 }
