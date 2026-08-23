@@ -4,6 +4,7 @@ return {
     build = ":TSUpdate",
     config = function ()
       require("nvim-treesitter.configs").setup({
+        ensure_installed = { "go", "gomod", "gowork", "gosum", "lua", "python", "typescript", "tsx" },
         highlight = { enable = true },
         indent = { enable = true },
         textobjects = { enable = true },

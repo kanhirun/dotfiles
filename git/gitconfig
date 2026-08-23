@@ -30,7 +30,7 @@
   excludesfile = ~/.gitignore
 [user]
   name     = Kel Kanhirun
-  email    = kel@native.dev
+  email    = kel@pillarhq.com
   initials = kk
 [filter "lfs"]
 	clean = git-lfs clean -- %f
