@@ -28,6 +28,7 @@ brew "pstree"
 brew "jq"
 
 brew "neovim"
+brew "tree-sitter-cli"  # parser compiler for nvim-treesitter (main branch)
 
 brew "asciinema"
 
