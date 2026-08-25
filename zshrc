@@ -2,6 +2,12 @@ PATH=/opt/homebrew/bin:/opt/homebrew/sbin:/usr/bin:/bin:/usr/sbin:/sbin:$PATH
 
 eval "$(/opt/homebrew/bin/brew shellenv)"
 
+# Completion system -- must load after brew shellenv extends $fpath
+autoload -Uz compinit
+compinit
+zstyle ':completion:*' menu select
+zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
+
 eval "$(zoxide init zsh --cmd j)"
 eval "$(pyenv init -)"
 eval "$(goenv init -)"
