@@ -4,3 +4,5 @@ nvim/bundle/
 
 !.projections.json
 !*.todo.md
+
+.claude/

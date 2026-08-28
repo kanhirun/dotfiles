@@ -26,6 +26,19 @@ return {
 
         map('<leader>rn', vim.lsp.buf.rename, '[R]e[n]ame')
         map('<leader>k', vim.lsp.buf.code_action, '[C]ode [A]ction', { 'n', 'x' })
+        -- Skip the menu: apply the fix for the diagnostic under the cursor when
+        -- the server offers exactly one. Falls back to a picker if there are several.
+        map('<leader>K', function()
+          vim.lsp.buf.code_action { apply = true, context = { only = { 'quickfix' } } }
+        end, 'Quick [F]ix Diagnostic')
+        -- Whole-buffer fix: ask the server for every auto-fixable problem at once,
+        -- no cursor positioning required. Needs server-side `source.fixAll` support.
+        map('<leader>F', function()
+          vim.lsp.buf.code_action {
+            apply = true,
+            context = { only = { 'source.fixAll' }, diagnostics = {} },
+          }
+        end, '[F]ix All in Buffer')
         map('gD', vim.lsp.buf.declaration, '[G]oto [D]eclaration')
 
         map('gr', require('telescope.builtin').lsp_references, '[G]oto [R]eferences')
