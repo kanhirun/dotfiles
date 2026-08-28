@@ -95,12 +95,17 @@ return {
     -- buffers first (most-recently-used) and then shada history -- i.e. a
     -- superset of :buffers, filtered to the project. Current file is omitted.
     -- Capped at 5: the finder drops any entry whose entry_maker returns nil.
+    -- .git/COMMIT_EDITMSG lands in oldfiles every time a commit is written
+    -- from nvim, so drop it before it eats one of the 5 slots.
     vim.keymap.set('n', '<leader><leader>', function()
       local gen = require('telescope.make_entry').gen_from_file { cwd = vim.uv.cwd() }
       local n = 0
       builtin.oldfiles {
         cwd_only = true,
         entry_maker = function(line)
+          if line:match '%.git/COMMIT_EDITMSG$' then
+            return nil
+          end
           n = n + 1
           if n > 5 then
             return nil
