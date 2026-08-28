@@ -6,6 +6,11 @@ vim.opt.compatible = false
 vim.opt.hlsearch = false
 vim.opt.backspace = "indent,eol,start"
 vim.opt.history = 1000
+
+-- Remember 1000 files in v:oldfiles (default is '100). Telescope's cwd filter
+-- is applied *after* this global cap, so a small cap starves per-project
+-- recent-file lists when you work across many repos.
+vim.opt.shada = "!,'1000,<50,s10,h"
 vim.opt.showcmd = true
 vim.opt.showmode = true
 vim.opt.autoread = true

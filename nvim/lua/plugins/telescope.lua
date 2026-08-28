@@ -83,11 +83,33 @@ return {
     -- vim.keymap.set('n', '<leader>sw', builtin.grep_string, { desc = '[S]earch current [W]ord' })
     vim.keymap.set('n', '<leader>sg', builtin.live_grep, { desc = '[S]earch by [G]rep' })
     vim.keymap.set('n', '<leader>sd', builtin.diagnostics, { desc = '[S]earch [D]iagnostics' })
+    -- Fires workspace/diagnostic first so servers can report on files that were
+    -- never opened (gopls supports it; ts_ls is push-only and ignores it), then
+    -- scopes the results to cwd.
+    vim.keymap.set('n', '<leader>sD', function()
+      builtin.diagnostics { workspace = true, root_dir = true }
+    end, { desc = '[S]earch [D]iagnostics (project-wide)' })
     -- vim.keymap.set('n', '<leader>sr', builtin.resume, { desc = '[S]earch [R]esume' })
-    vim.keymap.set('n', '<leader>s.', function()
-      builtin.oldfiles({ cwd_only = true })
-    end, { desc = '[S]earch Recent Files in Current Directory' })
-    vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = '[ ] Find existing buffers' })
+    -- Recent files, scoped to cwd, persisted across sessions via shada.
+    -- include_current_session defaults to true, so this lists current-session
+    -- buffers first (most-recently-used) and then shada history -- i.e. a
+    -- superset of :buffers, filtered to the project. Current file is omitted.
+    -- Capped at 5: the finder drops any entry whose entry_maker returns nil.
+    vim.keymap.set('n', '<leader><leader>', function()
+      local gen = require('telescope.make_entry').gen_from_file { cwd = vim.uv.cwd() }
+      local n = 0
+      builtin.oldfiles {
+        cwd_only = true,
+        entry_maker = function(line)
+          n = n + 1
+          if n > 5 then
+            return nil
+          end
+          return gen(line)
+        end,
+      }
+    end, { desc = '[ ] Recent files in cwd (last 5)' })
+    vim.keymap.set('n', '<leader>s.', builtin.buffers, { desc = '[S]earch existing buffers' })
 
     vim.keymap.set('n', '<leader>/', function()
       builtin.current_buffer_fuzzy_find(require('telescope.themes').get_dropdown {
