@@ -25,6 +25,7 @@
   tool = opendiff
 [rebase]
   autosquash = true
+	updateRefs = true
 [core]
   editor = nvim
   excludesfile = ~/.gitignore
@@ -37,3 +38,5 @@
 	smudge = git-lfs smudge -- %f
 	process = git-lfs filter-process
 	required = true
+[fetch]
+	prune = true
