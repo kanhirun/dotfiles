@@ -45,6 +45,35 @@ return {
     -- NOTE: <C-p> is so common for file search and frequently used that I will keep
     vim.keymap.set('n', '<C-p>', builtin.find_files, { desc = '[S]earch [F]iles' })
 
+    -- Search directories only; selecting one opens it in oil.nvim.
+    -- fd respects .gitignore; the 'find' fallback does not, so it will surface
+    -- build output (cdk.out, dist, ...) in repos that gitignore it.
+    vim.keymap.set('n', '<C-f>', function()
+      local find_command = vim.fn.executable 'fd' == 1
+          and { 'fd', '--type', 'd', '--hidden', '--exclude', '.git' }
+          or { 'find', '.', '(', '-name', '.git', '-o', '-name', 'node_modules', ')', '-prune', '-o', '-type', 'd', '-print' }
+
+      builtin.find_files {
+        prompt_title = 'Directories',
+        find_command = find_command,
+        attach_mappings = function(prompt_bufnr, _)
+          local actions = require 'telescope.actions'
+          local action_state = require 'telescope.actions.state'
+
+          actions.select_default:replace(function()
+            local entry = action_state.get_selected_entry()
+            actions.close(prompt_bufnr)
+            -- entry.path is already joined against the picker's cwd
+            vim.schedule(function()
+              require('oil').open(entry.path)
+            end)
+          end)
+
+          return true
+        end,
+      }
+    end, { desc = '[S]earch Directories' })
+
     -- vim.keymap.set('n', '<leader>sh', builtin.help_tags, { desc = '[S]earch [H]elp' })
     -- vim.keymap.set('n', '<leader>ss', builtin.builtin, { desc = '[S]earch [S]elect Telescope' })
     -- vim.keymap.set('n', '<leader>ss', builtin.lsp_document_symbols, { desc = '[S]earch Document [S]ymbols' })

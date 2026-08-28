@@ -22,6 +22,15 @@ brew "watchman"
 # https://github.com/ajeetdsouza/zoxide
 brew "zoxide"
 
+# A faster, .gitignore-aware 'find'
+# https://github.com/sharkdp/fd
+# Backs the telescope directory picker (<C-f>, nvim/lua/plugins/telescope.lua).
+# Plain 'find' knows nothing about .gitignore, so it walked build output like
+# cdk.out (~14k dirs in workspace/repo); fd reads .gitignore and skips it.
+# Of the tools telescope looks for (rg -> fd -> find), fd is the only one that
+# both lists directories and honours .gitignore -- 'rg --files' is files-only.
+brew "fd"
+
 # formats console output (i.e. JSON, tree)
 brew "tree"
 brew "pstree"
