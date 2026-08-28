@@ -8,7 +8,7 @@ return {
       terminal = {
         -- Open/focus the Claude terminal in Normal mode; <i> to start typing.
         -- Also preserves scroll position when refocusing.
-        auto_insert = false,
+        auto_insert = true,
         -- Half the editor width; upstream defaults to 0.30
         split_width_percentage = 0.5,
       },
@@ -33,6 +33,15 @@ return {
     keys = {
       { "<leader>c", nil, desc = "AI/Claude Code" },
       { "<leader>cc", "<cmd>ClaudeCode<cr>", desc = "Toggle Claude" },
+      -- Global toggle: works from any mode, including inside Claude's own terminal.
+      -- <C-Space> echoes the Space leader and is unclaimed by Vim, blink.cmp and Zellij.
+      -- Terminals send it as NUL, so it needs no kitty keyboard protocol support.
+      {
+        "<C-Space>",
+        "<cmd>ClaudeCode<cr>",
+        mode = { "n", "i", "v", "x", "t" },
+        desc = "Toggle Claude",
+      },
       { "<leader>cf", "<cmd>ClaudeCodeFocus<cr>", desc = "Focus Claude" },
       { "<leader>cr", "<cmd>ClaudeCode --resume<cr>", desc = "Resume Claude" },
       { "<leader>cC", "<cmd>ClaudeCode --continue<cr>", desc = "Continue Claude" },
