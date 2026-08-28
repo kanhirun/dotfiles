@@ -39,15 +39,16 @@ return {
 
     local builtin = require 'telescope.builtin'
 
-    -- TODO: This isn't working as I expected
-    vim.keymap.set('n', 'gd', builtin.lsp_definitions, { desc = '[G]oto [D]efinition' })
 
-    -- NOTE: <C-p> is so common for file search and frequently used that I will keep
-    vim.keymap.set('n', '<C-p>', builtin.find_files, { desc = '[S]earch [F]iles' })
+    --======================
+    -- 1. File system search
+    --======================
 
-    -- Search directories only; selecting one opens it in oil.nvim.
-    -- fd respects .gitignore; the 'find' fallback does not, so it will surface
-    -- build output (cdk.out, dist, ...) in repos that gitignore it.
+    vim.keymap.set('n', '<C-p>', builtin.find_files, { desc = 'Search Files' })
+    vim.keymap.set('n', '<C-g>', builtin.git_status, { desc = 'Search Files on Git Status' })
+
+    -- Search directories
+    -- Using `fd` respects .gitignore vs. `find`
     vim.keymap.set('n', '<C-f>', function()
       local find_command = vim.fn.executable 'fd' == 1
           and { 'fd', '--type', 'd', '--hidden', '--exclude', '.git' }
@@ -72,31 +73,8 @@ return {
           return true
         end,
       }
-    end, { desc = '[S]earch Directories' })
+    end, { desc = 'Search Directories' })
 
-    -- vim.keymap.set('n', '<leader>sh', builtin.help_tags, { desc = '[S]earch [H]elp' })
-    -- vim.keymap.set('n', '<leader>ss', builtin.builtin, { desc = '[S]earch [S]elect Telescope' })
-    -- vim.keymap.set('n', '<leader>ss', builtin.lsp_document_symbols, { desc = '[S]earch Document [S]ymbols' })
-    vim.keymap.set('n', '<C-l>', builtin.lsp_dynamic_workspace_symbols, { desc = 'Search Workspace Symbols' })
-    vim.keymap.set('n', '<C-k>', builtin.lsp_document_symbols, { desc = 'Search Document Symbols' })
-    vim.keymap.set('n', '<C-g>', builtin.git_status, { desc = 'Search Git Status' })
-    -- vim.keymap.set('n', '<leader>sw', builtin.grep_string, { desc = '[S]earch current [W]ord' })
-    vim.keymap.set('n', '<leader>sg', builtin.live_grep, { desc = '[S]earch by [G]rep' })
-    vim.keymap.set('n', '<leader>sd', builtin.diagnostics, { desc = '[S]earch [D]iagnostics' })
-    -- Fires workspace/diagnostic first so servers can report on files that were
-    -- never opened (gopls supports it; ts_ls is push-only and ignores it), then
-    -- scopes the results to cwd.
-    vim.keymap.set('n', '<leader>sD', function()
-      builtin.diagnostics { workspace = true, root_dir = true }
-    end, { desc = '[S]earch [D]iagnostics (project-wide)' })
-    -- vim.keymap.set('n', '<leader>sr', builtin.resume, { desc = '[S]earch [R]esume' })
-    -- Recent files, scoped to cwd, persisted across sessions via shada.
-    -- include_current_session defaults to true, so this lists current-session
-    -- buffers first (most-recently-used) and then shada history -- i.e. a
-    -- superset of :buffers, filtered to the project. Current file is omitted.
-    -- Capped at 5: the finder drops any entry whose entry_maker returns nil.
-    -- .git/COMMIT_EDITMSG lands in oldfiles every time a commit is written
-    -- from nvim, so drop it before it eats one of the 5 slots.
     vim.keymap.set('n', '<leader><leader>', function()
       local gen = require('telescope.make_entry').gen_from_file { cwd = vim.uv.cwd() }
       local n = 0
@@ -113,25 +91,28 @@ return {
           return gen(line)
         end,
       }
-    end, { desc = '[ ] Recent files in cwd (last 5)' })
-    vim.keymap.set('n', '<leader>s.', builtin.buffers, { desc = '[S]earch existing buffers' })
+    end, { desc = 'Search Recent Files' })
 
-    vim.keymap.set('n', '<leader>/', function()
-      builtin.current_buffer_fuzzy_find(require('telescope.themes').get_dropdown {
-        winblend = 10,
-        previewer = false,
-      })
-    end, { desc = '[/] Fuzzily search in current buffer' })
+    --======================
+    -- 2. Content search
+    --======================
 
-    vim.keymap.set('n', '<leader>s/', function()
-      builtin.live_grep {
-        grep_open_files = true,
-        prompt_title = 'Live Grep in Open Files',
-      }
-    end, { desc = '[S]earch [/] in Open Files' })
+    vim.keymap.set('n', '<C-l>', builtin.lsp_dynamic_workspace_symbols, { desc = 'Search Workspace Symbols' })
+    vim.keymap.set('n', '<C-k>', builtin.lsp_document_symbols, { desc = 'Search Document Symbols' })
 
-    vim.keymap.set('n', '<leader>sn', function()
-      builtin.find_files { cwd = vim.fn.stdpath 'config' }
-    end, { desc = '[S]earch [N]eovim files' })
+    vim.keymap.set('n', 'gd', builtin.lsp_definitions, { desc = '[G]oto [D]efinition' })
+
+    --======================
+    -- 3. Bug fixes
+    --======================
+
+    vim.keymap.set('n', '<leader>sd', builtin.diagnostics, { desc = '[S]earch [D]iagnostics' })
+    -- Fires workspace/diagnostic first so servers can report on files that were
+    -- never opened (gopls supports it; ts_ls is push-only and ignores it), then
+    -- scopes the results to cwd.
+    vim.keymap.set('n', '<leader>sD', function()
+      builtin.diagnostics { workspace = true, root_dir = true }
+    end, { desc = '[S]earch [D]iagnostics (project-wide)' })
+
   end,
 }
