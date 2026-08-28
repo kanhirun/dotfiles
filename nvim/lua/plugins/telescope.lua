@@ -216,7 +216,7 @@ return {
       return entries, score_width
     end
 
-    vim.keymap.set('n', '<leader><leader>', function()
+    vim.keymap.set('n', '<C-j>', function()
       local entries, score_width = zoxide_entries()
       if #entries == 0 then
         return vim.notify('zoxide has no directories yet', vim.log.levels.WARN)
@@ -275,8 +275,61 @@ return {
     -- 2. Content search
     --======================
 
-    vim.keymap.set('n', '<C-l>', builtin.lsp_dynamic_workspace_symbols, { desc = 'Search Workspace Symbols' })
-    vim.keymap.set('n', '<C-k>', builtin.lsp_document_symbols, { desc = 'Search Document Symbols' })
+    -- Kinds worth jumping to. Telescope lowercases these before comparing, so
+    -- they match the LSP kind names; drop the list to get everything back.
+    local SYMBOL_KINDS = { 'function', 'method', 'class', 'struct', 'interface' }
+
+    -- Paths git knows about, absolute. nil when cwd isn't a repo, meaning
+    -- "don't filter". --others plus --exclude-standard makes the union of
+    -- tracked and unignored-untracked files exactly "not ignored".
+    local function git_paths()
+      local cwd = vim.uv.cwd()
+      local root = vim.system({ 'git', 'rev-parse', '--show-toplevel' }, { cwd = cwd, text = true }):wait()
+      if root.code ~= 0 then
+        return nil
+      end
+      local top = vim.trim(root.stdout)
+      local ls = vim.system({
+        'git', 'ls-files', '--cached', '--others', '--exclude-standard', '--full-name', '-z',
+      }, { cwd = cwd, text = true }):wait()
+      local paths = {}
+      for _, rel in ipairs(vim.split(ls.stdout or '', '\0', { trimempty = true })) do
+        paths[vim.fs.normalize(top .. '/' .. rel)] = true
+      end
+      return { root = top, paths = paths }
+    end
+
+    -- Servers index the vendored and generated trees git ignores, so the symbol
+    -- list needs the filter the file pickers get for free from rg. Symbols
+    -- outside the repo (stdlib, installed deps) aren't gitignored and stay.
+    --
+    -- The path set is gathered here rather than inside the finder: the dynamic
+    -- finder runs in plenary's async context, where a blocking wait isn't safe.
+    vim.keymap.set('n', '<C-l>', function()
+      local git = git_paths()
+      local opts = { symbols = SYMBOL_KINDS }
+      local inner = require('telescope.make_entry').gen_from_lsp_symbols(opts)
+
+      -- The dynamic finder skips nil entries, which is the whole filter.
+      opts.entry_maker = function(item)
+        local entry = inner(item)
+        if not entry or not git or not entry.filename then
+          return entry
+        end
+        local abs = vim.fs.normalize(entry.filename)
+        if vim.startswith(abs, git.root .. '/') and not git.paths[abs] then
+          return nil
+        end
+        return entry
+      end
+
+      builtin.lsp_dynamic_workspace_symbols(opts)
+    end, { desc = 'Search Workspace Symbols' })
+    -- Document symbols only ever cover the current buffer, so the gitignore
+    -- filter has nothing to do here; the kind list still earns its place.
+    vim.keymap.set('n', '<C-k>', function()
+      builtin.lsp_document_symbols { symbols = SYMBOL_KINDS }
+    end, { desc = 'Search Document Symbols' })
 
     vim.keymap.set('n', 'gd', builtin.lsp_definitions, { desc = '[G]oto [D]efinition' })
 
