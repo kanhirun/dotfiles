@@ -44,9 +44,15 @@ return {
         map('gr', require('telescope.builtin').lsp_references, '[G]oto [R]eferences')
         map('gi', require('telescope.builtin').lsp_implementations, '[G]oto [I]mplementation')
         map('gd', require('telescope.builtin').lsp_definitions, '[G]oto [D]efinition')
-        map('<leader>gs', require('telescope.builtin').lsp_document_symbols, '[D]ocument [S]ymbols')
-        map('<leader>gS', require('telescope.builtin').lsp_dynamic_workspace_symbols, '[W]orkspace [S]ymbols')
-        map('<leader>gt', require('telescope.builtin').lsp_type_definitions, '[G]oto [T]ype Definition')
+        -- Document and workspace symbols live at <leader>ss / <leader>sS in
+        -- telescope.lua, alongside their <C-k>/<C-l> chords. They used to be
+        -- bound here too, calling the same builtins with no options -- so the
+        -- same key family returned filtered or unfiltered results depending on
+        -- which address you happened to use.
+        -- Type definition joins gd/gr/gi/gD on bare g rather than sitting alone
+        -- under <leader>g, which is now the Git group (git.lua). gt is vim's
+        -- next-tab, so this takes gy -- the usual address for it.
+        map('gy', require('telescope.builtin').lsp_type_definitions, '[G]oto T[y]pe Definition')
 
         local function client_supports_method(client, method, bufnr)
           if vim.fn.has 'nvim-0.11' == 1 then

@@ -9,8 +9,9 @@ return {
       spec = {
         -- Labels for prefixes whose mappings live across several plugin specs.
         -- <leader>c is labelled in claudecode.lua, alongside the mappings.
-        { "<leader>s", group = "Search (Telescope)" },
-        { "<leader>g", group = "Goto/Symbols" },
+        { "<leader>s", group = "Search" },
+        { "<leader>t", group = "Test/Toggle" },
+        { "<leader>g", group = "Git" },
       },
     },
     keys = {

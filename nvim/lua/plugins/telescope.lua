@@ -44,8 +44,6 @@ return {
     -- 1. File system search
     --======================
 
-    vim.keymap.set('n', '<C-p>', builtin.find_files, { desc = 'Search Files' })
-
     -- Files worth resuming: recent files first, uncommitted changes after.
     -- One flat list so an empty prompt keeps that order and typing fuzzy-matches both.
     local RECENT_LIMIT = 5
@@ -163,7 +161,7 @@ return {
     -- Search directories only; selecting one opens it in oil.nvim.
     -- fd respects .gitignore; the 'find' fallback does not, so it will surface
     -- build output (cdk.out, dist, ...) in repos that gitignore it.
-    vim.keymap.set('n', '<C-f>', function()
+    local function search_directories()
       local find_command = vim.fn.executable 'fd' == 1
           and { 'fd', '--type', 'd', '--hidden', '--exclude', '.git' }
           or { 'find', '.', '(', '-name', '.git', '-o', '-name', 'node_modules', ')', '-prune', '-o', '-type', 'd', '-print' }
@@ -190,7 +188,12 @@ return {
           return true
         end,
       }
-    end, { desc = 'Search Directories' })
+    end
+
+    -- Deliberately no chord. Directories are reached far less often than files,
+    -- and the chord tier is a fixed budget -- spending one here means not
+    -- spending it on something reached more often. <C-d> stays half-page scroll.
+    vim.keymap.set('n', '<leader>sd', search_directories, { desc = 'Search Directories' })
 
     -- Jump to any directory zoxide knows about (same database as `j` in the
     -- shell) and open it in oil. The picker opens on the full frecency
@@ -305,7 +308,7 @@ return {
     --
     -- The path set is gathered here rather than inside the finder: the dynamic
     -- finder runs in plenary's async context, where a blocking wait isn't safe.
-    vim.keymap.set('n', '<C-l>', function()
+    local function search_workspace_symbols()
       local git = git_paths()
       local opts = { symbols = SYMBOL_KINDS }
       local inner = require('telescope.make_entry').gen_from_lsp_symbols(opts)
@@ -324,26 +327,39 @@ return {
       end
 
       builtin.lsp_dynamic_workspace_symbols(opts)
-    end, { desc = 'Search Workspace Symbols' })
+    end
+
     -- Document symbols only ever cover the current buffer, so the gitignore
     -- filter has nothing to do here; the kind list still earns its place.
-    vim.keymap.set('n', '<C-k>', function()
+    local function search_document_symbols()
       builtin.lsp_document_symbols { symbols = SYMBOL_KINDS }
-    end, { desc = 'Search Document Symbols' })
+    end
 
-    vim.keymap.set('n', 'gd', builtin.lsp_definitions, { desc = '[G]oto [D]efinition' })
+    -- One function per pair, two addresses each. lsp.lua used to bind
+    -- <leader>gs/<leader>gS to the same builtins with no options at all -- the
+    -- same capability, silently unfiltered, at a third and fourth address.
+    -- Those are deleted; these four are the only symbol entry points.
+    vim.keymap.set('n', '<C-k>', search_document_symbols, { desc = 'Search Symbols (document)' })
+    vim.keymap.set('n', '<leader>ss', search_document_symbols, { desc = 'Search Symbols (document)' })
+    vim.keymap.set('n', '<C-l>', search_workspace_symbols, { desc = 'Search Symbols (workspace)' })
+    vim.keymap.set('n', '<leader>sS', search_workspace_symbols, { desc = 'Search Symbols (workspace)' })
+
+    -- gd lives in lsp.lua's LspAttach handler, buffer-local. It was bound here
+    -- too, globally, to the identical function -- removed.
 
     --======================
     -- 3. Bug fixes
     --======================
 
-    vim.keymap.set('n', '<leader>sd', builtin.diagnostics, { desc = 'Search Diagnostics' })
+    -- x, not d: <leader>sd is directories now. Shift widens scope here the same
+    -- way it does for symbols, so the whole <leader>s group reads one way.
+    vim.keymap.set('n', '<leader>sx', builtin.diagnostics, { desc = 'Search Diagnostics' })
     -- Fires workspace/diagnostic first so servers can report on files that were
     -- never opened (gopls supports it; ts_ls is push-only and ignores it), then
     -- scopes the results to cwd.
-    vim.keymap.set('n', '<leader>sD', function()
+    vim.keymap.set('n', '<leader>sX', function()
       builtin.diagnostics { workspace = true, root_dir = true }
-    end, { desc = '[S]earch [D]iagnostics (project-wide)' })
+    end, { desc = 'Search Diagnostics (project-wide)' })
 
   end,
 }
