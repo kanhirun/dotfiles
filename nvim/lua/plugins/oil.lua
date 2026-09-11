@@ -28,6 +28,12 @@ return {
         }
       })
       vim.keymap.set('n', '-', ':Oil<CR>', { noremap = true, desc = 'Open File Explorer' })
+      -- Pairs with bare `-`: the same explorer, opened beside the file instead of
+      -- over it. Not a chord -- opening a split is never needed from insert or
+      -- terminal mode, which is what the chord tier is reserved for. <C-[> can't
+      -- serve here either: it is byte 0x1B, the same byte as <Esc>, so binding it
+      -- would rebind Escape itself.
+      vim.keymap.set('n', '<leader>-', ':leftabove vsplit | Oil<CR>', { noremap = true, desc = 'Open File Explorer (left split)' })
     end
   }
 }

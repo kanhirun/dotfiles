@@ -44,6 +44,11 @@ return {
     -- 1. File system search
     --======================
 
+    -- <leader>f is Find: locate a thing by its name. <leader>s is Search: look
+    -- through content and lists. The split is what the argument is made of --
+    -- a name you type here, a match found for you there.
+    vim.keymap.set('n', '<leader>ff', builtin.find_files, { desc = 'Find Files' })
+
     -- Files worth resuming: recent files first, uncommitted changes after.
     -- One flat list so an empty prompt keeps that order and typing fuzzy-matches both.
     local RECENT_LIMIT = 5
@@ -60,7 +65,7 @@ return {
       return 'TelescopeResultsDiffChange'
     end
 
-    vim.keymap.set('n', '<C-g>', function()
+    local function search_recent_files()
       local cwd = vim.uv.cwd()
       local results, seen = {}, {}
 
@@ -156,7 +161,16 @@ return {
           previewer = conf.file_previewer {},
         })
         :find()
-    end, { desc = 'Search Recent & Changed Files' })
+    end
+
+    -- <C-p> is decades of muscle memory from every other editor, and what it
+    -- opens there is a recency-ranked list rather than a cold directory walk --
+    -- so it lands on this picker, not on find_files. One chord and one leader
+    -- twin, no more: <C-g> was a second address for this and is now back to
+    -- vim's show-file-info. <leader>fo names vim's own `:oldfiles` and
+    -- alternates hands, where `fr` would be the same index finger twice.
+    vim.keymap.set('n', '<C-p>', search_recent_files, { desc = 'Find Recent & Changed Files' })
+    vim.keymap.set('n', '<leader>fo', search_recent_files, { desc = 'Find Recent & Changed Files' })
 
     -- Search directories only; selecting one opens it in oil.nvim.
     -- fd respects .gitignore; the 'find' fallback does not, so it will surface
@@ -193,7 +207,10 @@ return {
     -- Deliberately no chord. Directories are reached far less often than files,
     -- and the chord tier is a fixed budget -- spending one here means not
     -- spending it on something reached more often. <C-d> stays half-page scroll.
-    vim.keymap.set('n', '<leader>sd', search_directories, { desc = 'Search Directories' })
+    -- Find, not Search: a directory is located by the name you type, the same
+    -- way a file is. Deliberately no chord -- directories are reached far less
+    -- often than files, and the chord tier is a fixed budget.
+    vim.keymap.set('n', '<leader>fd', search_directories, { desc = 'Find Directories' })
 
     -- Jump to any directory zoxide knows about (same database as `j` in the
     -- shell) and open it in oil. The picker opens on the full frecency
@@ -351,8 +368,10 @@ return {
     -- 3. Bug fixes
     --======================
 
-    -- x, not d: <leader>sd is directories now. Shift widens scope here the same
-    -- way it does for symbols, so the whole <leader>s group reads one way.
+    -- `x` is the diagnostic wherever it appears: ]x/[x move between them
+    -- (lsp.lua), <leader>rx fixes the one under the cursor, and this lists them.
+    -- Shift widens scope the same way it does for symbols, so the whole
+    -- <leader>s group reads one way.
     vim.keymap.set('n', '<leader>sx', builtin.diagnostics, { desc = 'Search Diagnostics' })
     -- Fires workspace/diagnostic first so servers can report on files that were
     -- never opened (gopls supports it; ts_ls is push-only and ignores it), then

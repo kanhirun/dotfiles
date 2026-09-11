@@ -21,24 +21,47 @@ return {
           vim.keymap.set(mode, keys, func, { buffer = event.buf, desc = 'LSP: ' .. desc })
         end
 
-        map('g]', vim.diagnostic.goto_next, '[G]oto Next Error')
-        map('g[', vim.diagnostic.goto_prev, '[G]oto Previous Error')
+        -- `x` is the diagnostic, everywhere it appears: ]x/[x move between them,
+        -- <leader>sx lists them (telescope.lua), <leader>rx fixes the one under
+        -- the cursor. Learn the noun once and the three addresses follow.
+        --
+        -- Brackets rather than g]/g[: [ and ] are adjacent because previous and
+        -- next are adjacent, so the shape carries the direction and the letter
+        -- only has to name the list. Neovim 0.11+ also ships ]d/[d as defaults;
+        -- those still work, they just aren't the address this config teaches.
+        map(']x', vim.diagnostic.goto_next, 'Next Diagnostic')
+        map('[x', vim.diagnostic.goto_prev, 'Previous Diagnostic')
 
-        map('<leader>rn', vim.lsp.buf.rename, '[R]e[n]ame')
-        map('<leader>k', vim.lsp.buf.code_action, '[C]ode [A]ction', { 'n', 'x' })
+        -- <leader>r is Refactor. Every member changes the code rather than
+        -- navigating it, which is what keeps it out of the bare `g` namespace.
+        -- rn stays where it was -- it is both the existing muscle memory and the
+        -- near-universal convention, worth more than a tidier letter.
+        map('<leader>rn', vim.lsp.buf.rename, 'Rename')
+        map('<leader>ra', vim.lsp.buf.code_action, 'Code Action', { 'n', 'x' })
         -- Skip the menu: apply the fix for the diagnostic under the cursor when
         -- the server offers exactly one. Falls back to a picker if there are several.
-        map('<leader>K', function()
+        map('<leader>rx', function()
           vim.lsp.buf.code_action { apply = true, context = { only = { 'quickfix' } } }
-        end, 'Quick [F]ix Diagnostic')
-        -- Whole-buffer fix: ask the server for every auto-fixable problem at once,
-        -- no cursor positioning required. Needs server-side `source.fixAll` support.
-        map('<leader>F', function()
+        end, 'Fix Diagnostic')
+        -- Shift widens scope, as everywhere else: rx fixes the diagnostic under
+        -- the cursor, rX asks the server for every auto-fixable problem at once
+        -- with no cursor positioning. Needs server-side `source.fixAll` support.
+        map('<leader>rX', function()
           vim.lsp.buf.code_action {
             apply = true,
             context = { only = { 'source.fixAll' }, diagnostics = {} },
           }
-        end, '[F]ix All in Buffer')
+        end, 'Fix All in Buffer')
+        -- gopls implements this as goimports (adds missing, drops unused, sorts).
+        -- ts_ls sorts and removes unused but will not add missing imports --
+        -- that is a separate TS-only action. pyright offers nothing here; ruff
+        -- would be needed for Python.
+        map('<leader>ri', function()
+          vim.lsp.buf.code_action {
+            apply = true,
+            context = { only = { 'source.organizeImports' }, diagnostics = {} },
+          }
+        end, 'Organize Imports')
         map('gD', vim.lsp.buf.declaration, '[G]oto [D]eclaration')
 
         map('gr', require('telescope.builtin').lsp_references, '[G]oto [R]eferences')
@@ -63,6 +86,67 @@ return {
         end
 
         local client = vim.lsp.get_client_by_id(event.data.client_id)
+
+        -- Organize imports on save, for servers that advertise they can.
+        --
+        -- Only servers listing `source.organizeImports` in codeActionKinds get
+        -- this, rather than an allowlist of names: gopls and ts_ls both
+        -- advertise it, pyright and lua_ls don't, and a server that says
+        -- nothing gets nothing. Silence beats surprise on every write.
+        --
+        -- The request is SYNCHRONOUS on purpose. vim.lsp.buf.code_action is
+        -- async, so from BufWritePre the write can land before the edit does --
+        -- imports then get organized only sometimes, which is worse to debug
+        -- than never working at all.
+        --
+        -- Only `edit` responses are applied. A server answering with a
+        -- `command` instead would need executing, which is itself async and
+        -- would reintroduce the race; none of the servers here do that for
+        -- this action.
+        local ca = client and client.server_capabilities.codeActionProvider
+        local organizes = false
+        for _, kind in ipairs((type(ca) == 'table' and ca.codeActionKinds) or {}) do
+          if kind == 'source.organizeImports' then
+            organizes = true
+            break
+          end
+        end
+
+        if organizes then
+          vim.api.nvim_create_autocmd('BufWritePre', {
+            buffer = event.buf,
+            group = vim.api.nvim_create_augroup('lsp-organize-imports-' .. event.buf, { clear = true }),
+            desc = 'Organize imports before writing',
+            callback = function()
+              local params = {
+                textDocument = vim.lsp.util.make_text_document_params(event.buf),
+                range = {
+                  start = { line = 0, character = 0 },
+                  ['end'] = { line = 0, character = 0 },
+                },
+                context = { only = { 'source.organizeImports' }, diagnostics = {} },
+              }
+
+              -- Wrapped so a failure never blocks the write itself; a save that
+              -- silently does nothing is recoverable, a save that errors out is not.
+              local ok, err = pcall(function()
+                local results = vim.lsp.buf_request_sync(event.buf, 'textDocument/codeAction', params, 1000)
+                for id, res in pairs(results or {}) do
+                  for _, action in ipairs(res.result or {}) do
+                    if action.edit then
+                      local c = vim.lsp.get_client_by_id(id)
+                      vim.lsp.util.apply_workspace_edit(action.edit, c and c.offset_encoding or 'utf-16')
+                    end
+                  end
+                end
+              end)
+              if not ok then
+                vim.notify('Organize imports failed: ' .. tostring(err), vim.log.levels.WARN)
+              end
+            end,
+          })
+        end
+
         if client and client_supports_method(client, vim.lsp.protocol.Methods.textDocument_documentHighlight, event.buf) then
           local highlight_augroup = vim.api.nvim_create_augroup('kickstart-lsp-highlight', { clear = false })
           vim.api.nvim_create_autocmd({ 'CursorHold', 'CursorHoldI' }, {
@@ -122,11 +206,6 @@ return {
             preferences = {
               includePackageJsonAutoImports = "auto",
             },
-          },
-        },
-        init_options = {
-          preferences = {
-            organizeImportsOnFormat = true,
           },
         },
       },
