@@ -128,17 +128,19 @@ return {
       { "<leader>c", nil, desc = "AI/Claude Code" },
       { "<leader>cc", "<cmd>ClaudeCode<cr>", desc = "Toggle Claude" },
       -- Bare toggle from any mode, including inside Claude's own terminal.
-      -- <C-Space> echoes the Space leader and is unclaimed by Vim, blink.cmp and Zellij.
-      -- Terminals send it as NUL, so it needs no kitty keyboard protocol support.
+      -- <C-]>'s only built-in is the ctags jump, and navigation here is entirely
+      -- LSP (gd/gr/gi/gy in lsp.lua) with no tags file anywhere, so nothing is
+      -- given up. Audited free of oil, fugitive, telescope and blink.cmp too.
+      -- Terminals send it as 0x1D, so it needs no kitty keyboard protocol support.
       {
-        "<C-Space>",
+        "<C-]>",
         "<cmd>ClaudeCode<cr>",
         mode = { "n", "i", "v", "x", "t" },
         desc = "Toggle Claude",
       },
       -- Same toggle, but hands Claude the context under the cursor. Normal and
       -- visual only: <leader> is Space, which just types a space in insert and
-      -- terminal mode -- <C-Space> above is the way in from there.
+      -- terminal mode -- <C-]> above is the way in from there.
       {
         "<leader><leader>",
         toggle_claude_with_context,
