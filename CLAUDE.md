@@ -77,10 +77,9 @@ The rules that matter most when editing this config:
   and cannot be bound independently.
 
 Namespaces in use: `<leader>s` search · `<leader>r` refactor · `<leader>t` test/toggle ·
-`<leader>g` git · `<leader>c` Claude. Universal escape to Normal mode is `<C-\>` (all
-modes, terminal included, except inside Claude's pane, where it hides the pane in one
-press); `<C-]>` toggles Claude and `<C-Space>` toggles a terminal, both from any mode.
-Only one of those two panes is ever open: showing either hides the other (a
+`<leader>g` git · `<leader>c` Claude. `<C-]>` toggles Claude and `<C-Space>` toggles a
+terminal, both from any mode; with a visual selection, `<C-]>` sends it to Claude
+instead. Only one of those two panes is ever open: showing either hides the other (a
 `BufWinEnter` rule in `terminal.lua`). `<C-p>` and `<C-j>` reach from inside both panes
 and step to an editor window first, so a picked file or directory never replaces a
 pane; picking one from inside a pane resizes the pane to half the screen along its own
