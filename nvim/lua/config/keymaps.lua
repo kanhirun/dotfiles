@@ -28,5 +28,13 @@ vim.keymap.set('i', '<C-a>', '<Esc>wa', { noremap = true })
 vim.keymap.set('t', '<C-\\>', '<C-\\><C-n>', { desc = 'Go to Normal mode' })
 vim.keymap.set({ 'n', 'i', 'v', 'x', 's', 'o' }, '<C-\\>', '<Esc>', { desc = 'Go to Normal mode' })
 
+-- Esc leaves terminal mode as well, which costs less than it looks like it should.
+-- Snacks installs its own <Esc> on its terminals BUFFER-LOCALLY -- a 200ms
+-- double-tap that passes a single press straight through to the program -- and
+-- buffer-local beats global, so Claude's pane and the <C-Space> terminal are
+-- untouched and keep Esc for interrupt. This governs plain :terminal buffers only,
+-- where nothing is competing for the key.
+vim.keymap.set('t', '<Esc>', '<C-\\><C-n>', { desc = 'Go to Normal mode' })
+
 -- ================ Custom Commands =======================
 vim.api.nvim_create_user_command('Projections', 'edit .projections.json', {})
