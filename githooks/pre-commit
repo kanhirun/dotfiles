@@ -1,0 +1,67 @@
+#!/bin/sh
+# Build and unit tests for this repo, run against the commit being made.
+#
+# Tracked here rather than in .git/hooks so it survives a fresh clone; enable it
+# with `git config core.hooksPath githooks`.
+#
+# THE STASH IS THE POINT. A pre-commit hook naively tests the working tree, which
+# is not what is being committed. Splitting a tree into several commits would then
+# produce commits that pass the hook but do not build alone -- exactly the history
+# git-bisect cannot use. Everything unstaged is stashed first, so what remains on
+# disk is precisely the commit under test.
+set -eu
+
+cd "$(git rev-parse --show-toplevel)"
+
+STASHED=0
+if [ -n "$(git diff --name-only)" ] || [ -n "$(git ls-files --others --exclude-standard)" ]; then
+  git stash push --quiet --keep-index --include-untracked --message 'pre-commit: unstaged'
+  STASHED=1
+fi
+
+restore() {
+  if [ "$STASHED" -eq 1 ]; then
+    git stash pop --quiet
+  fi
+}
+trap restore EXIT
+
+fail() {
+  echo "pre-commit: $1" >&2
+  exit 1
+}
+
+# --- Lua: every file must parse -------------------------------------------
+# loadfile compiles without executing, so this catches syntax errors without
+# needing the plugins installed or a working runtime.
+if command -v nvim >/dev/null; then
+  for f in $(find nvim -name '*.lua' -not -path '*/.git/*'); do
+    nvim --headless -c "lua local ok, err = loadfile('$f'); if not ok then io.stderr:write(err .. '\n'); vim.cmd('cq') end" -c 'qa!' 2>&1 |
+      grep -q . && fail "lua syntax error in $f"
+  done
+fi
+
+# --- Neovim: the config must actually start -------------------------------
+# Syntax-clean files can still fail at load (a bad option, a missing require).
+# Errors surface on stderr; lazy.nvim's own progress output does not.
+if command -v nvim >/dev/null && [ -f nvim/init.lua ]; then
+  out=$(nvim --headless -u nvim/init.lua -c 'qa!' 2>&1 || true)
+  if printf '%s' "$out" | grep -qE 'E[0-9]+:|Error executing|stack traceback'; then
+    printf '%s\n' "$out" >&2
+    fail 'neovim config failed to load'
+  fi
+fi
+
+# --- Shells: must parse ----------------------------------------------------
+[ -f zshrc ] && { zsh -n zshrc || fail 'zshrc has a syntax error'; }
+
+if command -v fish >/dev/null && [ -f fish/config.fish ]; then
+  fish -n fish/config.fish || fail 'fish/config.fish has a syntax error'
+fi
+
+# --- Hooks: must parse -----------------------------------------------------
+for h in githooks/*; do
+  [ -f "$h" ] && { sh -n "$h" || fail "$h has a syntax error"; }
+done
+
+echo 'pre-commit: ok'
