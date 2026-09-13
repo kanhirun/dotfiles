@@ -82,7 +82,8 @@ modes, terminal included); `<C-]>` toggles Claude and `<C-Space>` toggles a term
 both from any mode. Only one of those two panes is ever open: showing either hides the
 other (a `BufWinEnter` rule in `terminal.lua`). `<C-p>` reaches from inside both panes
 and steps to an editor window first, so a picked file never replaces a pane; picking
-one from inside a pane hides the panes, since the pick is a move to the editor.
+one from inside a pane resizes the pane to half the screen along its own axis (height
+for the bottom shell, width for Claude on the right), so file and pane share it 50/50.
 
 Nouns keep one letter across every position they appear in. Diagnostics are `x`:
 `]x`/`[x` move between them, `<leader>sx` lists them, `<leader>rx` fixes the one under

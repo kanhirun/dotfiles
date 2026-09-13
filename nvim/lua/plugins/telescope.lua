@@ -67,7 +67,7 @@ return {
     --
     -- Returns whether it stepped out of a pane -- the shell or Claude's, told
     -- apart from a plain :terminal by b:snacks_terminal -- so the picker can
-    -- hide the panes once a file is actually picked.
+    -- rebalance the panes once a file is actually picked.
     local function leave_terminal_window()
       if vim.bo.buftype ~= 'terminal' then
         return false
@@ -96,17 +96,27 @@ return {
       return from_pane
     end
 
-    -- Hide every pane that is showing. Picking a file from inside a pane means
-    -- leaving it for the editor, so the pane goes away rather than staying
-    -- open beside the file. Only one pane is ever on screen (terminal.lua),
-    -- but this asks Snacks for all of them rather than guessing which. Hiding
-    -- goes through each instance's own hide(), the same as terminal.lua does,
-    -- so Claude's takes claudecode's anchor-safe path and the shell's takes
-    -- Snacks'. Hidden is not closed: the next toggle brings the pane back.
-    local function hide_panes()
+    -- Give every showing pane half the screen. A pane opens large -- the shell
+    -- takes three quarters of the height, Claude three quarters of the width --
+    -- because on its own it is the thing being looked at. Picking a file from
+    -- inside it changes that: now the file and the pane are read side by side,
+    -- and neither should be a sliver. The pane is resized along its own split
+    -- axis, read off the position Snacks resolved for it: the shell sits at
+    -- the bottom, so it gets half the height; Claude sits on the right, so it
+    -- gets half the width. Whatever remains goes to the editor windows.
+    --
+    -- Only one pane is ever on screen (terminal.lua), but this asks Snacks for
+    -- all of them rather than guessing which. The resize lasts until the pane
+    -- is hidden; the next toggle brings it back at its configured size.
+    local function balance_panes()
       for _, term in ipairs(Snacks.terminal.list()) do
         if term:win_valid() then
-          term:hide()
+          local position = term.opts.position
+          if position == 'left' or position == 'right' then
+            vim.api.nvim_win_set_width(term.win, math.floor(vim.o.columns / 2))
+          elseif position == 'top' or position == 'bottom' then
+            vim.api.nvim_win_set_height(term.win, math.floor((vim.o.lines - vim.o.cmdheight) / 2))
+          end
         end
       end
     end
@@ -222,15 +232,16 @@ return {
           },
           sorter = conf.file_sorter {},
           previewer = conf.file_previewer {},
-          -- Launched from a pane, a pick hides the panes once the file is open.
-          -- `post` on action_set.select covers every way of picking -- Enter,
-          -- <C-x>, <C-v>, <C-t> -- and runs after the file has landed in the
-          -- editor window. Telescope resets action enhancements when the next
-          -- picker starts (clear_all in Picker:find), so this stays scoped to
-          -- this one picker rather than leaking into every select everywhere.
+          -- Launched from a pane, a pick splits the screen evenly between the
+          -- pane and the editor once the file is open. `post` on
+          -- action_set.select covers every way of picking -- Enter, <C-x>,
+          -- <C-v>, <C-t> -- and runs after the file has landed in the editor
+          -- window. Telescope resets action enhancements when the next picker
+          -- starts (clear_all in Picker:find), so this stays scoped to this
+          -- one picker rather than leaking into every select everywhere.
           attach_mappings = function()
             if from_pane then
-              require('telescope.actions.set').select:enhance { post = hide_panes }
+              require('telescope.actions.set').select:enhance { post = balance_panes }
             end
             return true
           end,
@@ -249,7 +260,7 @@ return {
     -- it makes the chord reach from inside the shell and Claude's pane, which
     -- otherwise swallow it (shell history-previous, which Up also does). Both
     -- addresses bind the same function, so <leader>fo steps out of a pane the
-    -- same way, and a file picked from inside a pane hides the panes. <C-p> is a legacy control byte (0x10), so it needs no kitty
+    -- same way, and a file picked from inside a pane shares the screen with it. <C-p> is a legacy control byte (0x10), so it needs no kitty
     -- keyboard protocol support to arrive through Zellij.
     vim.keymap.set({ 'n', 'i', 'v', 'x', 't' }, '<C-p>', search_recent_files, { desc = 'Find Recent & Changed Files' })
     vim.keymap.set('n', '<leader>fo', search_recent_files, { desc = 'Find Recent & Changed Files' })
