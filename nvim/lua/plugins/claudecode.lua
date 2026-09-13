@@ -192,6 +192,19 @@ local function add_claude_context()
   vim.cmd("ClaudeCode")
 end
 
+-- Open Claude on an empty composer: wipe the queued mentions and drop the set
+-- that tracks them, so <C-]> starts accumulating from nothing again. Open rather
+-- than toggle -- "start a fresh prompt" should never hide the pane you asked for.
+local function open_claude_clear()
+  local terminal_ok, terminal = pcall(require, "claudecode.terminal")
+  local term_bufnr = terminal_ok and terminal.get_active_terminal_bufnr() or nil
+  if term_bufnr and vim.api.nvim_buf_is_valid(term_bufnr) then
+    terminal.send_to_terminal(CLAUDE_CLEAR_INPUT, { submit = false })
+  end
+  mentioned, mentioned_term = {}, term_bufnr
+  vim.cmd("ClaudeCodeOpen")
+end
+
 return {
   -- Claude Code in Neovim: pairs the editor with the Claude Code CLI
   -- https://github.com/coder/claudecode.nvim
@@ -243,6 +256,17 @@ return {
         add_claude_context,
         mode = { "n", "i", "v", "x", "t" },
         desc = "Add context to Claude (or toggle)",
+      },
+      -- Normal mode only, and that is what makes it affordable. <C-\> is the
+      -- universal escape (config/keymaps.lua) -- but in Normal mode the escape
+      -- has almost nothing to do, since Esc there only cancels a pending count or
+      -- operator. Every mode where the escape actually earns its keep -- insert,
+      -- visual, select, operator-pending and terminal -- keeps it untouched.
+      {
+        "<C-\\>",
+        open_claude_clear,
+        mode = "n",
+        desc = "Open Claude, clear context",
       },
       -- Same toggle, but hands Claude the context under the cursor. Normal and
       -- visual only: <leader> is Space, which just types a space in insert and
