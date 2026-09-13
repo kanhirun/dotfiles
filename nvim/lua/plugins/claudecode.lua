@@ -132,27 +132,36 @@ local function add_claude_context()
   -- returns the entry under the cursor, so TreeAdd is the wrong call here;
   -- ClaudeCodeAdd takes a directory directly (it checks isdirectory alongside
   -- filereadable) and mentions it as one.
+  --
+  -- Except when that directory is the cwd. The plugin relativizes paths against
+  -- getcwd() and spells the cwd itself `./`; Claude Code then runs its own
+  -- path.relative(cwd, ...) on what arrives, which maps `./` to "" and lands a
+  -- bare `@ ` in the composer. No spelling of the cwd survives that -- `.`,
+  -- `./` and the absolute path all relativize to nothing -- and Claude already
+  -- has the project root as its working directory anyway. So at the root, fall
+  -- through to the entry under the cursor, the same as every other explorer.
   if vim.bo[bufnr].filetype == "oil" then
     local oil_ok, oil = pcall(require, "oil")
     local dir = oil_ok and oil.get_current_dir(bufnr) or nil
-    if dir then
-      -- Trailing slash stripped so the set key matches what a file path would
-      -- normalize to, and the same folder can't be mentioned under two spellings.
-      local path = vim.fs.normalize(dir):gsub("/$", "")
+    -- Trailing slash stripped so the set key matches what a file path would
+    -- normalize to, and the same folder can't be mentioned under two spellings.
+    local path = dir and vim.fs.normalize(dir):gsub("/$", "") or nil
+    local cwd = vim.fs.normalize(vim.fn.getcwd()):gsub("/$", "")
+    if path and path ~= cwd then
       if not mentioned[path] then
         vim.cmd("ClaudeCodeAdd " .. vim.fn.fnameescape(path))
         mentioned[path] = true
         return
       end
+      vim.cmd("ClaudeCode")
+      return
     end
-    vim.cmd("ClaudeCode")
-    return
   end
 
-  -- Every other explorer: the entry under the cursor. TreeAdd mentions whatever it
-  -- extracts and takes no filter, so the set is checked over the whole extraction:
-  -- every path already mentioned means there is nothing to add and the press
-  -- falls through to a plain toggle.
+  -- Every other explorer, and oil at the cwd: the entry under the cursor. TreeAdd
+  -- mentions whatever it extracts and takes no filter, so the set is checked over
+  -- the whole extraction: every path already mentioned means there is nothing to
+  -- add and the press falls through to a plain toggle.
   if EXPLORER_FILETYPES[vim.bo[bufnr].filetype] then
     local integrations_ok, integrations = pcall(require, "claudecode.integrations")
     local files = integrations_ok and integrations.get_selected_files_from_tree() or nil
