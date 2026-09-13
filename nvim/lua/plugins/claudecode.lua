@@ -1,7 +1,20 @@
--- ctrl+l is `chat:clearInput` in Claude Code's Chat keymap. Sent straight to the
--- PTY, so Neovim's own mappings never see it. NOT ctrl+u, which Claude binds to
--- scroll:halfPageUp -- that would scroll the transcript and leave the prompt as is.
-local CLAUDE_CLEAR_INPUT = "\12"
+-- Keystrokes that empty Claude's composer, sent straight to the PTY so Neovim's
+-- own mappings never see them.
+--
+-- Not ctrl+l. It is still named `chat:clearInput` in Claude Code's Chat keymap,
+-- but since 2.1.x it shares a handler with `chat:clearScreen`: a full redraw
+-- that keeps the input. The composer's own line editor is what still deletes
+-- text -- ctrl+k kills to the end of the line, ctrl+u to its start, and either
+-- one pressed at a line boundary eats the newline. So a burst of each, kill
+-- forward then kill backward, clears every line on both sides of the cursor.
+-- Twenty of each covers a draft of ten lines either way.
+--
+-- The whole thing has to stay under 64 bytes. Claude Code reads a larger
+-- single chunk from the PTY as a paste rather than as keystrokes, and a paste
+-- of control bytes is dropped whole (measured on 2.1.270: 48 bytes land, 64
+-- do not). One chansend, no timers, so the wipe stays synchronous and always
+-- beats a mention riding the plugin's 50ms debounce.
+local CLAUDE_CLEAR_INPUT = string.rep("\11", 20) .. string.rep("\21", 20)
 
 -- Explorer buffers, where the cursor sits on a directory listing rather than in
 -- a file. Matches the filetypes claudecode.nvim's own tree extractors support
