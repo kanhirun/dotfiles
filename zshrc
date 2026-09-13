@@ -20,8 +20,26 @@ eval "$(/opt/homebrew/bin/brew shellenv)"
 # than exiting immediately and leaving an unusable terminal.
 if [[ -o interactive && -z $SHELL_TRANSCRIPT && -z $NO_TRANSCRIPT && -z $CLAUDECODE && -z $NVIM ]]; then
   if command -v script >/dev/null; then
-    export SHELL_TRANSCRIPT="${PWD:t}.log"
-    script -q "$SHELL_TRANSCRIPT"
+    # Outside the repo, deliberately. A transcript in a project root is one
+    # `git add -f`, one missing global gitignore, or one clone on another machine
+    # away from being committed -- permanently, possibly publicly. Named by
+    # project so it stays findable without living next to the code.
+    SHELL_TRANSCRIPT_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/shell-logs"
+    mkdir -p "$SHELL_TRANSCRIPT_DIR" && chmod 700 "$SHELL_TRANSCRIPT_DIR"
+
+    # Retention. A secret that reaches a transcript should age out rather than
+    # sit on disk forever; deleting later does not undo exposure, but it does
+    # bound how much history one mistake covers.
+    find "$SHELL_TRANSCRIPT_DIR" -name '*.log' -mtime +7 -delete 2>/dev/null
+
+    export SHELL_TRANSCRIPT="$SHELL_TRANSCRIPT_DIR/${PWD:t}-$(date +%Y%m%d-%H%M%S).log"
+
+    # Created and locked down BEFORE script opens it, then appended to with -a.
+    # Setting `umask 077` around the call instead would work, but script passes
+    # its umask to the shell it starts -- every file written during the session
+    # would come out 0600 too.
+    : > "$SHELL_TRANSCRIPT" && chmod 600 "$SHELL_TRANSCRIPT"
+    script -q -a "$SHELL_TRANSCRIPT"
     exit
   fi
 fi
