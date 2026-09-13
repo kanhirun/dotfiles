@@ -51,27 +51,34 @@ local function leave_terminal_window()
   return from_pane
 end
 
--- Give every showing pane half the screen. A pane opens large -- the shell
--- takes three quarters of the height, Claude three quarters of the width --
--- because on its own it is the thing being looked at. Picking a file from
--- inside it changes that: now the file and the pane are read side by side,
--- and neither should be a sliver. The pane is resized along its own split
--- axis, read off the position Snacks resolved for it: the shell sits at
--- the bottom, so it gets half the height; Claude sits on the right, so it
--- gets half the width. Whatever remains goes to the editor windows.
+-- Give every showing pane the right half of the screen. A pane opens large --
+-- the shell takes three quarters of the height, Claude three quarters of the
+-- width -- because on its own it is the thing being looked at. Picking a file
+-- from inside it changes that: now the file and the pane are read side by
+-- side, and neither should be a sliver.
+--
+-- Side by side means the same shape for both panes. Claude already sits on
+-- the right, so it is only narrowed to half the width. The shell opens as a
+-- bottom split, and half the height there would leave the file a wide, short
+-- strip above it, so the shell is moved to a full-height column on the right
+-- first and then narrowed the same way. The move is Vim's own `wincmd L`,
+-- run inside the pane's window, so the window and its terminal buffer are
+-- untouched and Snacks keeps tracking the same window id. Whatever remains
+-- goes to the editor windows.
 --
 -- Only one pane is ever on screen (terminal.lua), but this asks Snacks for
--- all of them rather than guessing which. The resize lasts until the pane
--- is hidden; the next toggle brings it back at its configured size.
+-- all of them rather than guessing which. The layout lasts until the pane is
+-- hidden; the next toggle brings it back at its configured position and size.
 local function balance_panes()
   for _, term in ipairs(Snacks.terminal.list()) do
     if term:win_valid() then
       local position = term.opts.position
-      if position == 'left' or position == 'right' then
-        vim.api.nvim_win_set_width(term.win, math.floor(vim.o.columns / 2))
-      elseif position == 'top' or position == 'bottom' then
-        vim.api.nvim_win_set_height(term.win, math.floor((vim.o.lines - vim.o.cmdheight) / 2))
+      if position == 'top' or position == 'bottom' then
+        vim.api.nvim_win_call(term.win, function()
+          vim.cmd.wincmd 'L'
+        end)
       end
+      vim.api.nvim_win_set_width(term.win, math.floor(vim.o.columns / 2))
     end
   end
 end

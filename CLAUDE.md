@@ -83,9 +83,10 @@ instead. Only one of those two panes is ever open: showing either hides the othe
 `BufWinEnter` rule in `terminal.lua`). `<C-\>` toggles oil in a split beside the current
 buffer (twin of `<leader>-`). `<C-p>`, `<C-j>` and `<C-\>` reach from inside both panes
 and step to an editor window first (`config/panes.lua`), so a picked file or directory
-never replaces a pane; from inside a pane they also resize it to half the screen along
-its own axis (height for the bottom shell, width for Claude on the right), so the two
-share it 50/50.
+never replaces a pane; from inside a pane they also move it to the right half of the
+screen, so the file and the pane share it 50/50 side by side. Claude is already on the
+right and is only narrowed; the shell leaves its bottom split for a full-height column
+until it is next hidden.
 
 Nouns keep one letter across every position they appear in. Diagnostics are `x`:
 `]x`/`[x` move between them, `<leader>sx` lists them, `<leader>rx` fixes the one under
