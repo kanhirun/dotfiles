@@ -2,6 +2,30 @@ PATH=/opt/homebrew/bin:/opt/homebrew/sbin:/usr/bin:/bin:/usr/sbin:/sbin:$PATH
 
 eval "$(/opt/homebrew/bin/brew shellenv)"
 
+# Session transcript
+#
+# Record this shell's input and output to <dirname>.log in the directory it
+# started in, so an agent can read what was typed and what came back.
+#
+# The recursion guard is not optional. `script` starts a NEW shell, which sources
+# this file again, which starts another `script` -- forever. SHELL_TRANSCRIPT
+# marks the inner shell so it falls straight through. It sits this early so the
+# outer shell skips compinit and the version-manager evals it would only redo.
+#
+# Skipped under Claude Code and inside Neovim's terminal: both already surface
+# their own output, and recording a full-screen TUI writes megabytes of escape
+# sequences to a file nobody can read. NO_TRANSCRIPT=1 opts out of one shell.
+#
+# `command -v` first so a missing `script` falls through to a normal shell rather
+# than exiting immediately and leaving an unusable terminal.
+if [[ -o interactive && -z $SHELL_TRANSCRIPT && -z $NO_TRANSCRIPT && -z $CLAUDECODE && -z $NVIM ]]; then
+  if command -v script >/dev/null; then
+    export SHELL_TRANSCRIPT="${PWD:t}.log"
+    script -q "$SHELL_TRANSCRIPT"
+    exit
+  fi
+fi
+
 # Completion system -- must load after brew shellenv extends $fpath
 autoload -Uz compinit
 compinit
