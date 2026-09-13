@@ -23,6 +23,10 @@ vim.keymap.set('i', '<C-a>', '<Esc>wa', { noremap = true })
 -- terminals. Like <C-Space>'s NUL, <C-\> is a legacy control byte (0x1C), so it
 -- survives terminal mode with no kitty keyboard protocol support.
 --
+-- One buffer opts out: Claude's pane binds <C-\> buffer-locally in terminal mode
+-- to hide itself in a single press (plugins/claudecode.lua), since escaping to
+-- Normal mode inside Claude is almost never what the press meant.
+--
 -- Cmdline mode is left out on purpose: <Esc> already leaves it, and mapping
 -- <C-\> there would shadow <C-\>e (replace the command line with an expression).
 --

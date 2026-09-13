@@ -219,9 +219,11 @@ end
 -- Hiding leaves the composer and the set alone. Hiding is not clearing: the
 -- draft is still there when the pane comes back, and <C-]> still knows what it
 -- has already mentioned. Clearing happens on the way IN, which is the moment
--- "start a fresh prompt" actually refers to. From inside the pane, <C-\> is the
--- universal escape in terminal mode (config/keymaps.lua), so one press lands in
--- Normal mode and a second press -- this mapping -- closes the pane.
+-- "start a fresh prompt" actually refers to.
+--
+-- Bound twice: in Normal mode everywhere (keys below), and in terminal mode on
+-- Claude's own buffer (snacks_win_opts below), so one press from inside the pane
+-- hides it rather than first dropping to Normal mode.
 local function toggle_claude_clear()
   local terminal_ok, terminal = pcall(require, "claudecode.terminal")
   local term_bufnr = terminal_ok and terminal.get_active_terminal_bufnr() or nil
@@ -248,6 +250,26 @@ return {
         -- Also preserves scroll position when refocusing.
         auto_insert = true,
         split_width_percentage = 0.75,
+        -- Keys Snacks binds BUFFER-LOCALLY on Claude's terminal, with nowait.
+        -- Buffer-local beats global, so this is how the pane opts out of the
+        -- global t-mode <C-\> escape (config/keymaps.lua): pressed inside
+        -- Claude, <C-\> hides the pane in one press instead of landing in
+        -- Normal mode first and needing a second. Terminal-Normal is still
+        -- reachable inside the pane through Snacks' own double-<Esc>.
+        --
+        -- The plugin deep-merges this over its own keys (claude_new_line on
+        -- <S-CR>), so the entry needs a name of its own rather than replacing
+        -- that table.
+        snacks_win_opts = {
+          keys = {
+            claude_toggle = {
+              "<C-\\>",
+              toggle_claude_clear,
+              mode = "t",
+              desc = "Toggle Claude, clear context",
+            },
+          },
+        },
       },
       -- Land in Claude's prompt after sending context, instead of only revealing
       -- the split beside the file. Upstream defaults to false, which routes sends
@@ -292,7 +314,9 @@ return {
       -- universal escape (config/keymaps.lua) -- but in Normal mode the escape
       -- has almost nothing to do, since Esc there only cancels a pending count or
       -- operator. Every mode where the escape actually earns its keep -- insert,
-      -- visual, select, operator-pending and terminal -- keeps it untouched.
+      -- visual, select, operator-pending and terminal -- keeps it untouched,
+      -- with one exception: Claude's own terminal buffer, where the same
+      -- function is bound in terminal mode too (snacks_win_opts in opts above).
       {
         "<C-\\>",
         toggle_claude_clear,
