@@ -49,6 +49,68 @@ return {
     -- a name you type here, a match found for you there.
     vim.keymap.set('n', '<leader>ff', builtin.find_files, { desc = 'Find Files' })
 
+    -- A picker hands its result to the window it was opened from. Opened from
+    -- inside the <C-Space> shell or Claude's pane, that window is a terminal,
+    -- and the file would replace the pane instead of opening beside it. So a
+    -- picker launched from a terminal window first steps to an editor window:
+    -- the one it came from if that is one, else the first ordinary split.
+    -- Cancelling the picker leaves everything as it was; a chord teleports,
+    -- it never mutates. With no editor window at all, the picker opens where
+    -- it is.
+    --
+    -- An editor window is any non-floating window that is not a terminal. Not
+    -- "buftype is empty", which is what Snacks' fixbuf checks: oil buffers are
+    -- `acwrite`, help and quickfix are `help` and `quickfix`, and a split
+    -- showing any of those is exactly where a picked file should land. With
+    -- oil beside Claude's pane, the empty-buftype test found no editor window,
+    -- the picker opened from the pane, and the file replaced Claude's buffer.
+    --
+    -- Returns whether it stepped out of a pane -- the shell or Claude's, told
+    -- apart from a plain :terminal by b:snacks_terminal -- so the picker can
+    -- hide the panes once a file is actually picked.
+    local function leave_terminal_window()
+      if vim.bo.buftype ~= 'terminal' then
+        return false
+      end
+      local from_pane = vim.b.snacks_terminal ~= nil
+      local function is_editor_window(win)
+        return win ~= 0
+          and vim.api.nvim_win_is_valid(win)
+          and vim.bo[vim.api.nvim_win_get_buf(win)].buftype ~= 'terminal'
+          and vim.api.nvim_win_get_config(win).zindex == nil
+      end
+      local target = vim.fn.win_getid(vim.fn.winnr '#')
+      if not is_editor_window(target) then
+        target = nil
+        for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+          if is_editor_window(win) then
+            target = win
+            break
+          end
+        end
+      end
+      if target then
+        vim.api.nvim_set_current_win(target)
+        vim.cmd.stopinsert()
+      end
+      return from_pane
+    end
+
+    -- Hide every pane that is showing. Picking a file from inside a pane means
+    -- leaving it for the editor, so the pane goes away rather than staying
+    -- open beside the file. Only one pane is ever on screen (terminal.lua),
+    -- but this asks Snacks for all of them rather than guessing which. Hiding
+    -- goes through each instance's own hide(), the same as terminal.lua does,
+    -- so Claude's takes claudecode's anchor-safe path and the shell's takes
+    -- Snacks'. Hidden is not closed: the next toggle brings the pane back.
+    local function hide_panes()
+      for _, term in ipairs(Snacks.terminal.list()) do
+        if term:win_valid() then
+          term:hide()
+        end
+      end
+    end
+
     -- Files worth resuming: recent files first, uncommitted changes after.
     -- One flat list so an empty prompt keeps that order and typing fuzzy-matches both.
     local RECENT_LIMIT = 5
@@ -66,6 +128,7 @@ return {
     end
 
     local function search_recent_files()
+      local from_pane = leave_terminal_window()
       local cwd = vim.uv.cwd()
       local results, seen = {}, {}
 
@@ -159,6 +222,18 @@ return {
           },
           sorter = conf.file_sorter {},
           previewer = conf.file_previewer {},
+          -- Launched from a pane, a pick hides the panes once the file is open.
+          -- `post` on action_set.select covers every way of picking -- Enter,
+          -- <C-x>, <C-v>, <C-t> -- and runs after the file has landed in the
+          -- editor window. Telescope resets action enhancements when the next
+          -- picker starts (clear_all in Picker:find), so this stays scoped to
+          -- this one picker rather than leaking into every select everywhere.
+          attach_mappings = function()
+            if from_pane then
+              require('telescope.actions.set').select:enhance { post = hide_panes }
+            end
+            return true
+          end,
         })
         :find()
     end
@@ -169,7 +244,14 @@ return {
     -- twin, no more: <C-g> was a second address for this and is now back to
     -- vim's show-file-info. <leader>fo names vim's own `:oldfiles` and
     -- alternates hands, where `fr` would be the same index finger twice.
-    vim.keymap.set('n', '<C-p>', search_recent_files, { desc = 'Find Recent & Changed Files' })
+    --
+    -- Every mode, like <C-]> and <C-Space>, and `t` is the one that matters:
+    -- it makes the chord reach from inside the shell and Claude's pane, which
+    -- otherwise swallow it (shell history-previous, which Up also does). Both
+    -- addresses bind the same function, so <leader>fo steps out of a pane the
+    -- same way, and a file picked from inside a pane hides the panes. <C-p> is a legacy control byte (0x10), so it needs no kitty
+    -- keyboard protocol support to arrive through Zellij.
+    vim.keymap.set({ 'n', 'i', 'v', 'x', 't' }, '<C-p>', search_recent_files, { desc = 'Find Recent & Changed Files' })
     vim.keymap.set('n', '<leader>fo', search_recent_files, { desc = 'Find Recent & Changed Files' })
 
     -- Search directories only; selecting one opens it in oil.nvim.
