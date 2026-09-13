@@ -329,7 +329,15 @@ return {
       return entries, score_width
     end
 
-    vim.keymap.set('n', '<C-j>', function()
+    --
+    -- Every mode, like <C-p>: `t` is what lets the chord reach from inside the
+    -- shell and Claude's pane, and the same step to an editor window keeps the
+    -- picked directory from replacing the pane's buffer. <C-j> is a legacy
+    -- control byte (0x0A, linefeed), so it arrives through Zellij with no kitty
+    -- keyboard protocol support. In the shell it was a second Enter, which
+    -- Enter still is; Claude Code does not bind it.
+    local function jump_to_zoxide_directory()
+      local from_pane = leave_terminal_window()
       local entries, score_width = zoxide_entries()
       if #entries == 0 then
         return vim.notify('zoxide has no directories yet', vim.log.levels.WARN)
@@ -371,10 +379,15 @@ return {
               end
 
               -- The cd is what records the jump: the DirChanged autocmd in
-              -- config.autocmds feeds it to zoxide.
+              -- config.autocmds feeds it to zoxide. Launched from a pane, the
+              -- oil listing then shares the screen with it, as a picked file
+              -- does from <C-p>.
               vim.schedule(function()
                 vim.cmd.cd(vim.fn.fnameescape(entry.value))
                 require('oil').open(entry.value)
+                if from_pane then
+                  balance_panes()
+                end
               end)
             end)
 
@@ -382,7 +395,9 @@ return {
           end,
         })
         :find()
-    end, { desc = 'Jump to zoxide directory' })
+    end
+
+    vim.keymap.set({ 'n', 'i', 'v', 'x', 't' }, '<C-j>', jump_to_zoxide_directory, { desc = 'Jump to zoxide directory' })
 
     --======================
     -- 2. Content search
