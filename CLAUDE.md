@@ -80,11 +80,12 @@ Namespaces in use: `<leader>s` search · `<leader>r` refactor · `<leader>t` tes
 `<leader>g` git · `<leader>c` Claude. `<C-]>` toggles Claude and `<C-Space>` toggles a
 terminal, both from any mode; with a visual selection, `<C-]>` sends it to Claude
 instead. Only one of those two panes is ever open: showing either hides the other (a
-`BufWinEnter` rule in `terminal.lua`). `<C-p>` and `<C-j>` reach from inside both panes
-and step to an editor window first, so a picked file or directory never replaces a
-pane; picking one from inside a pane resizes the pane to half the screen along its own
-axis (height for the bottom shell, width for Claude on the right), so the two share it
-50/50.
+`BufWinEnter` rule in `terminal.lua`). `<C-\>` toggles oil in a split beside the current
+buffer (twin of `<leader>-`). `<C-p>`, `<C-j>` and `<C-\>` reach from inside both panes
+and step to an editor window first (`config/panes.lua`), so a picked file or directory
+never replaces a pane; from inside a pane they also resize it to half the screen along
+its own axis (height for the bottom shell, width for Claude on the right), so the two
+share it 50/50.
 
 Nouns keep one letter across every position they appear in. Diagnostics are `x`:
 `]x`/`[x` move between them, `<leader>sx` lists them, `<leader>rx` fixes the one under
