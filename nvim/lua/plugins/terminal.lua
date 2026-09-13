@@ -24,7 +24,18 @@ return {
       -- 0x1D it survives terminal mode with no kitty keyboard protocol support.
       {
         "<C-Space>",
-        function() Snacks.terminal.toggle() end,
+        -- term_normal = false deletes snacks' own <Esc> handler for THIS terminal,
+        -- letting the global t-mode <Esc> in config/keymaps.lua through. Snacks
+        -- binds <Esc> buffer-locally to a 200ms double-tap, and buffer-local beats
+        -- global, so without this a single <Esc> here does nothing.
+        --
+        -- Passed per call rather than in opts.terminal above, because that is
+        -- shared configuration: claudecode.nvim opens its pane through the same
+        -- Snacks.terminal, and Claude needs <Esc> for interrupt. This is a plain
+        -- shell, so nothing here wants the key.
+        function()
+          Snacks.terminal.toggle(nil, { win = { keys = { term_normal = false } } })
+        end,
         mode = { "n", "i", "v", "x", "t" },
         desc = "Toggle terminal",
       },
