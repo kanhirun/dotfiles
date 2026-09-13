@@ -79,7 +79,8 @@ The rules that matter most when editing this config:
 Namespaces in use: `<leader>s` search · `<leader>r` refactor · `<leader>t` test/toggle ·
 `<leader>g` git · `<leader>c` Claude. Universal escape to Normal mode is `<C-\>` (all
 modes, terminal included); `<C-]>` toggles Claude and `<C-Space>` toggles a terminal,
-both from any mode.
+both from any mode. Only one of those two panes is ever open: showing either hides the
+other (a `BufWinEnter` rule in `terminal.lua`).
 
 Nouns keep one letter across every position they appear in. Diagnostics are `x`:
 `]x`/`[x` move between them, `<leader>sx` lists them, `<leader>rx` fixes the one under

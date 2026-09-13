@@ -15,9 +15,55 @@ return {
         win = { height = 3 / 4 },
       },
     },
+    config = function(_, opts)
+      require("snacks").setup(opts)
+
+      -- One pane at a time. The <C-Space> shell and Claude's pane are both
+      -- Snacks terminals, and showing either one hides the other, so the two
+      -- never share the screen. Hiding is all it is: the shell and Claude keep
+      -- running, and the next toggle brings the hidden one straight back.
+      --
+      -- Enforced here, on the buffer entering a window, rather than in the two
+      -- toggles. The shell has one way in, but Claude has a dozen -- ClaudeCode,
+      -- ClaudeCodeOpen, ClaudeCodeAdd, ClaudeCodeSend, ClaudeCodeTreeAdd,
+      -- ClaudeCodeFocus, --resume, --continue -- and wrapping each would be one
+      -- forgotten path away from both panes open. Snacks' own on_win hook is no
+      -- use either: claudecode.nvim closes its split on hide and rebuilds it by
+      -- hand on show (its climbing-cursor workaround), so on_win fires once, on
+      -- first launch. BufWinEnter fires on every path: nvim_open_win on launch,
+      -- nvim_win_set_buf on every re-show.
+      --
+      -- Snacks stamps b:snacks_terminal on every terminal buffer it owns, which
+      -- is how a pane is told apart from a plain :terminal. Hiding goes through
+      -- the instance's own hide() so Claude's takes claudecode's anchor-safe
+      -- path and the shell's takes Snacks'. Nested so Snacks' WinClosed
+      -- bookkeeping runs the same as it does for an interactive close.
+      vim.api.nvim_create_autocmd("BufWinEnter", {
+        group = vim.api.nvim_create_augroup("one_pane_at_a_time", { clear = true }),
+        desc = "Hide the other pane when the shell or Claude is shown",
+        nested = true,
+        callback = function(ev)
+          if not vim.b[ev.buf].snacks_terminal then
+            return
+          end
+          for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+            local buf = vim.api.nvim_win_get_buf(win)
+            if buf ~= ev.buf and vim.b[buf].snacks_terminal then
+              for _, term in ipairs(Snacks.terminal.list()) do
+                if term.buf == buf then
+                  term:hide()
+                end
+              end
+            end
+          end
+        end,
+      })
+    end,
     keys = {
       -- Mirrors <C-]> in claudecode.lua: bound in every mode including `t`,
       -- so the chord that opens the terminal also closes it from inside.
+      -- Pressed from inside Claude's pane, it swaps the panes: the BufWinEnter
+      -- rule above hides Claude as the shell appears.
       --
       -- <C-Space> echoes the Space leader and is unclaimed by Vim, blink.cmp,
       -- oil, fugitive and telescope. Terminals send it as NUL, so like <C-]>'s
