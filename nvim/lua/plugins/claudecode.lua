@@ -15,6 +15,21 @@ local EXPLORER_FILETYPES = {
   snacks_picker_list = true,
 }
 
+-- Whether Claude's terminal buffer is showing in a window of the current tab.
+-- Only the plain `ClaudeCode` toggle can hide it, and only when it is on screen,
+-- so every "toggle" below asks this first.
+local function claude_is_visible(term_bufnr)
+  if not term_bufnr then
+    return false
+  end
+  for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+    if vim.api.nvim_win_get_buf(win) == term_bufnr then
+      return true
+    end
+  end
+  return false
+end
+
 -- Toggle Claude, handing it whatever context the cursor sits on: the visual
 -- selection if there is one, else the tree entry under the cursor (file or
 -- folder) in an explorer, else the current file, else nothing.
@@ -51,13 +66,9 @@ local function toggle_claude_with_context()
 
   -- Terminal already on screen: plain toggle hides it, and re-sending context on
   -- the way out would be wrong.
-  if term_bufnr then
-    for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
-      if vim.api.nvim_win_get_buf(win) == term_bufnr then
-        vim.cmd("ClaudeCode")
-        return
-      end
-    end
+  if claude_is_visible(term_bufnr) then
+    vim.cmd("ClaudeCode")
+    return
   end
 
   local bufnr = vim.api.nvim_get_current_buf()
@@ -201,12 +212,23 @@ local function add_claude_context()
   vim.cmd("ClaudeCode")
 end
 
--- Open Claude on an empty composer: wipe the queued mentions and drop the set
--- that tracks them, so <C-]> starts accumulating from nothing again. Open rather
--- than toggle -- "start a fresh prompt" should never hide the pane you asked for.
-local function open_claude_clear()
+-- Toggle Claude, and when opening, open it on an empty composer: wipe the queued
+-- mentions and drop the set that tracks them, so <C-]> starts accumulating from
+-- nothing again.
+--
+-- Hiding leaves the composer and the set alone. Hiding is not clearing: the
+-- draft is still there when the pane comes back, and <C-]> still knows what it
+-- has already mentioned. Clearing happens on the way IN, which is the moment
+-- "start a fresh prompt" actually refers to. From inside the pane, <C-\> is the
+-- universal escape in terminal mode (config/keymaps.lua), so one press lands in
+-- Normal mode and a second press -- this mapping -- closes the pane.
+local function toggle_claude_clear()
   local terminal_ok, terminal = pcall(require, "claudecode.terminal")
   local term_bufnr = terminal_ok and terminal.get_active_terminal_bufnr() or nil
+  if claude_is_visible(term_bufnr) then
+    vim.cmd("ClaudeCode")
+    return
+  end
   if term_bufnr and vim.api.nvim_buf_is_valid(term_bufnr) then
     terminal.send_to_terminal(CLAUDE_CLEAR_INPUT, { submit = false })
   end
@@ -273,9 +295,9 @@ return {
       -- visual, select, operator-pending and terminal -- keeps it untouched.
       {
         "<C-\\>",
-        open_claude_clear,
+        toggle_claude_clear,
         mode = "n",
-        desc = "Open Claude, clear context",
+        desc = "Toggle Claude, clear context",
       },
       -- Same toggle, but hands Claude the context under the cursor. Normal and
       -- visual only: <leader> is Space, which just types a space in insert and

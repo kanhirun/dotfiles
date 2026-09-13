@@ -26,7 +26,7 @@ vim.keymap.set('i', '<C-a>', '<Esc>wa', { noremap = true })
 -- Cmdline mode is left out on purpose: <Esc> already leaves it, and mapping
 -- <C-\> there would shadow <C-\>e (replace the command line with an expression).
 --
--- Normal mode is left out too, and claudecode.lua takes it -- "open Claude on a
+-- Normal mode is left out too, and claudecode.lua takes it -- "toggle Claude on a
 -- clear composer". Escaping to Normal from Normal is the one case with nothing to
 -- do: Esc there only cancels a pending count or operator, and Esc itself still
 -- does that. Every mode where the escape actually matters is still here.
