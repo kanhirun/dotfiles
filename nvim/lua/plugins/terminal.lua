@@ -1,3 +1,18 @@
+-- The shell's top edge, drawn as a rule across its winbar. A bottom split's
+-- upper boundary is the statusline of the window above it, and this theme
+-- paints inactive statuslines in the background colour (StatusLineNC fg == bg),
+-- so with the shell focused the seam between it and the editor vanished.
+-- Snacks already puts a winbar on bottom terminals ("1: zsh", in grey WinBar);
+-- this keeps the title and turns the line into a border. Normal's fg is the
+-- theme's white, and stays white across themes as the brightest colour there
+-- is. The rule is sized to the window so nothing is truncated (a `<` would
+-- otherwise appear).
+local SHELL_WINBAR = table.concat({
+  "%#Normal#",
+  "%{empty(get(b:, 'term_title', '')) ? repeat('─', winwidth(0))",
+  " : '── ' . b:term_title . ' ' . repeat('─', winwidth(0) - strdisplaywidth(b:term_title) - 4)}",
+})
+
 return {
   -- Terminal toggle
   -- https://github.com/folke/snacks.nvim
@@ -80,7 +95,9 @@ return {
         -- Snacks.terminal, and Claude needs <Esc> for interrupt. This is a plain
         -- shell, so nothing here wants the key.
         function()
-          Snacks.terminal.toggle(nil, { win = { keys = { term_normal = false } } })
+          Snacks.terminal.toggle(nil, {
+            win = { keys = { term_normal = false }, wo = { winbar = SHELL_WINBAR } },
+          })
         end,
         mode = { "n", "i", "v", "x", "t" },
         desc = "Toggle terminal",
