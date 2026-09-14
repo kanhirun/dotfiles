@@ -52,16 +52,55 @@ return {
             context = { only = { 'source.fixAll' }, diagnostics = {} },
           }
         end, 'Fix All in Buffer')
-        -- gopls implements this as goimports (adds missing, drops unused, sorts).
-        -- ts_ls sorts and removes unused but will not add missing imports --
-        -- that is a separate TS-only action. pyright offers nothing here; ruff
-        -- would be needed for Python.
-        map('<leader>ri', function()
-          vim.lsp.buf.code_action {
-            apply = true,
-            context = { only = { 'source.organizeImports' }, diagnostics = {} },
-          }
-        end, 'Organize Imports')
+        -- Fix imports: drop the unused ones, then organize what is left.
+        --
+        -- Two requests, not one. `source.organizeImports` is the portable
+        -- name, and gopls does the whole job under it (goimports: add missing,
+        -- drop unused, sort). typescript-language-server 5.3 does not: its
+        -- handler pins that kind to TypeScript's SortAndCombine mode, so it
+        -- only sorts, and on a file whose imports are already sorted it
+        -- returns no action at all -- "No code actions available" with an
+        -- unused import sitting right there. Removal lives under its own
+        -- kind, `source.removeUnusedImports` (RemoveUnused mode, TS 4.9+).
+        -- So that is asked for first, then organize. Servers ignore kinds
+        -- they do not provide, so gopls sees one request that matters and
+        -- pyright sees none.
+        --
+        -- Applied in sequence and synchronously: each kind's edits land before
+        -- the next kind is requested, so the second response is computed
+        -- against the text the first one produced rather than a stale copy.
+        -- pyright offers nothing here; ruff would be needed for Python.
+        map('<leader>fi', function()
+          local bufnr = vim.api.nvim_get_current_buf()
+          local applied = false
+          for _, kind in ipairs { 'source.removeUnusedImports', 'source.organizeImports' } do
+            local params = {
+              textDocument = vim.lsp.util.make_text_document_params(bufnr),
+              range = {
+                start = { line = 0, character = 0 },
+                ['end'] = { line = 0, character = 0 },
+              },
+              context = { only = { kind }, diagnostics = {} },
+            }
+            local results = vim.lsp.buf_request_sync(bufnr, 'textDocument/codeAction', params, 2000)
+            for id, res in pairs(results or {}) do
+              local c = vim.lsp.get_client_by_id(id)
+              for _, action in ipairs(res.result or {}) do
+                if not action.edit and c and action.data then
+                  local resolved = c:request_sync('codeAction/resolve', action, 2000, bufnr)
+                  action = resolved and resolved.result or action
+                end
+                if action.edit then
+                  vim.lsp.util.apply_workspace_edit(action.edit, c and c.offset_encoding or 'utf-16')
+                  applied = true
+                end
+              end
+            end
+          end
+          if not applied then
+            vim.notify('Imports already clean', vim.log.levels.INFO)
+          end
+        end, 'Fix Imports')
         map('gD', vim.lsp.buf.declaration, '[G]oto [D]eclaration')
 
         map('gr', require('telescope.builtin').lsp_references, '[G]oto [R]eferences')
