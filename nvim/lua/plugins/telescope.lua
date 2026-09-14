@@ -21,7 +21,9 @@ return {
   config = function()
     require('telescope').setup {
       defaults = {
-        file_ignore_patterns = { 'node_modules', 'generated' }
+        -- `%.git/` needs the slash: `.github/` must stay in. It is only
+        -- reached now that find_files walks hidden files (see find_files below).
+        file_ignore_patterns = { 'node_modules', 'generated', '%.git/' },
       },
       extensions = {
         ['ui-select'] = {
@@ -47,7 +49,14 @@ return {
     -- <leader>f is Find: locate a thing by its name. <leader>s is Search: look
     -- through content and lists. The split is what the argument is made of --
     -- a name you type here, a match found for you there.
-    vim.keymap.set('n', '<leader>ff', builtin.find_files, { desc = 'Find Files' })
+    --
+    -- `hidden` walks dotfiles too: `.github/workflows`, `.envrc`, `.zshrc`.
+    -- rg still honours .gitignore, so the ignored trees stay out; `.git/`
+    -- itself is dropped by file_ignore_patterns above.
+    local function find_files()
+      builtin.find_files { hidden = true }
+    end
+    vim.keymap.set('n', '<leader>ff', find_files, { desc = 'Find Files' })
 
     -- Pickers launched from inside the shell or Claude's pane step to an editor
     -- window first and rebalance the panes once a file is picked. Shared with
