@@ -361,6 +361,38 @@ return {
     -- 2. Content search
     --======================
 
+    -- Live grep over the tree. rg drives it, so .gitignore is honoured and
+    -- hidden files are walked the way find_files walks them; `%.git/` is
+    -- dropped by file_ignore_patterns above. Same pane handling as the file
+    -- pickers: launched from the shell or Claude's pane, the match lands in an
+    -- editor window and the panes rebalance once one is picked.
+    local function live_grep()
+      local from_pane = panes.leave_terminal_window()
+      builtin.live_grep {
+        additional_args = { '--hidden' },
+        attach_mappings = function()
+          if from_pane then
+            require('telescope.actions.set').select:enhance { post = panes.balance_panes }
+          end
+          return true
+        end,
+      }
+    end
+
+    -- <C-g> is the grep chord: g for grep, and it takes back the slot the
+    -- recent-files picker gave up (see <leader>fo above). Every mode, like
+    -- <C-f>, so it reaches from inside the shell and Claude's pane; there it
+    -- displaces readline's abort-line, which <C-c> also does. <C-g> is BEL
+    -- (0x07), a legacy control byte that arrives through Zellij with no
+    -- kitty keyboard protocol support. Normal mode's default <C-g> only
+    -- prints the file name, which the statusline already shows.
+    --
+    -- <leader>fg is the leader twin. By the Find/Search split above it would
+    -- read as <leader>sg, since grep is a content search; `fg` is the address
+    -- muscle memory already carries from the usual telescope setups.
+    vim.keymap.set({ 'n', 'i', 'v', 'x', 't' }, '<C-g>', live_grep, { desc = 'Live Grep' })
+    vim.keymap.set('n', '<leader>fg', live_grep, { desc = 'Live Grep' })
+
     -- Kinds worth jumping to. Telescope lowercases these before comparing, so
     -- they match the LSP kind names; drop the list to get everything back.
     --
