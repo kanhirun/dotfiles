@@ -50,18 +50,42 @@ return {
     -- through content and lists. The split is what the argument is made of --
     -- a name you type here, a match found for you there.
     --
-    -- `hidden` walks dotfiles too: `.github/workflows`, `.envrc`, `.zshrc`.
-    -- rg still honours .gitignore, so the ignored trees stay out; `.git/`
-    -- itself is dropped by file_ignore_patterns above.
-    local function find_files()
-      builtin.find_files { hidden = true }
-    end
-    vim.keymap.set('n', '<leader>ff', find_files, { desc = 'Find Files' })
-
     -- Pickers launched from inside the shell or Claude's pane step to an editor
     -- window first and rebalance the panes once a file is picked. Shared with
-    -- oil's <C-\> in oil.lua, so both reach from a pane the same way.
+    -- oil's <C-]> in oil.lua, so both reach from a pane the same way.
     local panes = require('config.panes')
+
+    -- `hidden` walks dotfiles too: `.github/workflows`, `.envrc`, `.zshrc`.
+    -- rg still honours .gitignore, so the ignored trees stay out; `.git/`
+    -- itself is dropped by file_ignore_patterns above. `post` on
+    -- action_set.select runs after the file has landed in the editor window
+    -- and is reset when the next picker starts, so it stays scoped to this
+    -- one picker (see search_recent_files below for the longer note).
+    local function find_files()
+      local from_pane = panes.leave_terminal_window()
+      builtin.find_files {
+        hidden = true,
+        attach_mappings = function()
+          if from_pane then
+            require('telescope.actions.set').select:enhance { post = panes.balance_panes }
+          end
+          return true
+        end,
+      }
+    end
+
+    -- <C-f> is the file chord: f is the noun's letter, the same one <leader>ff
+    -- carries. It replaced <C-p>, which used to open the recent-files picker
+    -- and is now unbound outside the completion menu. Every mode, like <C-]>
+    -- and <C-Space>, and `t` is the one that matters: it makes the chord
+    -- reach from inside the shell and Claude's pane, which otherwise swallow
+    -- it (readline forward-char, which Right also does). Both addresses bind
+    -- the same function, so <leader>ff steps out of a pane the same way, and
+    -- a file picked from inside a pane shares the screen with it. <C-f> is a
+    -- legacy control byte (0x06), so it arrives through Zellij with no kitty
+    -- keyboard protocol support.
+    vim.keymap.set({ 'n', 'i', 'v', 'x', 't' }, '<C-f>', find_files, { desc = 'Find Files' })
+    vim.keymap.set('n', '<leader>ff', find_files, { desc = 'Find Files' })
 
     -- Files worth resuming: recent files first, uncommitted changes after.
     -- One flat list so an empty prompt keeps that order and typing fuzzy-matches both.
@@ -191,20 +215,12 @@ return {
         :find()
     end
 
-    -- <C-p> is decades of muscle memory from every other editor, and what it
-    -- opens there is a recency-ranked list rather than a cold directory walk --
-    -- so it lands on this picker, not on find_files. One chord and one leader
-    -- twin, no more: <C-g> was a second address for this and is now back to
-    -- vim's show-file-info. <leader>fo names vim's own `:oldfiles` and
-    -- alternates hands, where `fr` would be the same index finger twice.
-    --
-    -- Every mode, like <C-]> and <C-Space>, and `t` is the one that matters:
-    -- it makes the chord reach from inside the shell and Claude's pane, which
-    -- otherwise swallow it (shell history-previous, which Up also does). Both
-    -- addresses bind the same function, so <leader>fo steps out of a pane the
-    -- same way, and a file picked from inside a pane shares the screen with it. <C-p> is a legacy control byte (0x10), so it needs no kitty
-    -- keyboard protocol support to arrive through Zellij.
-    vim.keymap.set({ 'n', 'i', 'v', 'x', 't' }, '<C-p>', search_recent_files, { desc = 'Find Recent & Changed Files' })
+    -- Leader only, no chord. <C-p> used to land here, and <C-g> before that;
+    -- the chord tier is a fixed budget and <C-f> now spends the file slot on
+    -- find_files. <leader>fo names vim's own `:oldfiles` and alternates
+    -- hands, where `fr` would be the same index finger twice. The pane
+    -- handling stays, so a pick made from inside the shell or Claude's pane
+    -- still shares the screen with it.
     vim.keymap.set('n', '<leader>fo', search_recent_files, { desc = 'Find Recent & Changed Files' })
 
     -- Search directories only; selecting one opens it in oil.nvim.
@@ -272,7 +288,7 @@ return {
     end
 
     --
-    -- Every mode, like <C-p>: `t` is what lets the chord reach from inside the
+    -- Every mode, like <C-f>: `t` is what lets the chord reach from inside the
     -- shell and Claude's pane, and the same step to an editor window keeps the
     -- picked directory from replacing the pane's buffer. <C-j> is a legacy
     -- control byte (0x0A, linefeed), so it arrives through Zellij with no kitty
@@ -323,7 +339,7 @@ return {
               -- The cd is what records the jump: the DirChanged autocmd in
               -- config.autocmds feeds it to zoxide. Launched from a pane, the
               -- oil listing then shares the screen with it, as a picked file
-              -- does from <C-p>.
+              -- does from <C-f>.
               vim.schedule(function()
                 vim.cmd.cd(vim.fn.fnameescape(entry.value))
                 require('oil').open(entry.value)

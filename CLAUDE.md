@@ -68,7 +68,7 @@ The rules that matter most when editing this config:
 - **A chord is an alias, never a sole address.** Chords are invisible — nothing on
   screen reveals them. Each one binds the *same function object* as its `<leader>`
   twin so the two cannot drift apart. See `telescope.lua`: `<C-k>`/`<leader>ss`,
-  `<C-s>`/`<leader>sS`, `<C-p>` and `<C-f>`/`<leader>sf`.
+  `<C-s>`/`<leader>sS`, `<C-f>`/`<leader>ff`.
 - **Shift widens scope, and means nothing else.** `<leader>ss` document →
   `<leader>sS` workspace; `<leader>sx` buffer diagnostics → `<leader>sX` project.
 - **Legacy control bytes only.** Zellij sits between the terminal and Neovim, so a
@@ -81,7 +81,7 @@ Namespaces in use: `<leader>s` search · `<leader>r` refactor · `<leader>t` tes
 terminal, both from any mode; with a visual selection, `<C-\>` sends it to Claude
 instead. Only one of those two panes is ever open: showing either hides the other (a
 `BufWinEnter` rule in `terminal.lua`). `<C-]>` toggles oil in a split beside the current
-buffer (twin of `<leader>-`). `<C-p>`, `<C-j>` and `<C-]>` reach from inside both panes
+buffer (twin of `<leader>-`). `<C-f>`, `<C-j>` and `<C-]>` reach from inside both panes
 and step to an editor window first (`config/panes.lua`), so a picked file or directory
 never replaces a pane; from inside a pane they also move it to the right half of the
 screen, so the file and the pane share it 50/50 side by side. Claude is already on the

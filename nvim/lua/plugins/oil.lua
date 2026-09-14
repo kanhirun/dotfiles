@@ -45,11 +45,11 @@ return {
       -- space back. The one exception is an explorer that is the only editor
       -- window on screen -- bare `-` over the file, say, with Claude's pane
       -- beside it. Closing that window would leave the pane alone, with nothing
-      -- for <C-p> or <C-j> to step to, so oil's own close is used there instead:
+      -- for <C-f> or <C-j> to step to, so oil's own close is used there instead:
       -- it puts the original buffer back in the same window.
       --
       -- Opening reaches from every mode. From inside the shell or Claude's pane
-      -- it first steps to an editor window (config/panes.lua), the same as <C-p>
+      -- it first steps to an editor window (config/panes.lua), the same as <C-f>
       -- and <C-j>: split in place, the explorer would open inside the pane and a
       -- picked file would land there too. The pane is then resized to half the
       -- screen so the drawer and the file have room beside it. Insert and
