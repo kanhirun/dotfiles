@@ -215,12 +215,21 @@ return {
         :find()
     end
 
-    -- Leader only, no chord. <C-p> used to land here, and <C-g> before that;
-    -- the chord tier is a fixed budget and <C-f> now spends the file slot on
-    -- find_files. <leader>fo names vim's own `:oldfiles` and alternates
-    -- hands, where `fr` would be the same index finger twice. The pane
-    -- handling stays, so a pick made from inside the shell or Claude's pane
-    -- still shares the screen with it.
+    -- <C-k> is the recent-files chord. <C-p> used to land here, and <C-g>
+    -- before that; <C-f> spent the file slot on find_files and <C-g> went to
+    -- grep, so this takes the key document symbols held, which are now
+    -- leader-only at <leader>ss. Every mode, like <C-f>, so it reaches from
+    -- inside the shell and Claude's pane; there it displaces readline's
+    -- kill-line, and in insert mode Vim's digraph entry, neither of which
+    -- earns a chord over resuming a file. <C-k> is VT (0x0B), a legacy
+    -- control byte that arrives through Zellij with no kitty keyboard
+    -- protocol support.
+    --
+    -- <leader>fo is the leader twin: it names vim's own `:oldfiles` and
+    -- alternates hands, where `fr` would be the same index finger twice.
+    -- Both addresses bind the same function, so a pick made from inside a
+    -- pane shares the screen with it either way.
+    vim.keymap.set({ 'n', 'i', 'v', 'x', 't' }, '<C-k>', search_recent_files, { desc = 'Find Recent & Changed Files' })
     vim.keymap.set('n', '<leader>fo', search_recent_files, { desc = 'Find Recent & Changed Files' })
 
     -- Search directories only; selecting one opens it in oil.nvim.
@@ -379,9 +388,8 @@ return {
       }
     end
 
-    -- <C-g> is the grep chord: g for grep, and it takes back the slot the
-    -- recent-files picker gave up (see <leader>fo above). Every mode, like
-    -- <C-f>, so it reaches from inside the shell and Claude's pane; there it
+    -- <C-g> is the grep chord: g for grep. Every mode, like <C-f>, so it
+    -- reaches from inside the shell and Claude's pane; there it
     -- displaces readline's abort-line, which <C-c> also does. <C-g> is BEL
     -- (0x07), a legacy control byte that arrives through Zellij with no
     -- kitty keyboard protocol support. Normal mode's default <C-g> only
@@ -455,17 +463,21 @@ return {
       builtin.lsp_document_symbols { symbols = SYMBOL_KINDS }
     end
 
-    -- One function per pair, two addresses each. lsp.lua used to bind
-    -- <leader>gs/<leader>gS to the same builtins with no options at all -- the
-    -- same capability, silently unfiltered, at a third and fourth address.
-    -- Those are deleted; these four are the only symbol entry points.
+    -- One function per scope. lsp.lua used to bind <leader>gs/<leader>gS to
+    -- the same builtins with no options at all -- the same capability,
+    -- silently unfiltered, at other addresses. Those are deleted; these three
+    -- are the only symbol entry points.
+    --
+    -- Document symbols are leader-only. They had <C-k>, which now opens the
+    -- recent-files picker (see <leader>fo above): the chord tier is a fixed
+    -- budget, and resuming a file is reached for more often than the outline
+    -- of the current one.
     --
     -- <C-s> for the workspace: s as in symbol, the same letter the <leader>
     -- twins carry. It was <C-l>, which is also Vim's redraw and oil's refresh,
     -- so the move gives a mnemonic and frees a chord that had two other jobs.
     -- Terminals send <C-s> as byte 0x13, and Neovim's TUI turns off XON/XOFF
     -- flow control, so it arrives through Zellij like the other chords.
-    vim.keymap.set('n', '<C-k>', search_document_symbols, { desc = 'Search Symbols (document)' })
     vim.keymap.set('n', '<leader>ss', search_document_symbols, { desc = 'Search Symbols (document)' })
     vim.keymap.set('n', '<C-s>', search_workspace_symbols, { desc = 'Search Symbols (workspace)' })
     vim.keymap.set('n', '<leader>sS', search_workspace_symbols, { desc = 'Search Symbols (workspace)' })
