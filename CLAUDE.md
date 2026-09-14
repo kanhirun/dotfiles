@@ -68,7 +68,7 @@ The rules that matter most when editing this config:
 - **A chord is an alias, never a sole address.** Chords are invisible — nothing on
   screen reveals them. Each one binds the *same function object* as its `<leader>`
   twin so the two cannot drift apart. See `telescope.lua`: `<C-k>`/`<leader>ss`,
-  `<C-l>`/`<leader>sS`, `<C-p>` and `<C-f>`/`<leader>sf`.
+  `<C-s>`/`<leader>sS`, `<C-p>` and `<C-f>`/`<leader>sf`.
 - **Shift widens scope, and means nothing else.** `<leader>ss` document →
   `<leader>sS` workspace; `<leader>sx` buffer diagnostics → `<leader>sX` project.
 - **Legacy control bytes only.** Zellij sits between the terminal and Neovim, so a

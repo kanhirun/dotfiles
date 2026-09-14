@@ -107,7 +107,7 @@ return {
         map('gi', require('telescope.builtin').lsp_implementations, '[G]oto [I]mplementation')
         map('gd', require('telescope.builtin').lsp_definitions, '[G]oto [D]efinition')
         -- Document and workspace symbols live at <leader>ss / <leader>sS in
-        -- telescope.lua, alongside their <C-k>/<C-l> chords. They used to be
+        -- telescope.lua, alongside their <C-k>/<C-s> chords. They used to be
         -- bound here too, calling the same builtins with no options -- so the
         -- same key family returned filtered or unfiltered results depending on
         -- which address you happened to use.

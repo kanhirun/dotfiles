@@ -397,9 +397,15 @@ return {
     -- <leader>gs/<leader>gS to the same builtins with no options at all -- the
     -- same capability, silently unfiltered, at a third and fourth address.
     -- Those are deleted; these four are the only symbol entry points.
+    --
+    -- <C-s> for the workspace: s as in symbol, the same letter the <leader>
+    -- twins carry. It was <C-l>, which is also Vim's redraw and oil's refresh,
+    -- so the move gives a mnemonic and frees a chord that had two other jobs.
+    -- Terminals send <C-s> as byte 0x13, and Neovim's TUI turns off XON/XOFF
+    -- flow control, so it arrives through Zellij like the other chords.
     vim.keymap.set('n', '<C-k>', search_document_symbols, { desc = 'Search Symbols (document)' })
     vim.keymap.set('n', '<leader>ss', search_document_symbols, { desc = 'Search Symbols (document)' })
-    vim.keymap.set('n', '<C-l>', search_workspace_symbols, { desc = 'Search Symbols (workspace)' })
+    vim.keymap.set('n', '<C-s>', search_workspace_symbols, { desc = 'Search Symbols (workspace)' })
     vim.keymap.set('n', '<leader>sS', search_workspace_symbols, { desc = 'Search Symbols (workspace)' })
 
     -- gd lives in lsp.lua's LspAttach handler, buffer-local. It was bound here
