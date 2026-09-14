@@ -34,6 +34,13 @@ return {
       -- explorer already showing in this tab, the press hides it instead of
       -- stacking a second split beside the first.
       --
+      -- The explorer is a drawer, not a second page. A plain vsplit would halve
+      -- the window, and a directory listing needs nothing like that: file names
+      -- fit in a narrow column, and the file being edited is what the width is
+      -- for. So the split is opened at a fixed width and pinned with
+      -- winfixwidth, so opening or closing other windows does not re-equalize
+      -- it back to a half.
+      --
       -- Hiding closes the explorer's window, so the file it sat beside takes the
       -- space back. The one exception is an explorer that is the only editor
       -- window on screen -- bare `-` over the file, say, with Claude's pane
@@ -45,10 +52,12 @@ return {
       -- it first steps to an editor window (config/panes.lua), the same as <C-p>
       -- and <C-j>: split in place, the explorer would open inside the pane and a
       -- picked file would land there too. The pane is then resized to half the
-      -- screen so the explorer and the file have room beside it. Insert and
+      -- screen so the drawer and the file have room beside it. Insert and
       -- visual mode are left before the split, since the explorer is a buffer
       -- to be read and edited in Normal mode. Hiding touches none of that: the
       -- mode and the window the press came from are left as they were.
+      local DRAWER_WIDTH = 30
+
       local function is_ordinary_window(win)
         return vim.api.nvim_win_get_config(win).zindex == nil
       end
@@ -96,7 +105,8 @@ return {
         vim.cmd.stopinsert()
         local panes = require('config.panes')
         local from_pane = panes.leave_terminal_window()
-        vim.cmd('leftabove vsplit | Oil')
+        vim.cmd(('leftabove %dvsplit | Oil'):format(DRAWER_WIDTH))
+        vim.wo.winfixwidth = true
         if from_pane then
           panes.balance_panes()
         end
