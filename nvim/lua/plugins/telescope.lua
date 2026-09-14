@@ -338,7 +338,12 @@ return {
 
     -- Kinds worth jumping to. Telescope lowercases these before comparing, so
     -- they match the LSP kind names; drop the list to get everything back.
-    local SYMBOL_KINDS = { 'function', 'method', 'class', 'struct', 'interface' }
+    --
+    -- `constant` is what the server calls it, and servers differ on when they
+    -- do: gopls and lua_ls report `const` as constant, ts_ls reports a
+    -- top-level `const` as variable and keeps constant for enum-like cases.
+    -- `variable` is left out on purpose, since it would bring every `let` in.
+    local SYMBOL_KINDS = { 'function', 'method', 'class', 'struct', 'interface', 'constant' }
 
     -- Paths git knows about, absolute. nil when cwd isn't a repo, meaning
     -- "don't filter". --others plus --exclude-standard makes the union of
