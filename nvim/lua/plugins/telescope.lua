@@ -441,8 +441,11 @@ return {
     end
 
     -- Servers index the vendored and generated trees git ignores, so the symbol
-    -- list needs the filter the file pickers get for free from rg. Symbols
-    -- outside the repo (stdlib, installed deps) aren't gitignored and stay.
+    -- list needs the filter the file pickers get for free from rg. Anything
+    -- outside the repo is dropped too: gopls is told symbolScope=workspace in
+    -- lsp.lua, but other servers still answer with stdlib and installed deps
+    -- (pyright's site-packages under ~/.pyenv, say), and the picker is meant
+    -- to cover the project, not the toolchain.
     --
     -- The path set is gathered here rather than inside the finder: the dynamic
     -- finder runs in plenary's async context, where a blocking wait isn't safe.
@@ -458,7 +461,7 @@ return {
           return entry
         end
         local abs = vim.fs.normalize(entry.filename)
-        if vim.startswith(abs, git.root .. '/') and not git.paths[abs] then
+        if not vim.startswith(abs, git.root .. '/') or not git.paths[abs] then
           return nil
         end
         return entry

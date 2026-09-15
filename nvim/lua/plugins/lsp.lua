@@ -269,6 +269,11 @@ return {
             staticcheck = true,
             -- Telescope's workspace-symbol picker leans on this
             symbolMatcher = 'fuzzy',
+            -- The default, "all", also searches every loaded dependency and
+            -- the standard library, so <leader>sS filled with symbols from
+            -- GOROOT under ~/.goenv and the module cache. "workspace" limits
+            -- the search to the packages in the open workspace folders.
+            symbolScope = 'workspace',
             analyses = {
               nilness = true,
               unusedparams = true,
