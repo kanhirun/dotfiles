@@ -19,11 +19,21 @@ return {
   --=======================
 
   config = function()
+    local actions = require 'telescope.actions'
     require('telescope').setup {
       defaults = {
         -- `%.git/` needs the slash: `.github/` must stay in. It is only
         -- reached now that find_files walks hidden files (see find_files below).
         file_ignore_patterns = { 'node_modules', 'generated', '%.git/' },
+        -- <C-s> opens the pick in a vertical split, the key oil.lua gives the
+        -- same action, so both listings split the same way. Telescope's own
+        -- <C-v> stays. The picker's buffer-local map wins over the global
+        -- <C-s> workspace-symbols chord while a picker is open. Both modes,
+        -- since a pick is made from either.
+        mappings = {
+          i = { ['<C-s>'] = actions.select_vertical },
+          n = { ['<C-s>'] = actions.select_vertical },
+        },
       },
       extensions = {
         ['ui-select'] = {
