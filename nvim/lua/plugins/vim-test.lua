@@ -4,6 +4,13 @@ return {
   {
     "vim-test/vim-test",
     config = function()
+      -- vim-test picks the Go runner per buffer: a file importing
+      -- github.com/onsi/ginkgo runs under `ginkgo`, anything else under
+      -- `go test`. Ginkgo prints a dot per spec by default; -v prints each
+      -- spec's full Describe/Context/It path instead, which is the point of
+      -- writing them that way.
+      vim.g['test#go#ginkgo#options'] = '-v'
+
       -- Grouped under <leader>t rather than four bare leader letters. The old
       -- layout put a complete mapping on <leader>s and <leader>t while
       -- <leader>sd and <leader>th also existed, so both keys had to wait out
