@@ -21,16 +21,19 @@ return {
           vim.keymap.set(mode, keys, func, { buffer = event.buf, desc = 'LSP: ' .. desc })
         end
 
-        -- `x` is the diagnostic, everywhere it appears: ]x/[x move between them,
+        -- `x` is the diagnostic, everywhere it appears: g]/g[ move between them,
         -- <leader>sx lists them (telescope.lua), <leader>rx fixes the one under
         -- the cursor. Learn the noun once and the three addresses follow.
         --
-        -- Brackets rather than g]/g[: [ and ] are adjacent because previous and
-        -- next are adjacent, so the shape carries the direction and the letter
-        -- only has to name the list. Neovim 0.11+ also ships ]d/[d as defaults;
-        -- those still work, they just aren't the address this config teaches.
-        map(']x', vim.diagnostic.goto_next, 'Next Diagnostic')
-        map('[x', vim.diagnostic.goto_prev, 'Previous Diagnostic')
+        -- g]/g[ rather than ]x/[x: the `g` namespace is where this config's
+        -- go-to motions live (gd, gr, gi), so "go to the next problem" reads as
+        -- one more of them, and the bracket still carries the direction. This
+        -- shadows Vim's default g] (:tselect on the word under the cursor),
+        -- which has no job here because the LSP owns definitions. Neovim 0.11+
+        -- also ships ]d/[d as defaults; those still work, they just aren't the
+        -- address this config teaches.
+        map('g]', vim.diagnostic.goto_next, 'Next Diagnostic')
+        map('g[', vim.diagnostic.goto_prev, 'Previous Diagnostic')
 
         -- <leader>r is Refactor. Every member changes the code rather than
         -- navigating it, which is what keeps it out of the bare `g` namespace.
