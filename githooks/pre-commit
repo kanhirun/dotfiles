@@ -44,8 +44,18 @@ fi
 # --- Neovim: the config must actually start -------------------------------
 # Syntax-clean files can still fail at load (a bad option, a missing require).
 # Errors surface on stderr; lazy.nvim's own progress output does not.
+#
+# The tree under test is made the config directory, not just the init file.
+# `-u nvim/init.lua` alone resolves every require() against the runtime path,
+# which is ~/.config/nvim -- the live checkout -- so from a worktree, or with a
+# new module in the commit, the init file gets tested against someone else's
+# lua/ and either passes by accident or fails for a module that is right there.
+# Plugins still come from the real data directory.
 if command -v nvim >/dev/null && [ -f nvim/init.lua ]; then
-  out=$(nvim --headless -u nvim/init.lua -c 'qa!' 2>&1 || true)
+  xdg=$(mktemp -d)
+  ln -s "$(pwd)/nvim" "$xdg/nvim"
+  out=$(XDG_CONFIG_HOME="$xdg" nvim --headless -c 'qa!' 2>&1 || true)
+  rm -rf "$xdg"
   if printf '%s' "$out" | grep -qE 'E[0-9]+:|Error executing|stack traceback'; then
     printf '%s\n' "$out" >&2
     fail 'neovim config failed to load'
