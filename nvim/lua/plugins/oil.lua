@@ -127,13 +127,17 @@ return {
         open_oil_beside()
       end
       vim.keymap.set('n', '<leader>-', toggle_oil_beside, { desc = 'Toggle File Explorer (left split)' })
-      -- The chord twin, binding the same function. <C-a> is byte 0x01, so it
-      -- arrives through Zellij with no kitty keyboard protocol support. It
-      -- costs Vim's increment in Normal mode and readline's beginning-of-line
-      -- inside the panes (Home still works there). <C-[> could not serve:
-      -- it is byte 0x1B, the same byte as <Esc>, so binding it would rebind
-      -- Escape itself.
-      vim.keymap.set({ 'n', 'i', 'v', 'x', 't' }, '<C-a>', toggle_oil_beside, { desc = 'Toggle File Explorer (left split)' })
+      -- The chord twin, binding the same function. <C-q> is byte 0x11, so it
+      -- needs no kitty keyboard protocol support. It is XON, but Neovim's TUI
+      -- turns off flow control, so it arrives like <C-s> does. It costs Vim's
+      -- alternative to <C-v> (blockwise Visual in Normal mode, literal insert
+      -- in Insert mode) and readline's quoted-insert inside the panes. Zellij
+      -- binds Ctrl-q to quit by default; that binding has to be removed in
+      -- the Zellij config or the chord never gets this far.
+      --
+      -- It was <C-a>, which is now unbound: that gave back Vim's increment
+      -- and readline's beginning-of-line in the panes.
+      vim.keymap.set({ 'n', 'i', 'v', 'x', 't' }, '<C-q>', toggle_oil_beside, { desc = 'Toggle File Explorer (left split)' })
     end
   }
 }

@@ -73,15 +73,15 @@ The rules that matter most when editing this config:
   `<leader>sS` workspace; `<leader>sx` buffer diagnostics → `<leader>sX` project.
 - **Legacy control bytes only.** Zellij sits between the terminal and Neovim, so a
   chord must survive without kitty keyboard protocol support: `<C-Space>` (NUL),
-  `<C-]>` (0x1D), `<C-a>` (0x01). Note that **`<C-[>` is byte 0x1B — it *is* `<Esc>`**
+  `<C-]>` (0x1D), `<C-q>` (0x11). Note that **`<C-[>` is byte 0x1B — it *is* `<Esc>`**
   and cannot be bound independently.
 
 Namespaces in use: `<leader>s` search · `<leader>r` refactor · `<leader>t` test/toggle ·
 `<leader>g` git · `<leader>c` Claude. `<C-]>` toggles Claude and `<C-Space>` toggles a
 terminal, both from any mode; with a visual selection, `<C-]>` sends it to Claude
 instead. Only one of those two panes is ever open: showing either hides the other (a
-`BufWinEnter` rule in `terminal.lua`). `<C-a>` toggles oil in a split beside the current
-buffer (twin of `<leader>-`). `<C-f>`, `<C-j>` and `<C-a>` reach from inside both panes
+`BufWinEnter` rule in `terminal.lua`). `<C-q>` toggles oil in a split beside the current
+buffer (twin of `<leader>-`). `<C-f>`, `<C-j>` and `<C-q>` reach from inside both panes
 and step to an editor window first (`config/panes.lua`), so a picked file or directory
 never replaces a pane; from inside a pane they also move it to the right half of the
 screen, so the file and the pane share it 50/50 side by side. Claude is already on the
