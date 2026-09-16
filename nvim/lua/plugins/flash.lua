@@ -17,6 +17,14 @@ return {
     -- window-wide. `S` only reaches the nodes enclosing the cursor.
     { "s", mode = { "n", "x", "o" }, function() require("flash").treesitter_search() end, desc = "Flash Treesitter Search" },
     { "S", mode = { "n", "x", "o" }, function() require("flash").treesitter() end, desc = "Flash Treesitter" },
+    -- Labels every foldable node in the window; the pick becomes a manual
+    -- fold (config/fold_pick.lua). Bare `z` is vim's fold prefix, so this
+    -- sits inside it. Shadows zs, horizontal scroll, which only matters
+    -- with nowrap.
+    { "zs", mode = "n", function() require("config.fold_pick").pick("node") end, desc = "Fold Pick" },
+    -- Shift widens scope: zs folds one node, zS folds every node at the
+    -- picked nesting level. Labels are digits, so `3` reads as "level 3".
+    { "zS", mode = "n", function() require("config.fold_pick").pick("level") end, desc = "Fold Pick Level" },
     -- { "r", mode = "o", function() require("flash").remote() end, desc = "Remote Flash" },
     -- { "<c-s>", mode = { "c" }, function() require("flash").toggle() end, desc = "Toggle Flash Search" },
   },

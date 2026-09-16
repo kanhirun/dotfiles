@@ -24,7 +24,8 @@ vim.opt.exrc = true
 vim.opt.secure = true
 
 -- Folding settings
-vim.opt.foldmethod = "indent"
+-- manual: folds exist only where fold_pick (zs) creates them.
+vim.opt.foldmethod = "manual"
 vim.opt.foldenable = false
 
 -- ================ UI Configuration =========================
