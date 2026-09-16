@@ -75,14 +75,14 @@ return {
       })
     end,
     keys = {
-      -- Mirrors <C-\> in claudecode.lua: bound in every mode including `t`,
+      -- Mirrors <C-]> in claudecode.lua: bound in every mode including `t`,
       -- so the chord that opens the terminal also closes it from inside.
       -- Pressed from inside Claude's pane, it swaps the panes: the BufWinEnter
       -- rule above hides Claude as the shell appears.
       --
       -- <C-Space> echoes the Space leader and is unclaimed by Vim, blink.cmp,
-      -- oil, fugitive and telescope. Terminals send it as NUL, so like <C-\>'s
-      -- 0x1C it survives terminal mode with no kitty keyboard protocol support.
+      -- oil, fugitive and telescope. Terminals send it as NUL, so like <C-]>'s
+      -- 0x1D it survives terminal mode with no kitty keyboard protocol support.
       {
         "<C-Space>",
         -- term_normal = false deletes snacks' own <Esc> handler for THIS terminal,

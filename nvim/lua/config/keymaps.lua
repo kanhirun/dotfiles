@@ -7,9 +7,6 @@ vim.keymap.set('n', '//', ':noh<CR>', { silent = true })
 vim.keymap.set('n', '0', '^', { noremap = true })
 vim.keymap.set('n', '^', '0', { noremap = true })
 
--- Move past quotes in insert mode
-vim.keymap.set('i', '<C-a>', '<Esc>wa', { noremap = true })
-
 -- ================ Terminal Escape =======================
 -- Esc leaves terminal mode, which costs less than it looks like it should.
 -- Snacks installs its own <Esc> on its terminals BUFFER-LOCALLY -- a 200ms

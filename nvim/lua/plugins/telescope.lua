@@ -62,7 +62,7 @@ return {
     --
     -- Pickers launched from inside the shell or Claude's pane step to an editor
     -- window first and rebalance the panes once a file is picked. Shared with
-    -- oil's <C-]> in oil.lua, so both reach from a pane the same way.
+    -- oil's <C-a> in oil.lua, so both reach from a pane the same way.
     local panes = require('config.panes')
 
     -- `hidden` walks dotfiles too: `.github/workflows`, `.envrc`, `.zshrc`.
@@ -86,7 +86,7 @@ return {
 
     -- <C-f> is the file chord: f is the noun's letter, the same one <leader>ff
     -- carries. It replaced <C-p>, which used to open the recent-files picker
-    -- and is now unbound outside the completion menu. Every mode, like <C-]>
+    -- and is now unbound outside the completion menu. Every mode, like <C-a>
     -- and <C-Space>, and `t` is the one that matters: it makes the chord
     -- reach from inside the shell and Claude's pane, which otherwise swallow
     -- it (readline forward-char, which Right also does). Both addresses bind

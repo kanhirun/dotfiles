@@ -56,14 +56,13 @@ return {
       { "<leader>c", nil, desc = "AI/Claude Code" },
       { "<leader>cc", "<cmd>ClaudeCode<cr>", desc = "Toggle Claude" },
       -- Toggles the pane from every mode, including from inside it, and sends
-      -- the selection when there is one. <C-\>'s only built-ins are the
-      -- <C-\><C-n> / <C-\><C-o> mode escapes, which the t-mode <Esc> in
-      -- config/keymaps.lua already covers for plain terminals; Snacks' own
-      -- double-tap <Esc> covers this pane. Audited free of oil, fugitive,
-      -- telescope and blink.cmp too. Terminals send it as 0x1C, so it needs no
-      -- kitty keyboard protocol support.
+      -- the selection when there is one. <C-]>'s only built-in is the ctags
+      -- jump, and navigation here is entirely LSP with no tags file anywhere,
+      -- so nothing is given up. Audited free of oil, fugitive, telescope and
+      -- blink.cmp too. Terminals send it as 0x1D, so it needs no kitty
+      -- keyboard protocol support.
       {
-        "<C-\\>",
+        "<C-]>",
         toggle_claude_or_send,
         mode = { "n", "i", "v", "x", "t" },
         desc = "Toggle Claude (or send selection)",

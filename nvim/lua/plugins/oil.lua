@@ -118,13 +118,13 @@ return {
         end
       end
       vim.keymap.set('n', '<leader>-', toggle_oil_beside, { desc = 'Toggle File Explorer (left split)' })
-      -- The chord twin, binding the same function. <C-]> is byte 0x1D, so it
-      -- arrives through Zellij with no kitty keyboard protocol support. Its only
-      -- built-in is the ctags jump, and navigation here is entirely LSP with no
-      -- tags file anywhere, so nothing is given up. <C-[> could not serve here:
+      -- The chord twin, binding the same function. <C-a> is byte 0x01, so it
+      -- arrives through Zellij with no kitty keyboard protocol support. It
+      -- costs Vim's increment in Normal mode and readline's beginning-of-line
+      -- inside the panes (Home still works there). <C-[> could not serve:
       -- it is byte 0x1B, the same byte as <Esc>, so binding it would rebind
       -- Escape itself.
-      vim.keymap.set({ 'n', 'i', 'v', 'x', 't' }, '<C-]>', toggle_oil_beside, { desc = 'Toggle File Explorer (left split)' })
+      vim.keymap.set({ 'n', 'i', 'v', 'x', 't' }, '<C-a>', toggle_oil_beside, { desc = 'Toggle File Explorer (left split)' })
     end
   }
 }
