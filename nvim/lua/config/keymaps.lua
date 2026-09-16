@@ -17,5 +17,14 @@ vim.keymap.set('n', '^', '0', { noremap = true })
 -- everywhere as well.
 vim.keymap.set('t', '<Esc>', '<C-\\><C-n>', { desc = 'Go to Normal mode' })
 
+-- ================ Suspend ===============================
+-- <C-z> suspends Neovim from every mode, as it already does in Normal. Unmapped
+-- in terminal mode it is forwarded to the job, and Claude Code answers 0x1A by
+-- SIGTSTP-ing itself -- with no shell on that PTY to `fg` it, the pane just
+-- goes dead. Insert mode has no default for it since 'insertmode' was removed.
+-- Global, so it also covers Claude's pane and the shell: neither Snacks nor
+-- claudecode binds the key buffer-locally.
+vim.keymap.set({ 'i', 't' }, '<C-z>', '<Cmd>suspend<CR>', { desc = 'Suspend Neovim' })
+
 -- ================ Custom Commands =======================
 vim.api.nvim_create_user_command('Projections', 'edit .projections.json', {})
