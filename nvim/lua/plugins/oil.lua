@@ -112,7 +112,13 @@ return {
         end
       end
 
+      -- Pressed from inside the drawer it does nothing: the chord is muscle
+      -- memory for "get me to oil", and closing the drawer under the cursor
+      -- when it already has focus is the one outcome that is never wanted.
       local function toggle_oil_beside()
+        if vim.bo.filetype == 'oil' then
+          return
+        end
         if not hide_oil() then
           open_oil_beside()
         end
