@@ -65,9 +65,10 @@ return {
         return is_ordinary_window(win)
           and vim.bo[vim.api.nvim_win_get_buf(win)].buftype ~= 'terminal'
       end
+      -- Only the drawer counts. Oil opened into a regular window with :Oil or
+      -- `-` is a buffer being browsed, and the toggle leaves it alone.
       local function is_oil_window(win)
-        return is_ordinary_window(win)
-          and vim.bo[vim.api.nvim_win_get_buf(win)].filetype == 'oil'
+        return is_ordinary_window(win) and vim.w[win].oil_drawer == true
       end
 
       local function hide_oil()
@@ -107,21 +108,23 @@ return {
         local from_pane = panes.leave_terminal_window()
         vim.cmd(('leftabove %dvsplit | Oil'):format(DRAWER_WIDTH))
         vim.wo.winfixwidth = true
+        vim.w.oil_drawer = true
         if from_pane then
           panes.balance_panes()
         end
       end
 
-      -- Pressed from inside the drawer it does nothing: the chord is muscle
-      -- memory for "get me to oil", and closing the drawer under the cursor
-      -- when it already has focus is the one outcome that is never wanted.
+      -- Closes the drawer if one is open, from inside it too. Otherwise opens
+      -- one, unless the cursor is already in an oil buffer filling a regular
+      -- window, where a drawer beside it would be oil next to oil: no-op.
       local function toggle_oil_beside()
+        if hide_oil() then
+          return
+        end
         if vim.bo.filetype == 'oil' then
           return
         end
-        if not hide_oil() then
-          open_oil_beside()
-        end
+        open_oil_beside()
       end
       vim.keymap.set('n', '<leader>-', toggle_oil_beside, { desc = 'Toggle File Explorer (left split)' })
       -- The chord twin, binding the same function. <C-a> is byte 0x01, so it
