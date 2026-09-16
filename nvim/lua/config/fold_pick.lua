@@ -13,19 +13,16 @@ local M = {}
 ---@field col number    column the label sits at
 ---@field depth number  how many other foldable nodes enclose it, buffer-wide
 
+-- Every foldable node in the buffer, with its depth. Buffer-wide for two
+-- reasons: depth stays the same however far you have scrolled into a
+-- function, and the level picker folds a level across the whole file, not
+-- just the part of it in view.
 ---@return FoldPick.Candidate[]
-function M.candidates(win)
-  -- line() treats winid 0 as "no such window", not "current window".
-  win = win == 0 and vim.api.nvim_get_current_win() or win
-  local buf = vim.api.nvim_win_get_buf(win)
+function M.all_candidates(buf)
   local ok, parser = pcall(vim.treesitter.get_parser, buf)
   if not (ok and parser) then
     return {}
   end
-  local top, bot = vim.fn.line("w0", win), vim.fn.line("w$", win)
-
-  -- Ranges are collected for the whole buffer, not just the window, so depth
-  -- stays the same however far you have scrolled into a function.
   parser:parse(true)
   local all, seen = {}, {} ---@type FoldPick.Candidate[], table<string, boolean>
   parser:for_each_tree(function(tstree, tree)
@@ -58,6 +55,17 @@ function M.candidates(win)
       end
     end
   end
+  return all
+end
+
+-- The candidates whose start line is on screen in the window: the ones that
+-- can carry a label.
+---@return FoldPick.Candidate[]
+function M.candidates(win)
+  -- line() treats winid 0 as "no such window", not "current window".
+  win = win == 0 and vim.api.nvim_get_current_win() or win
+  local all = M.all_candidates(vim.api.nvim_win_get_buf(win))
+  local top, bot = vim.fn.line("w0", win), vim.fn.line("w$", win)
 
   local out = {} ---@type FoldPick.Candidate[]
   vim.api.nvim_win_call(win, function()
@@ -82,6 +90,7 @@ local function to_match(win, it, label)
     label = label,
     highlight = false,
     fold_last = it.last,
+    fold_depth = it.depth,
   }
 end
 
@@ -159,31 +168,53 @@ function M.fold(match)
   end)
 end
 
--- Folds every node sharing the picked label. All closed already means open
--- them all; anything else means close them all, so one press never leaves a
--- level half-folded.
+-- Folds every node in the buffer at the picked label's depth, not only the
+-- ones that were on screen to be labelled. All the visible ones closed
+-- already means open the level; anything else means close it, so one press
+-- never leaves a level half-folded. Only the visible ones vote because a node
+-- hidden inside a closed ancestor cannot report its own state.
 function M.fold_level(match, state)
   local group = {}
-  for _, m in ipairs(state.results) do
-    if m.label == match.label then
-      group[#group + 1] = m
+  for _, c in ipairs(M.all_candidates(vim.api.nvim_win_get_buf(match.win))) do
+    if c.depth == match.fold_depth then
+      group[#group + 1] = c
     end
   end
   in_win(match.win, function()
     local all_closed = true
-    for _, m in ipairs(group) do
-      if vim.fn.foldclosed(m.pos[1]) ~= m.pos[1] then
+    for _, m in ipairs(state.results) do
+      if m.label == match.label and vim.fn.foldclosed(m.pos[1]) ~= m.pos[1] then
         all_closed = false
         break
       end
     end
+    local how = all_closed and "open" or "close"
+
     -- Innermost first: closing an outer fold hides the inner start lines,
     -- and :fold on a hidden line would attach to the wrong fold.
     table.sort(group, function(a, b)
-      return a.pos[1] > b.pos[1]
+      return a.first > b.first
     end)
-    for _, m in ipairs(group) do
-      fold_lines(m.pos[1], m.fold_last, all_closed and "open" or "close")
+
+    -- An Ex range that falls inside a closed fold is silently widened to the
+    -- whole fold, so a node hidden under a closed ancestor cannot be folded
+    -- or opened in place. Each closed ancestor is opened first and noted;
+    -- they are all closed again afterwards, innermost first, since closing an
+    -- outer one would hide the line the inner one is closed by.
+    local reopened = {}
+    for _, c in ipairs(group) do
+      while true do
+        local closed = vim.fn.foldclosed(c.first)
+        if closed == -1 or closed == c.first then
+          break
+        end
+        vim.cmd(("%dfoldopen"):format(closed))
+        reopened[#reopened + 1] = closed
+      end
+      fold_lines(c.first, c.last, how)
+    end
+    for i = #reopened, 1, -1 do
+      vim.cmd(("%dfoldclose"):format(reopened[i]))
     end
   end)
 end
