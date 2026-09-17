@@ -5,19 +5,24 @@ return {
   opts = {
     modes = {
       -- `f` and `F` are the jumps below, so flash must not also claim them for
-      -- its enhanced f/t motions. The rest keep their labels; `;`/`,` repeat them.
+      -- its enhanced f/t motions. `t`/`T` stay: their off-by-one landing is what
+      -- makes `dt,` work, and no labelled jump reproduces it. `;`/`,` repeat them.
       char = { keys = { "t", "T", ";", "," } },
     },
   },
   keys = {
-    -- Shadows vim's f. Flash's jump is find-by-characters across the window,
-    -- so the one-line `f{char}` is a special case of it.
+    -- An enhancement, not a replacement: vim's `f` means "move to text I name"
+    -- and so does this. It reaches the window instead of the line and labels the
+    -- candidates instead of making you repeat `;`. Nothing about `f` became false.
     { "f", mode = { "n", "x", "o" }, function() require("flash").jump() end, desc = "Flash" },
-    -- Same find, one scope wider: the pattern still matches characters, but the
-    -- label lands on a treesitter node enclosing the match, window-wide. Shadows
-    -- vim's F, which `f` already subsumes -- backwards-find-on-this-line is a
-    -- special case of find-by-characters across the whole window.
-    { "F", mode = { "n", "x", "o" }, function() require("flash").treesitter_search() end, desc = "Flash Treesitter Search" },
+    -- Same find, one scope wider: `f` names a position by the characters at it,
+    -- `F` names the structure around it. There is no pattern to type -- the
+    -- labels are on screen the moment it fires, one per treesitter node
+    -- enclosing the cursor, and the pick selects that node.
+    -- This one IS a replacement -- vim's F meant backwards-find-on-this-line --
+    -- and it is only affordable because the bidirectional `f` above already
+    -- absorbed that job, so the capability moved rather than disappeared.
+    { "F", mode = { "n", "x", "o" }, function() require("flash").treesitter() end, desc = "Flash Treesitter" },
     -- No pattern: labels only the nodes enclosing the cursor.
     { "S", mode = { "n", "x", "o" }, function() require("flash").treesitter() end, desc = "Flash Treesitter" },
     -- Labels every foldable node in the window; the pick becomes a manual

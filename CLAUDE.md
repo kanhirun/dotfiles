@@ -90,7 +90,18 @@ The rules that matter most when editing this config:
   twin so the two cannot drift apart. See `telescope.lua`: `<C-k>`/`<leader>ss`,
   `<C-s>`/`<leader>sS`, `<C-f>`/`<leader>ff`.
 - **Shift widens scope, and means nothing else.** `<leader>ss` document →
-  `<leader>sS` workspace; `<leader>sx` buffer diagnostics → `<leader>sX` project.
+  `<leader>sS` workspace; `<leader>sx` buffer diagnostics → `<leader>sX` project. Bare
+  `f` finds by text, `F` finds the text object enclosing the match — same pattern, one
+  scope wider.
+- **Shadow freely to enhance, deliberately to replace.** An *enhancement* keeps a vim
+  key's meaning and widens its reach: flash on `f` still means "move to text I name," so
+  nothing you knew about `f` became false and no justification is owed. A *replacement*
+  puts a different meaning on the key, costs a default, and owes an account of where
+  that job went — `F` is a replacement, acceptable only because bidirectional
+  window-wide `f` already absorbed backwards-find-on-this-line. `t` and `T` are left
+  alone because nothing else does their job. Record which kind a change is.
+- **A bare key is not vacant real estate.** Leaving a slot to vim is a legitimate
+  outcome; `s` is unbound on purpose.
 - **Legacy control bytes only.** Zellij sits between the terminal and Neovim, so a
   chord must survive without kitty keyboard protocol support: `<C-Space>` (NUL),
   `<C-]>` (0x1D), `<C-q>` (0x11). Note that **`<C-[>` is byte 0x1B — it *is* `<Esc>`**
