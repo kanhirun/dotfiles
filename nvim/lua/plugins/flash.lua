@@ -4,18 +4,21 @@ return {
   ---@type Flash.Config
   opts = {
     modes = {
-      -- `f` is the jump below, so flash must not also claim it for its
-      -- enhanced f/t motions. The others keep their labels; `;`/`,` repeat them.
-      char = { keys = { "F", "t", "T", ";", "," } },
+      -- `f` and `F` are the jumps below, so flash must not also claim them for
+      -- its enhanced f/t motions. The rest keep their labels; `;`/`,` repeat them.
+      char = { keys = { "t", "T", ";", "," } },
     },
   },
   keys = {
     -- Shadows vim's f. Flash's jump is find-by-characters across the window,
     -- so the one-line `f{char}` is a special case of it.
     { "f", mode = { "n", "x", "o" }, function() require("flash").jump() end, desc = "Flash" },
-    -- Type a pattern; every treesitter node enclosing each match gets a label,
-    -- window-wide. `S` only reaches the nodes enclosing the cursor.
-    { "s", mode = { "n", "x", "o" }, function() require("flash").treesitter_search() end, desc = "Flash Treesitter Search" },
+    -- Same find, one scope wider: the pattern still matches characters, but the
+    -- label lands on a treesitter node enclosing the match, window-wide. Shadows
+    -- vim's F, which `f` already subsumes -- backwards-find-on-this-line is a
+    -- special case of find-by-characters across the whole window.
+    { "F", mode = { "n", "x", "o" }, function() require("flash").treesitter_search() end, desc = "Flash Treesitter Search" },
+    -- No pattern: labels only the nodes enclosing the cursor.
     { "S", mode = { "n", "x", "o" }, function() require("flash").treesitter() end, desc = "Flash Treesitter" },
     -- Labels every foldable node in the window; the pick becomes a manual
     -- fold (config/fold_pick.lua). Bare `z` is vim's fold prefix, so this
