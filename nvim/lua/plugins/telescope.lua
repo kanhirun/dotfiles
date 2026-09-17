@@ -97,114 +97,70 @@ return {
     vim.keymap.set({ 'n', 'i', 'v', 'x', 't' }, '<C-f>', find_files, { desc = 'Find Files' })
     vim.keymap.set('n', '<leader>ff', find_files, { desc = 'Find Files' })
 
-    -- Files worth resuming: recent files first, uncommitted changes after.
-    -- One flat list so an empty prompt keeps that order and typing fuzzy-matches both.
-    local RECENT_LIMIT = 5
-
-    -- Git's two-char porcelain code doubles as the source marker; recent files
-    -- get blanks in the same column so the paths stay aligned. Deleted paths
-    -- never reach here, they fail the fs_stat check below.
-    local function status_hl(xy)
-      if xy:find '?' then
-        return 'TelescopeResultsDiffUntracked'
-      elseif xy:find 'A' then
-        return 'TelescopeResultsDiffAdd'
+    -- Files git knows about: tracked, plus the untracked ones it would not
+    -- ignore -- `show_untracked` is what adds the second half, so a file
+    -- created and not yet added still shows up.
+    local function find_git_files()
+      local from_pane = panes.leave_terminal_window()
+      local function attach()
+        if from_pane then
+          require('telescope.actions.set').select:enhance { post = panes.balance_panes }
+        end
+        return true
       end
-      return 'TelescopeResultsDiffChange'
+
+      -- git_files raises outside a work tree, which the dotfiles-adjacent and
+      -- scratch directories are; rg covers those the way <C-f> does.
+      local repo = vim.system({ 'git', 'rev-parse', '--is-inside-work-tree' }, { cwd = vim.uv.cwd(), text = true }):wait()
+      if repo.code ~= 0 then
+        return builtin.find_files { hidden = true, attach_mappings = attach }
+      end
+
+      builtin.git_files { show_untracked = true, attach_mappings = attach }
     end
 
+    -- <C-g> is the git chord: g for git. It held live_grep before, which is
+    -- leader-only now (see <leader>sg below). Every mode, like <C-f>, so it
+    -- reaches from inside the shell and Claude's pane; there it displaces
+    -- readline's abort-line, which <C-c> also does. <C-g> is BEL (0x07), a
+    -- legacy control byte that arrives through Zellij with no kitty keyboard
+    -- protocol support. Normal mode's default <C-g> only prints the file name,
+    -- which the statusline already shows.
+    --
+    -- <leader>fg is the leader twin, and reads as find-git either way round.
+    vim.keymap.set({ 'n', 'i', 'v', 'x', 't' }, '<C-g>', find_git_files, { desc = 'Find Git Files' })
+    vim.keymap.set('n', '<leader>fg', find_git_files, { desc = 'Find Git Files' })
+
+    -- The cwd's recent files, most recent first. options.lua raises the shada
+    -- cap to 1000 precisely so this per-project slice is not starved; there is
+    -- no further limit here, and the fuzzy matcher narrows the rest.
     local function search_recent_files()
       local from_pane = panes.leave_terminal_window()
       local cwd = vim.uv.cwd()
       local results, seen = {}, {}
 
-      -- Returns true when the path was actually added
-      local function add(path, tag, hl)
-        local abs = vim.fs.normalize(path)
-        if seen[abs] or not vim.uv.fs_stat(abs) then
-          return false
-        end
-        seen[abs] = true
-        -- gen_from_file joins relative paths against cwd and displays them as-is
-        local under_cwd = vim.startswith(abs, cwd .. '/')
-        table.insert(results, {
-          value = under_cwd and abs:sub(#cwd + 2) or abs,
-          tag = tag,
-          hl = hl,
-        })
-        return true
-      end
-
-      -- 1. Git status, gathered before anything is added so a recent file that
-      -- is also changed keeps its status marker. Porcelain paths are relative
-      -- to the repo root, and -z avoids the quoting/escaping the
-      -- human-readable format applies.
-      local changed, status_of = {}, {}
-      local root = vim.system({ 'git', 'rev-parse', '--show-toplevel' }, { cwd = cwd, text = true }):wait()
-      if root.code == 0 then
-        local top = vim.trim(root.stdout)
-        local status = vim.system({ 'git', 'status', '--porcelain', '-z' }, { cwd = cwd, text = true }):wait()
-        local fields = vim.split(status.stdout or '', '\0', { trimempty = true })
-        local i = 1
-        while i <= #fields do
-          local xy, path = fields[i]:sub(1, 2), fields[i]:sub(4)
-          i = i + 1
-          if xy:match '[RC]' then
-            i = i + 1 -- renames/copies put the source in the following field
-          end
-          if not path:match '/$' then -- untracked dirs are listed as a directory, not a file
-            local abs = vim.fs.normalize(top .. '/' .. path)
-            table.insert(changed, abs)
-            status_of[abs] = xy
-          end
-        end
-      end
-
-      -- 2. Recent files, filtered to the cwd
-      local recent = 0
       for _, path in ipairs(vim.v.oldfiles) do
-        if recent >= RECENT_LIMIT then
-          break
-        end
         local abs = vim.fs.normalize(path)
-        if not path:match '%.git/COMMIT_EDITMSG$' and vim.startswith(abs, cwd .. '/') then
-          local xy = status_of[abs]
-          if add(abs, xy or '  ', xy and status_hl(xy) or 'TelescopeResultsComment') then
-            recent = recent + 1
-          end
+        -- oldfiles keeps paths that have since been deleted, hence fs_stat.
+        if
+          not seen[abs]
+          and not path:match '%.git/COMMIT_EDITMSG$'
+          and vim.startswith(abs, cwd .. '/')
+          and vim.uv.fs_stat(abs)
+        then
+          seen[abs] = true
+          -- gen_from_file joins relative paths against cwd and displays them as-is
+          table.insert(results, abs:sub(#cwd + 2))
         end
-      end
-
-      -- 3. The remaining changed files; `add` skips any already listed above.
-      for _, abs in ipairs(changed) do
-        add(abs, status_of[abs], status_hl(status_of[abs]))
-      end
-
-      -- Prefix the marker onto the file entry's own display. Only `display` is
-      -- wrapped, so `ordinal` stays the path and the marker never fuzzy-matches.
-      local make_file_entry = require('telescope.make_entry').gen_from_file { cwd = cwd }
-      local function entry_maker(item)
-        local entry = make_file_entry(item.value)
-        local file_display = entry.display -- resolved off gen_from_file's shared metatable
-        entry.display = function(e)
-          local text, highlights = file_display(e)
-          local prefix = item.tag .. ' '
-          local shifted = { { { 0, #item.tag }, item.hl } }
-          for _, hl in ipairs(highlights or {}) do
-            table.insert(shifted, { { hl[1][1] + #prefix, hl[1][2] + #prefix }, hl[2] })
-          end
-          return prefix .. text, shifted
-        end
-        return entry
       end
 
       local conf = require('telescope.config').values
       require('telescope.pickers')
         .new({}, {
-          prompt_title = 'Recent & Changed',
+          prompt_title = 'Recent Files',
           finder = require('telescope.finders').new_table {
             results = results,
-            entry_maker = entry_maker,
+            entry_maker = require('telescope.make_entry').gen_from_file { cwd = cwd },
           },
           sorter = conf.file_sorter {},
           previewer = conf.file_previewer {},
@@ -225,22 +181,10 @@ return {
         :find()
     end
 
-    -- <C-k> is the recent-files chord. <C-p> used to land here, and <C-g>
-    -- before that; <C-f> spent the file slot on find_files and <C-g> went to
-    -- grep, so this takes the key document symbols held, which are now
-    -- leader-only at <leader>ss. Every mode, like <C-f>, so it reaches from
-    -- inside the shell and Claude's pane; there it displaces readline's
-    -- kill-line, and in insert mode Vim's digraph entry, neither of which
-    -- earns a chord over resuming a file. <C-k> is VT (0x0B), a legacy
-    -- control byte that arrives through Zellij with no kitty keyboard
-    -- protocol support.
-    --
-    -- <leader>fo is the leader twin: it names vim's own `:oldfiles` and
-    -- alternates hands, where `fr` would be the same index finger twice.
-    -- Both addresses bind the same function, so a pick made from inside a
-    -- pane shares the screen with it either way.
-    vim.keymap.set({ 'n', 'i', 'v', 'x', 't' }, '<C-k>', search_recent_files, { desc = 'Find Recent & Changed Files' })
-    vim.keymap.set('n', '<leader>fo', search_recent_files, { desc = 'Find Recent & Changed Files' })
+    -- `fr` names what the picker shows. It was <leader>fo, for vim's own
+    -- `:oldfiles`, back when the list also carried the uncommitted files; it
+    -- had a <C-k> chord too, now unmapped.
+    vim.keymap.set('n', '<leader>fr', search_recent_files, { desc = 'Find Recent Files' })
 
     -- Search directories only; selecting one opens it in oil.nvim.
     -- fd respects .gitignore; the 'find' fallback does not, so it will surface
@@ -398,18 +342,9 @@ return {
       }
     end
 
-    -- <C-g> is the grep chord: g for grep. Every mode, like <C-f>, so it
-    -- reaches from inside the shell and Claude's pane; there it
-    -- displaces readline's abort-line, which <C-c> also does. <C-g> is BEL
-    -- (0x07), a legacy control byte that arrives through Zellij with no
-    -- kitty keyboard protocol support. Normal mode's default <C-g> only
-    -- prints the file name, which the statusline already shows.
-    --
-    -- <leader>fg is the leader twin. By the Find/Search split above it would
-    -- read as <leader>sg, since grep is a content search; `fg` is the address
-    -- muscle memory already carries from the usual telescope setups.
-    vim.keymap.set({ 'n', 'i', 'v', 'x', 't' }, '<C-g>', live_grep, { desc = 'Live Grep' })
-    vim.keymap.set('n', '<leader>fg', live_grep, { desc = 'Live Grep' })
+    -- Leader-only now that <C-g> carries git files, and <leader>sg is where the
+    -- Find/Search split puts it: a grep searches content, not names.
+    vim.keymap.set('n', '<leader>sg', live_grep, { desc = 'Live Grep' })
 
     -- Kinds worth jumping to. Telescope lowercases these before comparing, so
     -- they match the LSP kind names; drop the list to get everything back.
@@ -481,10 +416,7 @@ return {
     -- silently unfiltered, at other addresses. Those are deleted; these three
     -- are the only symbol entry points.
     --
-    -- Document symbols are leader-only. They had <C-k>, which now opens the
-    -- recent-files picker (see <leader>fo above): the chord tier is a fixed
-    -- budget, and resuming a file is reached for more often than the outline
-    -- of the current one.
+    -- Document symbols are leader-only. They had <C-k>, which is now unmapped.
     --
     -- <C-s> for the workspace: s as in symbol, the same letter the <leader>
     -- twins carry. It was <C-l>, which is also Vim's redraw and oil's refresh,
