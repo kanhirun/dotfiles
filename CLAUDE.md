@@ -53,6 +53,26 @@ It is documented in full at:
 
 **[One Noun, Every Verb](https://claude.ai/code/artifact/e66c9011-6cf1-46ca-a8d9-822c6af29120)**
 
+The doc is in two books. **Book One (Theory)** derives the architecture from the
+mechanics of pressing keys and names no plugins. **Book Two (Implementation)** is the
+as-built keymap — every binding actually installed, audited against the theory, with
+deviations stated rather than hidden. Book Two is the authoritative inventory; the
+summary below is orientation only.
+
+> **Maintenance rule — this is not optional.** Any change to a key mapping under
+> `nvim/` is incomplete until the artifact is updated in the same session. Read it with
+> the Artifact tool using the URL above, edit that version, and republish to the same
+> URL. Never publish a second artifact; never let the code change land alone.
+>
+> - A binding added, moved, removed or re-scoped → update Book Two's inventory row.
+> - A binding that does not follow from an axiom → record it in Book Two's deviations,
+>   with the reason. A deviation that is written down is fine; one that is silent is the
+>   failure this whole document exists to prevent.
+> - A new *rule* or a rule that changed → Book One, as an axiom or an amendment to one.
+>   Never state a principle only in this file.
+> - A question you could not settle → Book One, Part VI, as an open fork. Do not guess
+>   and do not leave it out.
+
 The rules that matter most when editing this config:
 
 - **Three tiers.** Bare keys and the `g` / `[` / `]` namespaces are motion. Chords
