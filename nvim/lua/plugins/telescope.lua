@@ -97,10 +97,10 @@ return {
     vim.keymap.set({ 'n', 'i', 'v', 'x', 't' }, '<C-f>', find_files, { desc = 'Find Files' })
     vim.keymap.set('n', '<leader>ff', find_files, { desc = 'Find Files' })
 
-    -- Files git knows about: tracked, plus the untracked ones it would not
-    -- ignore -- `show_untracked` is what adds the second half, so a file
-    -- created and not yet added still shows up.
-    local function find_git_files()
+    -- The files changed in the working tree: modified, staged, and untracked
+    -- but not ignored -- what `git status` reports. git_files was the wrong
+    -- list; it returns every file in the repo, which <C-f> already covers.
+    local function find_git_changes()
       local from_pane = panes.leave_terminal_window()
       local function attach()
         if from_pane then
@@ -109,14 +109,14 @@ return {
         return true
       end
 
-      -- git_files raises outside a work tree, which the dotfiles-adjacent and
+      -- git_status raises outside a work tree, which the dotfiles-adjacent and
       -- scratch directories are; rg covers those the way <C-f> does.
       local repo = vim.system({ 'git', 'rev-parse', '--is-inside-work-tree' }, { cwd = vim.uv.cwd(), text = true }):wait()
       if repo.code ~= 0 then
         return builtin.find_files { hidden = true, attach_mappings = attach }
       end
 
-      builtin.git_files { show_untracked = true, attach_mappings = attach }
+      builtin.git_status { attach_mappings = attach }
     end
 
     -- <C-g> is the git chord: g for git. It held live_grep before, which is
@@ -128,8 +128,8 @@ return {
     -- which the statusline already shows.
     --
     -- <leader>fg is the leader twin, and reads as find-git either way round.
-    vim.keymap.set({ 'n', 'i', 'v', 'x', 't' }, '<C-g>', find_git_files, { desc = 'Find Git Files' })
-    vim.keymap.set('n', '<leader>fg', find_git_files, { desc = 'Find Git Files' })
+    vim.keymap.set({ 'n', 'i', 'v', 'x', 't' }, '<C-g>', find_git_changes, { desc = 'Find Git Changes' })
+    vim.keymap.set('n', '<leader>fg', find_git_changes, { desc = 'Find Git Changes' })
 
     -- The cwd's recent files, most recent first. options.lua raises the shada
     -- cap to 1000 precisely so this per-project slice is not starved; there is
@@ -342,7 +342,7 @@ return {
       }
     end
 
-    -- Leader-only now that <C-g> carries git files, and <leader>sg is where the
+    -- Leader-only now that <C-g> carries git changes, and <leader>sg is where the
     -- Find/Search split puts it: a grep searches content, not names.
     vim.keymap.set('n', '<leader>sg', live_grep, { desc = 'Live Grep' })
 
