@@ -88,9 +88,10 @@ The rules that matter most when editing this config:
 - **A chord is an alias, never a sole address.** Chords are invisible — nothing on
   screen reveals them. Each one binds the *same function object* as its `<leader>`
   twin so the two cannot drift apart. See `telescope.lua`: `<C-k>`/`<leader>ss`,
-  `<C-s>`/`<leader>sS`, `<C-f>`/`<leader>ff`.
+  `<C-s>`/`<leader>sS`, `<C-f>`/`<leader>fF`.
 - **Shift widens scope, and means nothing else.** `<leader>ss` document →
-  `<leader>sS` workspace; `<leader>sx` buffer diagnostics → `<leader>sX` project. Bare
+  `<leader>sS` workspace; `<leader>sx` buffer diagnostics → `<leader>sX` project;
+  `<leader>ff` recent files → `<leader>fF` every file. Bare
   `f` finds by text, `F` finds the text object enclosing the match — same pattern, one
   scope wider.
 - **Shadow freely to enhance, deliberately to replace.** An *enhancement* keeps a vim
