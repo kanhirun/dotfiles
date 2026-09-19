@@ -109,8 +109,8 @@ The rules that matter most when editing this config:
   *is* `<Esc>`** and cannot be bound independently.
 
 Namespaces in use: `<leader>s` search · `<leader>r` refactor · `<leader>t` test/toggle ·
-`<leader>g` git · `<leader>c` Claude. `<C-]>` toggles Claude and `<C-\>` opens a
-terminal in a new tab, both from any mode; with a visual selection, `<C-]>` sends it to
+`<leader>g` git · `<leader>c` Claude. `<C-]>` toggles Claude and `<C-\>` toggles a
+terminal tab, both from any mode; with a visual selection, `<C-]>` sends it to
 Claude instead. `<C-Space>` returns to Normal mode from every mode and is the only way
 out of terminal mode: `<Esc>` is bound nowhere and belongs to the program in every
 terminal, which is what Snacks' buffer-local double-tap on Claude's pane already forced.
