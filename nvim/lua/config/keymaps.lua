@@ -26,5 +26,13 @@ vim.keymap.set('t', '<Esc>', '<C-\\><C-n>', { desc = 'Go to Normal mode' })
 -- claudecode binds the key buffer-locally.
 vim.keymap.set({ 'i', 't' }, '<C-z>', '<Cmd>suspend<CR>', { desc = 'Suspend Neovim' })
 
+-- Shift makes it a different key, not the same one. Ghostty speaks the kitty
+-- keyboard protocol, so Neovim reads <C-S-Z> as its own keycode rather than
+-- folding it into <C-z>, and it has no default binding in any mode -- including
+-- Normal, where plain <C-z> suspends. In terminal mode it is then forwarded to
+-- the job as bare 0x1A, which is the dead-pane case above. Hence every mode
+-- here, not just the two.
+vim.keymap.set({ 'n', 'v', 'o', 'i', 't' }, '<C-S-z>', '<Cmd>suspend<CR>', { desc = 'Suspend Neovim' })
+
 -- ================ Custom Commands =======================
 vim.api.nvim_create_user_command('Projections', 'edit .projections.json', {})
