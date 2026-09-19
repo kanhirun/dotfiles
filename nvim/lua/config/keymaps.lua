@@ -34,5 +34,24 @@ vim.keymap.set({ 'i', 't' }, '<C-z>', '<Cmd>suspend<CR>', { desc = 'Suspend Neov
 -- here, not just the two.
 vim.keymap.set({ 'n', 'v', 'o', 'i', 't' }, '<C-S-z>', '<Cmd>suspend<CR>', { desc = 'Suspend Neovim' })
 
+-- ================ Terminal in a Tab =====================
+-- <C-Space> echoes the Space leader, is unclaimed by vim, blink.cmp, oil,
+-- fugitive and telescope, and terminals send it as NUL, so it survives
+-- terminal mode with no kitty keyboard protocol support. Every mode, like
+-- <C-]>, so it also reaches from inside Claude's pane and from another shell.
+--
+-- A tab, not a pane. Nothing here shares the screen with the editor, so this is
+-- a plain :terminal rather than a Snacks one: it carries no b:snacks_terminal,
+-- the one-pane-at-a-time rule in terminal.lua ignores it, and the global t-mode
+-- <Esc> above governs it. <leader>tt is the twin, bound to the same function.
+local function terminal_tab()
+  vim.cmd.tabnew()
+  vim.cmd.terminal()
+  vim.cmd.startinsert()
+end
+
+vim.keymap.set({ 'n', 'i', 'v', 'x', 't' }, '<C-Space>', terminal_tab, { desc = 'Terminal in a new tab' })
+vim.keymap.set('n', '<leader>tt', terminal_tab, { desc = 'Terminal in a new tab' })
+
 -- ================ Custom Commands =======================
 vim.api.nvim_create_user_command('Projections', 'edit .projections.json', {})
