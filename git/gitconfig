@@ -10,6 +10,7 @@
   s  = status
   st = stash
   ci = commit --verbose
+  p  = push
 
   # Shows the graph of all branches
   ll = log --graph --oneline --decorate=short -30 --no-merges
