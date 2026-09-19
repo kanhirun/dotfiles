@@ -80,15 +80,17 @@ return {
 --       -- Pressed from inside Claude's pane, it swaps the panes: the BufWinEnter
 --       -- rule above hides Claude as the shell appears.
 --       --
---       -- <C-Space> echoes the Space leader and is unclaimed by Vim, blink.cmp,
---       -- oil, fugitive and telescope. Terminals send it as NUL, so like <C-]>'s
---       -- 0x1D it survives terminal mode with no kitty keyboard protocol support.
+--       -- <C-\> is a legacy control byte (0x1C), so like <C-]>'s 0x1D it
+--       -- survives terminal mode with no kitty keyboard protocol support. Note
+--       -- that config/keymaps.lua now binds <C-\> to the terminal-in-a-tab;
+--       -- re-enabling this block needs a different chord.
 --       {
---         "<C-Space>",
---         -- term_normal = false deletes snacks' own <Esc> handler for THIS terminal,
---         -- letting the global t-mode <Esc> in config/keymaps.lua through. Snacks
---         -- binds <Esc> buffer-locally to a 200ms double-tap, and buffer-local beats
---         -- global, so without this a single <Esc> here does nothing.
+--         "<C-\\>",
+--         -- term_normal = false deletes snacks' own <Esc> handler for THIS terminal.
+--         -- Snacks binds <Esc> buffer-locally to a 200ms double-tap whose first press
+--         -- goes to the program. There is no global t-mode <Esc> to fall back on --
+--         -- <C-Space> is how you leave terminal mode -- so this only decides whether
+--         -- the shell sees a lone <Esc> at all.
 --         --
 --         -- Passed per call rather than in opts.terminal above, because that is
 --         -- shared configuration: claudecode.nvim opens its pane through the same

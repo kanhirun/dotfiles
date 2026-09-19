@@ -87,7 +87,7 @@ return {
     -- <C-f> is the file chord: f is the noun's letter, the same one the
     -- <leader>f pair carries. It replaced <C-p>, which used to open the
     -- recent-files picker and is now unbound outside the completion menu.
-    -- Every mode, like <C-q> and <C-Space>, and `t` is the one that matters:
+    -- Every mode, like <C-q> and <C-\>, and `t` is the one that matters:
     -- it makes the chord reach from inside the shell and Claude's pane, which
     -- otherwise swallow it (readline forward-char, which Right also does).
     -- <C-f> is a legacy control byte (0x06), so it arrives through Zellij with

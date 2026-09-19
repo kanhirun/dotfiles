@@ -105,14 +105,20 @@ The rules that matter most when editing this config:
   outcome; `s` is unbound on purpose.
 - **Legacy control bytes only.** Zellij sits between the terminal and Neovim, so a
   chord must survive without kitty keyboard protocol support: `<C-Space>` (NUL),
-  `<C-]>` (0x1D), `<C-q>` (0x11). Note that **`<C-[>` is byte 0x1B — it *is* `<Esc>`**
-  and cannot be bound independently.
+  `<C-\>` (0x1C), `<C-]>` (0x1D), `<C-q>` (0x11). Note that **`<C-[>` is byte 0x1B — it
+  *is* `<Esc>`** and cannot be bound independently.
 
 Namespaces in use: `<leader>s` search · `<leader>r` refactor · `<leader>t` test/toggle ·
-`<leader>g` git · `<leader>c` Claude. `<C-]>` toggles Claude and `<C-Space>` toggles a
-terminal, both from any mode; with a visual selection, `<C-]>` sends it to Claude
-instead. Only one of those two panes is ever open: showing either hides the other (a
-`BufWinEnter` rule in `terminal.lua`). `<C-q>` toggles oil in a split beside the current
+`<leader>g` git · `<leader>c` Claude. `<C-]>` toggles Claude and `<C-\>` opens a
+terminal in a new tab, both from any mode; with a visual selection, `<C-]>` sends it to
+Claude instead. `<C-Space>` returns to Normal mode from every mode and is the only way
+out of terminal mode: `<Esc>` is bound nowhere and belongs to the program in every
+terminal, which is what Snacks' buffer-local double-tap on Claude's pane already forced.
+`<C-\>` is a replacement — it makes vim's own `<C-\><C-n>` and `<C-\><C-o>` untypable,
+and stops forwarding the tty quit byte to a job, which is why `<C-Space>` had to take
+over the first of those. Only one Snacks terminal pane is ever open at a time: showing
+one hides any other (a `BufWinEnter` rule in `terminal.lua`). The `<C-\>` tab is a plain
+`:terminal` and that rule ignores it. `<C-q>` toggles oil in a split beside the current
 buffer (twin of `<leader>-`). `<C-f>`, `<C-j>` and `<C-q>` reach from inside both panes
 and step to an editor window first (`config/panes.lua`), so a picked file or directory
 never replaces a pane; from inside a pane they also move it to the right half of the
