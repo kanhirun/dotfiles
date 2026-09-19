@@ -33,7 +33,7 @@ return {
     config = function(_, opts)
       require("snacks").setup(opts)
 
-      -- One pane at a time. The <C-Space> shell and Claude's pane are both
+      -- One pane at a time. The Snacks shell and Claude's pane are both
       -- Snacks terminals, and showing either one hides the other, so the two
       -- never share the screen. Hiding is all it is: the shell and Claude keep
       -- running, and the next toggle brings the hidden one straight back.

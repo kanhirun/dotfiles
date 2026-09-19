@@ -5,7 +5,7 @@
 local M = {}
 
 -- A picker hands its result to the window it was opened from. Opened from
--- inside the <C-Space> shell or Claude's pane, that window is a terminal,
+-- inside the Snacks shell or Claude's pane, that window is a terminal,
 -- and the file would replace the pane instead of opening beside it. So a
 -- picker launched from a terminal window first steps to an editor window:
 -- the one it came from if that is one, else the first ordinary split.
