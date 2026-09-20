@@ -2,7 +2,6 @@
 # Environment Variables
 # ========================
 
-# Unset the default fish greeting text which messes up Zellij
 set fish_greeting
 
 # Uses nvim as default editor
@@ -19,14 +18,6 @@ fish_add_path $HOME/.local/bin
 
 if not string match -q "*$PNPM_HOME*" "$PATH"
     fish_add_path $PNPM_HOME
-end
-
-if status is-interactive
-    export ZELLIJ_CONFIG_DIR=$HOME/.config/zellij
-
-    if [ "$TERM" = "xterm-ghostty" ]
-        eval (zellij setup --generate-auto-start fish | string collect)
-    end
 end
 
 # ========================

@@ -19,7 +19,7 @@ brew bundle  # Install all Homebrew packages from Brewfile
 
 The repository supports both Fish and Zsh shells:
 
-- **Fish**: Primary config in `fish/config.fish`, integrates with Zellij terminal multiplexer when using Ghostty terminal. Empty `functions/` and `completions/` directories.
+- **Fish**: Primary config in `fish/config.fish` — editor, PATH, and the same zoxide/pyenv/nodenv/direnv/starship initialization as zsh. Empty `functions/` and `completions/` directories.
 - **Zsh**: Config in `zshrc` at the repo root — this is the file `~/.zshrc` symlinks to. Uses starship for the prompt, zoxide for directory jumping, and pyenv/goenv/nodenv/rbenv/direnv. No framework. Note `bindkey -e` is load-bearing: `EDITOR=nvim` contains "vi", which otherwise makes zsh silently select vi keybindings.
 
 ### Development Environment Management
@@ -174,4 +174,3 @@ Both provide frecency-based directory jumping.
 
 - **Project-specific Vim configs**: Enabled via `.exrc` files (with security enabled)
 - **vim-projectionist**: Uses `.projections.json` for project navigation
-- **Terminal Integration**: Fish integrates with Zellij when using Ghostty terminal
