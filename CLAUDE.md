@@ -141,6 +141,25 @@ affect which chords are reachable.
 
 **Note**: Hammerspoon config references a missing `wincmds` module that should be created or removed.
 
+### Claude Code (`claude/`)
+
+Global config, symlinked into place rather than copied — `~/.claude/CLAUDE.md` and
+each `~/.claude/skills/<name>` point back here, so an edit through either path is the
+same file:
+
+```bash
+ln -s ~/workspace/dotfiles/claude/CLAUDE.md ~/.claude/CLAUDE.md
+ln -s ~/workspace/dotfiles/claude/skills/commit ~/.claude/skills/commit
+```
+
+Note the undotted directory: `.gitignore` excludes `.claude/`, which is this repo's own
+project-local Claude state.
+
+Only hand-written skills live here. `~/.claude/skills` also holds `synced/`, which
+claude.ai rewrites, and marketplace installs symlinked out to `~/.agents/skills/`;
+neither is this repo's to track. `perfectly-hedged` is deliberately excluded too — its
+corpus is licensed course material and this repo is public.
+
 ### Git Workflow
 - Uses concise aliases (a=add, co=checkout, ci=commit, etc.)
 - Auto-rebasing on pull enabled
