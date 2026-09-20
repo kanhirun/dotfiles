@@ -23,12 +23,16 @@ ls -lt ~/.local/state/shell-logs/ | head
 
 A log is written continuously while its shell is open, so **mtime is liveness**:
 modified seconds ago means that session is active right now; modified an hour ago
-means it is idle or closed. Match the project by filename prefix. When several
-sessions share a prefix they differ only by start time — prefer the most recently
-modified, not the most recently started, unless I say otherwise.
+means it is idle. Match the project by filename prefix. When several sessions
+share a prefix they differ only by start time — prefer the most recently modified,
+not the most recently started, unless I say otherwise.
 
-Logs older than 7 days are pruned automatically. Absence is not evidence that
-something did not happen.
+**A transcript is deleted when its own shell exits.** Everything on disk therefore
+belongs to a session that is still open, or to one that died without cleaning up —
+a SIGKILL, a panic, a power cut — and those are swept after 7 days. There is no
+archive of closed sessions. If I have shut the terminal, the log is gone; ask me to
+paste rather than hunting for it. Absence is not evidence that something did not
+happen.
 
 ## When to read one
 

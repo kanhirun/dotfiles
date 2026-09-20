@@ -27,9 +27,9 @@ if [[ -o interactive && -z $SHELL_TRANSCRIPT && -z $NO_TRANSCRIPT && -z $CLAUDEC
     SHELL_TRANSCRIPT_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/shell-logs"
     mkdir -p "$SHELL_TRANSCRIPT_DIR" && chmod 700 "$SHELL_TRANSCRIPT_DIR"
 
-    # Retention. A secret that reaches a transcript should age out rather than
-    # sit on disk forever; deleting later does not undo exposure, but it does
-    # bound how much history one mistake covers.
+    # Backstop only. A transcript is deleted when its own shell exits (below),
+    # so anything still here is the residue of a session that died without
+    # running its trap -- a SIGKILL, a panic, a power cut.
     find "$SHELL_TRANSCRIPT_DIR" -name '*.log' -mtime +7 -delete 2>/dev/null
 
     export SHELL_TRANSCRIPT="$SHELL_TRANSCRIPT_DIR/${PWD:t}-$(date +%Y%m%d-%H%M%S).log"
@@ -39,6 +39,20 @@ if [[ -o interactive && -z $SHELL_TRANSCRIPT && -z $NO_TRANSCRIPT && -z $CLAUDEC
     # its umask to the shell it starts -- every file written during the session
     # would come out 0600 too.
     : > "$SHELL_TRANSCRIPT" && chmod 600 "$SHELL_TRANSCRIPT"
+
+    # The transcript dies with the session that wrote it. It exists so an agent
+    # can answer "what did that just print" about a shell I am sitting in; once
+    # that shell is gone the log answers nothing and is only a file of
+    # everything the terminal ever showed -- tokens, connection strings,
+    # environment dumps -- waiting to be backed up.
+    #
+    # HUP is trapped as well as EXIT because closing the terminal window kills
+    # `script` by signal, and the outer shell would die at that point without
+    # ever reaching the line after it. Deliberately not INT: Ctrl-C reaches the
+    # inner shell's process group, not this one, but trapping it here would
+    # turn any stray interrupt into a deleted log mid-session.
+    trap 'rm -f "$SHELL_TRANSCRIPT"' EXIT HUP TERM
+
     script -q -a "$SHELL_TRANSCRIPT"
     exit
   fi
