@@ -130,9 +130,12 @@ Nouns keep one letter across every position they appear in. Diagnostics are `x`:
 `g]`/`g[` move between them, `<leader>sx` lists them, `<leader>rx` fixes the one under
 the cursor. Adding a binding for an existing noun should reuse its letter.
 
-**Setup this repo does not capture**: Caps Lock is remapped to Ctrl via macOS System
-Settings, and the Zellij and Ghostty configs live in `~/.config/` untracked. Both
-affect which chords are reachable.
+**Setup this repo does not capture**: Caps Lock is remapped to Ctrl via macOS
+System Settings. cmux is the terminal and sits directly under Neovim — there is
+no multiplexer in between, and `~/.config/ghostty/config` does not exist, so
+cmux's built-in Ghostty defaults apply. Both affect which chords are reachable;
+see the note on legacy control bytes above, which was written for a Zellij layer
+that is no longer installed.
 
 ### Window Management (Hammerspoon)
 - `Cmd+Ctrl+H`: Move window to left half and other windows to right
@@ -190,9 +193,18 @@ cmux is closed. Reload rules with `cmux automation reload`, list them with
   the `kill -9` case the exit trap cannot, but a wrong surface-to-file mapping
   would delete a live log.
 
-**Setup this repo does not capture:** `tmutil addexclusion ~/.local/state/shell-logs`,
-once per machine. Without it Time Machine copies transcripts into snapshots the exit
-trap cannot reach.
+**Setup this repo does not capture**, once per machine:
+
+```bash
+ln -s ~/workspace/dotfiles/cmux/automations.json ~/.cmuxterm/automations.json
+cmux automation reload && cmux automation list      # expect two enabled rules
+~/workspace/dotfiles/cmux/shell-log-links --replay 1200   # backfill tab titles
+tmutil addexclusion ~/.local/state/shell-logs
+```
+
+Without the exclusion, Time Machine copies transcripts into snapshots the exit
+trap cannot reach. `~/.config/cmux/cmux.json` is deliberately not tracked: it is
+cmux's own generated template, and nothing in it is set.
 
 ### Claude Code (`claude/`)
 
