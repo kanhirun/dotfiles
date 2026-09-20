@@ -38,6 +38,43 @@ git fetch origin && git log --oneline HEAD..origin/master   # behind?
 
 ## 2. Title
 
+**The title is the Linear issue's title, verbatim.** Take the id from the branch
+name (`kel/dev-1370-…`) or from what the user says, and read the issue with
+Linear's `get_issue`. Never reconstruct it from the branch slug — that has been
+lowercased and hyphenated and has already lost the wording.
+
+One title in both places is how anyone moving between Linear and GitHub knows
+they are looking at the same work. Two spellings of one change is a question
+every reader has to resolve alone, and the PR is the copy that gets linked into
+Slack.
+
+The id is still appended; matching means the title text matches, not that the
+line is byte-identical:
+
+```
+Access Pillar on Staging using Clerk sign-in, fixes DEV-1370
+```
+
+### When the issue's title does not fit
+
+The rules below are the bar. A Linear title often fails them — issues get
+written in a hurry, in the system's vocabulary, before the shape of the fix is
+known. **Do not quietly reword it, and do not quietly ship a title that names a
+construct or an environment. Stop and ask.** Three answers, and the choice is
+the user's:
+
+- use the issue's title as it stands, mismatch resolved in its favour;
+- use the better title and edit the Linear issue to match, so the two agree;
+- use the better title and leave the issue alone, accepting the divergence.
+
+Quote both titles when asking. The difference is usually obvious once they are
+side by side, and the user picks in one word.
+
+With no linked issue, write the title from the rules below and say there was
+none to match.
+
+### What a good title looks like
+
 The title belongs to the body's audience, not the commits'. It is the one-line
 form of *What this is* — the capability a reader gains, in words they already
 have. It should read like the test case QA is about to run.
@@ -63,13 +100,8 @@ system, in the system's own vocabulary.
 - **One clause.** A comma appending the mechanism is the commit habit returning.
 
 The title is also the id-bearing line — Linear reads it, and for a squash merge
-it becomes the subject on master.
-
-```
-Access Pillar on Staging using Clerk sign-in, fixes DEV-1370
-```
-
-`fixes` for a bug, `resolves` for anything else. The judgement of whether the
+it becomes the subject on master. `fixes` for a bug, `resolves` for anything
+else. The judgement of whether the
 branch *meets the issue's goal* is the same one the `commit` skill makes, and
 it is stricter than it looks: if the issue lists several complaints and the
 branch answers some, **no id goes on the title**. Say so, and let the issue be
@@ -151,6 +183,8 @@ gh pr view <n> --json body --jq .body
 - **Never merge**, and never mark ready-for-review, without being asked.
 - **Never put the Linear id on a title** whose branch answers only part of the
   issue.
+- **Never invent a title when the branch has an issue.** Read the issue, use its
+  title, and ask when it does not fit rather than choosing for the user.
 - **Never paste a credential, token or connection string into a body.** The PR
   is more widely readable than the terminal it came from, and edits do not
   unsend it.
