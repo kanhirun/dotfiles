@@ -46,9 +46,11 @@ if [[ -o interactive && -z $SHELL_TRANSCRIPT && -z $NO_TRANSCRIPT && -z $CLAUDEC
     # everything the terminal ever showed -- tokens, connection strings,
     # environment dumps -- waiting to be backed up.
     #
-    # HUP is trapped as well as EXIT because closing the terminal window kills
-    # `script` by signal, and the outer shell would die at that point without
-    # ever reaching the line after it. Deliberately not INT: Ctrl-C reaches the
+    # This only works because `script` is a child that returns, not an exec:
+    # the trap fires in this shell, after. HUP is trapped as well as EXIT
+    # because closing the terminal window kills `script` by signal, and the
+    # outer shell would die at that point without ever reaching the line
+    # after it. Deliberately not INT: Ctrl-C reaches the
     # inner shell's process group, not this one, but trapping it here would
     # turn any stray interrupt into a deleted log mid-session.
     trap 'rm -f "$SHELL_TRANSCRIPT"' EXIT HUP TERM

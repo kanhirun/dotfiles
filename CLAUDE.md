@@ -20,7 +20,7 @@ brew bundle  # Install all Homebrew packages from Brewfile
 The repository supports both Fish and Zsh shells:
 
 - **Fish**: Primary config in `fish/config.fish` — editor, PATH, and the same zoxide/pyenv/nodenv/direnv/starship initialization as zsh. Empty `functions/` and `completions/` directories.
-- **Zsh**: Config in `zshrc` at the repo root — this is the file `~/.zshrc` symlinks to. Uses starship for the prompt, zoxide for directory jumping, and pyenv/goenv/nodenv/rbenv/direnv. No framework. Note `bindkey -e` is load-bearing: `EDITOR=nvim` contains "vi", which otherwise makes zsh silently select vi keybindings.
+- **Zsh**: Config in `zshrc` at the repo root — this is the file `~/.zshrc` symlinks to. Uses starship for the prompt, zoxide for directory jumping, and pyenv/goenv/nodenv/rbenv/direnv. No framework. Records every session to a transcript — see Shell Transcripts below. Note `bindkey -e` is load-bearing: `EDITOR=nvim` contains "vi", which otherwise makes zsh silently select vi keybindings.
 
 ### Development Environment Management
 
@@ -140,6 +140,32 @@ affect which chords are reachable.
 - `Cmd+Ctrl+Return`: Maximize current window
 
 **Note**: Hammerspoon config references a missing `wincmds` module that should be created or removed.
+
+### Shell Transcripts (`zshrc`)
+
+Every interactive zsh records itself with `script` to
+`~/.local/state/shell-logs/<dirname>-<timestamp>.log` and deletes the log when it
+exits. The block sits at the top of `zshrc`; its comments explain each line. What
+follows is the shape, and what breaks it.
+
+- **Two shells per tab.** The outer zsh sources `zshrc`, starts `script`, waits,
+  then exits. `script` starts the inner zsh you type into, which sources `zshrc`
+  again and falls through because `$SHELL_TRANSCRIPT` is already set. Every prompt
+  you see is the inner one.
+- **`script` must stay a child, never an `exec`.** The cleanup trap runs in the
+  outer shell after `script` returns. `exec script` reads like a tidy-up and
+  silently ends deletion.
+- **Not recorded:** shells under Claude Code (`$CLAUDECODE`), inside Neovim's
+  terminal (`$NVIM`) — so the `<C-\>` tab and the Snacks pane never are — and
+  anything started with `NO_TRANSCRIPT=1`. Fish does not record at all.
+- **The consumer side is `claude/CLAUDE.md`.** It tells Claude where logs are, how
+  to read them narrowly, and that they vanish with their shell. A change here to
+  naming, location, retention or the exclusion list is incomplete until that file
+  says the same thing.
+
+**Setup this repo does not capture:** `tmutil addexclusion ~/.local/state/shell-logs`,
+once per machine. Without it Time Machine copies transcripts into snapshots the exit
+trap cannot reach.
 
 ### Claude Code (`claude/`)
 
