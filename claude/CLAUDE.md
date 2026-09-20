@@ -6,10 +6,20 @@ something that happened in my terminal without pasting it.
 ## Where they are
 
 ```
-~/.local/state/shell-logs/<project-dirname>-<YYYYmmdd-HHMMSS>.log
+~/.local/state/shell-logs/<dirname>-<surface>-<YYYYmmdd-HHMMSS>.log   the transcript
+~/.local/state/shell-logs/<cmux-tab-title>.log                        symlink to it
 ```
 
-Named for the directory the shell started in. Directory is `0700`, files `0600`.
+The transcript is named for the directory the shell started in, plus eight hex
+digits identifying its cmux tab. Directory is `0700`, files `0600`.
+
+**Prefer the symlink.** `cmux/shell-log-links` in the dotfiles repo names one
+after the cmux tab's own title — `kel-dev-1370-fix-access-to-staging.log`,
+`dotfiles.log` — which is what I mean when I name a tab. The `<dirname>` prefix
+routinely fails to identify one, since several tabs on the same checkout all
+carry it. A missing symlink means the watcher is not running, or that tab has
+not been visited since cmux started; fall back to the transcript names and say
+which you read.
 
 Not recorded: shells running under Claude Code, shells inside Neovim's terminal,
 and any shell started with `NO_TRANSCRIPT=1`. So a missing log means one of those,
@@ -23,9 +33,10 @@ ls -lt ~/.local/state/shell-logs/ | head
 
 A log is written continuously while its shell is open, so **mtime is liveness**:
 modified seconds ago means that session is active right now; modified an hour ago
-means it is idle. Match the project by filename prefix. When several sessions
-share a prefix they differ only by start time — prefer the most recently modified,
-not the most recently started, unless I say otherwise.
+means it is idle. Match on the tab title first; fall back to the `<dirname>`
+prefix only when no symlink resolves. When several transcripts share a prefix they
+differ only by start time — prefer the most recently modified, not the most
+recently started, unless I say otherwise.
 
 **A transcript is deleted when its own shell exits.** Everything on disk therefore
 belongs to a session that is still open, or to one that died without cleaning up —

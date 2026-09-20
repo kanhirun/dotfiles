@@ -32,7 +32,13 @@ if [[ -o interactive && -z $SHELL_TRANSCRIPT && -z $NO_TRANSCRIPT && -z $CLAUDEC
     # running its trap -- a SIGKILL, a panic, a power cut.
     find "$SHELL_TRANSCRIPT_DIR" -name '*.log' -mtime +7 -delete 2>/dev/null
 
-    export SHELL_TRANSCRIPT="$SHELL_TRANSCRIPT_DIR/${PWD:t}-$(date +%Y%m%d-%H%M%S).log"
+    # The cmux surface owning this shell, so `cmux/shell-log-links` can join a
+    # transcript to the tab it came from -- the tab's title is the only name
+    # that distinguishes several shells in one directory, and it lives in cmux,
+    # not here. Empty outside cmux, and the field drops out with it rather than
+    # leaving a bare separator behind.
+    surface=${${CMUX_SURFACE_ID:0:8}:l}
+    export SHELL_TRANSCRIPT="$SHELL_TRANSCRIPT_DIR/${PWD:t}${surface:+-$surface}-$(date +%Y%m%d-%H%M%S).log"
 
     # Created and locked down BEFORE script opens it, then appended to with -a.
     # Setting `umask 077` around the call instead would work, but script passes

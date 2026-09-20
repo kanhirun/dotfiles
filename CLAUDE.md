@@ -144,9 +144,9 @@ affect which chords are reachable.
 ### Shell Transcripts (`zshrc`)
 
 Every interactive zsh records itself with `script` to
-`~/.local/state/shell-logs/<dirname>-<timestamp>.log` and deletes the log when it
-exits. The block sits at the top of `zshrc`; its comments explain each line. What
-follows is the shape, and what breaks it.
+`~/.local/state/shell-logs/<dirname>-<surface>-<timestamp>.log` and deletes the log
+when it exits. The block sits at the top of `zshrc`; its comments explain each
+line. What follows is the shape, and what breaks it.
 
 - **Two shells per tab.** The outer zsh sources `zshrc`, starts `script`, waits,
   then exits. `script` starts the inner zsh you type into, which sources `zshrc`
@@ -162,6 +162,26 @@ follows is the shape, and what breaks it.
   to read them narrowly, and that they vanish with their shell. A change here to
   naming, location, retention or the exclusion list is incomplete until that file
   says the same thing.
+
+#### Naming, and `cmux/shell-log-links`
+
+`<dirname>` is the basename of the directory the shell started in, so tabs on one
+checkout are indistinguishable by it — the name that tells them apart is the cmux
+tab title, and that lives in cmux. `<surface>` is the first eight hex digits of
+`$CMUX_SURFACE_ID`, present only under cmux, and it is the join key: the watcher
+follows `cmux events` and maintains a symlink named after the tab title pointing
+at the transcript.
+
+- **The transcript never moves.** `script` holds an open descriptor for the life
+  of the session; only the symlink is swapped. Renaming the file instead would
+  put that descriptor in question for no gain.
+- **There is no rename event.** Of every event cmux emits, only
+  `workspace.created` and `workspace.selected` carry a title, so a tab renamed
+  mid-session keeps its old link until you switch to it again.
+- **Nothing starts the watcher yet.** Run it by hand; there is no launchd agent.
+  `--reap` additionally deletes a transcript on `surface.closed`, which would
+  cover the `kill -9` case the trap cannot, and is off because a wrong
+  surface-to-file mapping would delete a live log.
 
 **Setup this repo does not capture:** `tmutil addexclusion ~/.local/state/shell-logs`,
 once per machine. Without it Time Machine copies transcripts into snapshots the exit
