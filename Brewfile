@@ -40,6 +40,7 @@ brew "neovim"
 brew "tree-sitter-cli"  # parser compiler for nvim-treesitter (main branch)
 
 brew "asciinema"
+brew "ffmpeg"  # mic capture and encoding for asciinema/narrate
 
 # -- apps --
 

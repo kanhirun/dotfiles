@@ -1,0 +1,206 @@
+#!/usr/bin/env bash
+#
+# narrate -- an asciinema cast with a voice track, played as one.
+#
+#   narrate check          confirm the microphone is actually reaching ffmpeg
+#   narrate rec   <name>   record the terminal
+#   narrate voice <name>   play it back and narrate over it
+#   narrate build <name>   encode the audio and write a page
+#
+# See README.md for why it is three steps and not one.
+
+set -euo pipefail
+
+DIR="${NARRATE_DIR:-$HOME/Recordings/casts}"
+PLAYER_VERSION="3.17.0"
+RATE=48000
+WAV_HEADER=44
+# Nudge, in seconds, if narration lands consistently early (negative) or late
+# (positive) on your machine. Measure once, then leave it alone.
+OFFSET="${NARRATE_AUDIO_OFFSET:-0}"
+
+die() { printf 'narrate: %s\n' "$1" >&2; exit 1; }
+
+need() {
+  command -v "$1" >/dev/null 2>&1 || die "$1 not found${2:+ -- $2}"
+}
+
+usage() {
+  sed -n '3,9p' "$0" | sed 's/^# \{0,1\}//'
+  exit "${1:-0}"
+}
+
+# ---------------------------------------------------------------- rec
+
+cmd_rec() {
+  local name=${1:-} cast
+  [ -n "$name" ] || usage 1
+  need asciinema "brew install asciinema"
+  mkdir -p "$DIR/$name"
+  cast="$DIR/$name/session.cast"
+
+  cat >&2 <<'EOF'
+Recording the terminal. Two things will desync the audio later, so don't:
+  * ctrl+\        pauses capture while the clock keeps running
+  * --idle-time-limit   compresses gaps at playback time
+Exit the shell (ctrl+d) to stop.
+
+EOF
+
+  asciinema rec --overwrite "$cast"
+  printf '\nnarrate: wrote %s\n' "$cast" >&2
+  printf 'narrate: next -- narrate voice %s\n' "$name" >&2
+}
+
+# ---------------------------------------------------------------- voice
+
+# Records the mic while playing the cast back. Both starts are ours, so the
+# lead between them is measured rather than guessed, and trimmed off the front
+# of the audio afterwards. That is the whole sync story; there is no drift
+# correction because a sound card and the system clock disagree by parts per
+# million, which over an hour is a few milliseconds.
+cmd_voice() {
+  local name=${1:-} dir cast raw trimmed lead device
+  [ -n "$name" ] || usage 1
+  need asciinema "brew install asciinema"
+  need ffmpeg "brew install ffmpeg"
+
+  dir="$DIR/$name"
+  cast="$dir/session.cast"
+  raw="$dir/voice-raw.wav"
+  trimmed="$dir/voice.wav"
+  [ -f "$cast" ] || die "no cast at $cast -- run: narrate rec $name"
+
+  device="${NARRATE_AUDIO_DEVICE:-:default}"
+
+  printf 'narrate: arming the microphone...\n' >&2
+  # Raw PCM at a known rate, flushed per packet: that combination turns the
+  # file's size into a sample-accurate clock, which is what measures the lead
+  # below. Any compressed codec here would break that.
+  ffmpeg -hide_banner -loglevel warning -y \
+    -f avfoundation -i "$device" \
+    -ac 1 -ar "$RATE" -c:a pcm_s16le -flush_packets 1 "$raw" &
+  local ff=$!
+  trap 'kill "$ff" 2>/dev/null || true' EXIT
+
+  # Wait for PCM, not for the file: ffmpeg writes the 44-byte header the
+  # instant it opens the output, seconds before the first sample arrives.
+  # macOS powers the mic down when idle and a cold start costs 2-5s, so this
+  # wait is long and its length is not predictable.
+  local waited=0
+  while [ "$(stat -f %z "$raw" 2>/dev/null || echo 0)" -le "$WAV_HEADER" ]; do
+    sleep 0.05
+    waited=$((waited + 1))
+    [ "$waited" -lt 200 ] || die "no audio after 10s -- check Privacy & Security > Microphone (the grant is held by your terminal app, not ffmpeg)"
+  done
+
+  # How much audio exists at the instant playback starts IS the lead. Not an
+  # estimate of it: these are the samples that were captured before the first
+  # frame of the cast, and they are the ones to drop.
+  local armed_bytes
+  armed_bytes=$(stat -f %z "$raw")
+  printf 'narrate: speak. playback starts now.\n\n' >&2
+  asciinema play "$cast"
+
+  kill "$ff" 2>/dev/null || true
+  wait "$ff" 2>/dev/null || true
+  trap - EXIT
+
+  lead=$(python3 -c "
+lead = (max(0, $armed_bytes - $WAV_HEADER)) / ($RATE * 2)
+print(f'{max(0.0, lead + $OFFSET):.3f}')
+")
+
+  printf 'narrate: trimming %ss of lead-in\n' "$lead" >&2
+  ffmpeg -hide_banner -loglevel warning -y -ss "$lead" -i "$raw" -c copy "$trimmed"
+  rm -f "$raw"
+
+  printf 'narrate: wrote %s\n' "$trimmed" >&2
+  printf 'narrate: next -- narrate build %s\n' "$name" >&2
+}
+
+# ---------------------------------------------------------------- check
+
+# ffmpeg's avfoundation input never calls requestAccessForMediaType, so a
+# denied microphone is not an error: it exits 0 and writes pure silence. The
+# only tell is that every sample is exactly zero, which a real room never
+# produces -- mic self-noise alone sits around -60dB.
+cmd_check() {
+  local out
+  need ffmpeg "brew install ffmpeg"
+  printf 'narrate: sampling 3s from %s -- say something\n' "${NARRATE_AUDIO_DEVICE:-:default}" >&2
+  out=$(ffmpeg -hide_banner -f avfoundation -i "${NARRATE_AUDIO_DEVICE:-:default}" \
+        -t 3 -af volumedetect -f null /dev/null 2>&1 | grep -E 'max_volume|mean_volume' || true)
+  printf '%s\n' "$out" >&2
+  case "$out" in
+    *"max_volume: -0.0 dB"*) die "clipping -- turn the input gain down" ;;
+    *"max_volume: -inf dB"*) die "every sample is zero: the microphone is denied or muted, not quiet" ;;
+    "") die "no level reported -- ffmpeg produced no audio at all" ;;
+    *) printf 'narrate: microphone is live\n' >&2 ;;
+  esac
+}
+
+# ---------------------------------------------------------------- build
+
+cmd_build() {
+  local name=${1:-} dir cast wav m4a
+  [ -n "$name" ] || usage 1
+  need ffmpeg "brew install ffmpeg"
+
+  dir="$DIR/$name"
+  cast="$dir/session.cast"
+  wav="$dir/voice.wav"
+  m4a="$dir/voice.m4a"
+  [ -f "$cast" ] || die "no cast at $cast"
+  [ -f "$wav" ] || die "no voice track at $wav -- run: narrate voice $name"
+
+  # The player reads idle_time_limit out of the header by default and
+  # compresses gaps to it at playback time. The audio is not compressed with
+  # them, so everything after the first long pause slides.
+  if head -1 "$cast" | grep -q '"idle_time_limit"'; then
+    die "cast header carries idle_time_limit -- it will desync the audio. Re-record without -i, or delete the field from line 1 of $cast"
+  fi
+
+  # +faststart moves the moov atom to the front so playback can begin before
+  # the whole file has arrived.
+  ffmpeg -hide_banner -loglevel warning -y -i "$wav" \
+    -ac 1 -ar "$RATE" -c:a aac -b:a 64k -movflags +faststart "$m4a"
+
+  cat > "$dir/index.html" <<EOF
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>$name</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/asciinema-player@$PLAYER_VERSION/dist/bundle/asciinema-player.css">
+<style>
+  body { margin: 0; background: #12151a; display: grid; place-items: center; min-height: 100vh; }
+  main { width: min(100%, 960px); padding: 24px; box-sizing: border-box; }
+</style>
+<main><div id="player"></div></main>
+<script src="https://cdn.jsdelivr.net/npm/asciinema-player@$PLAYER_VERSION/dist/bundle/asciinema-player.min.js"></script>
+<script>
+  AsciinemaPlayer.create('session.cast', document.getElementById('player'), {
+    audioUrl: 'voice.m4a',
+    // Anything but 1 plays the audio at 1x against a terminal that isn't:
+    // the player never touches playbackRate. Leave the speed control alone.
+    speed: 1,
+    autoPlay: false,
+    preload: true
+  });
+</script>
+EOF
+
+  printf 'narrate: wrote %s\n' "$dir/index.html" >&2
+  printf 'narrate: serve it -- python3 -m http.server -d %s\n' "$dir" >&2
+}
+
+# ----------------------------------------------------------------
+
+case "${1:-}" in
+  rec)   shift; cmd_rec   "$@" ;;
+  voice) shift; cmd_voice "$@" ;;
+  build) shift; cmd_build "$@" ;;
+  check) shift; cmd_check "$@" ;;
+  -h|--help|help|"") usage ;;
+  *) die "unknown command: $1" ;;
+esac
