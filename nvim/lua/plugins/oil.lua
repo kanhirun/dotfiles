@@ -7,6 +7,11 @@ return {
     opts = {},
     config = function ()
       require("oil").setup({
+        -- Oil reads a directory once and holds that listing. Anything that
+        -- changes the tree from outside Neovim -- a shell, a git checkout --
+        -- leaves the buffer showing a snapshot, with no sign it is stale.
+        -- Costs a libuv watcher per open oil buffer.
+        watch_for_changes = true,
         use_default_keymaps = false,
         keymaps = {
           ["g?"] = { "actions.show_help", mode = "n" },
