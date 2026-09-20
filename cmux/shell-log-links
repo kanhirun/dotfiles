@@ -1,15 +1,20 @@
 #!/usr/bin/env python3
-"""Maintain readable symlinks to shell transcripts, named after their cmux tab.
+"""Name a shell transcript after the cmux tab that produced it.
 
-The transcript itself is written by zshrc and never moves: `script` holds an
-open descriptor on it for the life of the session. Only the link moves, so a
-tab renamed mid-session costs a symlink swap and nothing else.
+Invoked by a cmux automation rule, once per event, with the event in
+CMUX_AUTOMATION_EVENT_JSON. cmux owns the lifecycle, so there is no daemon to
+supervise and nothing runs while cmux is closed.
 
-Run it with no arguments to follow the live event stream. `--replay N` reads
-the retained history instead and exits, which is how the tests drive it.
+The transcript itself never moves: `script` holds an open descriptor on it for
+the life of the session, so only the symlink beside it is swapped.
+
+  --replay N   walk N retained events and exit, which both tests the handler
+               and backfills state for tabs open since before the rule existed
+  --prune      drop state for surfaces whose transcript is gone
 """
 
 import argparse
+import fcntl
 import json
 import os
 import re
@@ -18,41 +23,76 @@ import sys
 
 CMUX = "/Applications/cmux.app/Contents/Resources/bin/cmux"
 LOG_DIR = os.path.expanduser("~/.local/state/shell-logs")
-CURSOR = os.path.expanduser("~/.cache/cmux/shell-log-links.seq")
+STATE = os.path.expanduser("~/.cache/cmux/shell-log-links.json")
 
-# The 8-hex-digit field zshrc puts in the filename. Matching on a prefix rather
-# than the whole UUID keeps the transcript name readable on its own.
+# The eight hex digits zshrc puts in the filename. Kept to a prefix so the
+# transcript name stays readable on its own.
 LOG_RE = re.compile(r"-([0-9a-f]{8})-\d{8}-\d{6}\.log$", re.I)
+
+LINK_EVENTS = ("surface.created", "surface.selected", "surface.focused")
+TITLE_EVENTS = ("workspace.created", "workspace.selected")
 
 
 def slug(title):
-    s = re.sub(r"[^a-z0-9]+", "-", (title or "").lower()).strip("-")
-    return s or "untitled"
+    return re.sub(r"[^a-z0-9]+", "-", (title or "").lower()).strip("-") or "untitled"
+
+
+class State:
+    """The handler is a separate process per event, so what the follower kept in
+    memory has to survive on disk. Every run takes an exclusive lock: cmux can
+    fire several rules at once and a lost update would strand a symlink."""
+
+    def __init__(self, path):
+        self.path = path
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        self._fh = open(path + ".lock", "a+")
+
+    def __enter__(self):
+        fcntl.flock(self._fh, fcntl.LOCK_EX)
+        try:
+            with open(self.path) as f:
+                self.d = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError):
+            self.d = {}
+        self.d.setdefault("surface_ws", {})
+        self.d.setdefault("ws_title", {})
+        self.d.setdefault("linked", {})
+        return self
+
+    def __exit__(self, *exc):
+        tmp = self.path + ".tmp"
+        with open(tmp, "w") as f:
+            json.dump(self.d, f, indent=1, sort_keys=True)
+        os.replace(tmp, self.path)
+        fcntl.flock(self._fh, fcntl.LOCK_UN)
 
 
 class Linker:
-    def __init__(self, log_dir, dry_run=False, reap=False):
-        self.log_dir, self.dry_run, self.reap = log_dir, dry_run, reap
-        self.surface_ws = {}    # surface id -> workspace id
-        self.ws_title = {}      # workspace id -> title
-        self.linked = {}        # surface id -> link path we created
+    def __init__(self, state, log_dir, dry_run=False, reap=False):
+        self.s, self.log_dir = state, log_dir
+        self.dry_run, self.reap = dry_run, reap
 
-    # -- filesystem -------------------------------------------------------
+    def _say(self, *a):
+        print(*a, file=sys.stderr, flush=True)
+
     def _log_for(self, surface):
         want = surface[:8].lower()
-        for name in os.listdir(self.log_dir):
+        try:
+            names = os.listdir(self.log_dir)
+        except FileNotFoundError:
+            return None
+        for name in names:
             m = LOG_RE.search(name)
             if m and m.group(1).lower() == want:
                 return name
         return None
 
-    def _say(self, *a):
-        print(*a, file=sys.stderr, flush=True)
-
     def _link(self, path, target):
         if self.dry_run:
             return self._say(f"  would link {os.path.basename(path)} -> {target}")
         tmp = path + ".tmp"
+        if os.path.lexists(tmp):
+            os.unlink(tmp)
         os.symlink(target, tmp)
         os.replace(tmp, path)   # atomic: a reader never sees the link missing
         self._say(f"  {os.path.basename(path)} -> {target}")
@@ -66,122 +106,110 @@ class Linker:
         except FileNotFoundError:
             pass
 
-    # -- naming -----------------------------------------------------------
     def _link_path(self, surface, title):
         base = slug(title)
         plain = os.path.join(self.log_dir, base + ".log")
-        # Two terminal surfaces in one workspace share a title, so the bare
-        # slug only goes to whichever claims it first; the rest keep the
-        # surface prefix that makes them distinct.
-        if not os.path.lexists(plain) or self.linked.get(surface) == plain:
+        # Two terminal surfaces in one workspace share a title, so the bare slug
+        # goes to whichever claims it first and the rest keep a surface suffix.
+        if not os.path.lexists(plain) or self.s["linked"].get(surface) == plain:
             return plain
         return os.path.join(self.log_dir, f"{base}-{surface[:8].lower()}.log")
 
     def sync(self, surface):
-        ws = self.surface_ws.get(surface)
-        title = self.ws_title.get(ws)
+        title = self.s["ws_title"].get(self.s["surface_ws"].get(surface, ""))
         if not title:
-            return
+            return                          # tab not named yet
         log = self._log_for(surface)
         if not log:
-            return                      # shell not recording, or not started yet
+            return                          # shell not recording, or not up yet
         path = self._link_path(surface, title)
-        old = self.linked.get(surface)
-        # surface.focused fires on every tab switch; without this the link is
-        # torn down and rebuilt each time for no change.
+        old = self.s["linked"].get(surface)
         if old == path and os.path.islink(path) and os.readlink(path) == log:
-            return
+            return                          # every focus event would redo this
         if old and old != path:
             self._unlink(old)
         self._link(path, log)
-        self.linked[surface] = path
+        self.s["linked"][surface] = path
 
     def drop(self, surface):
-        path = self.linked.pop(surface, None)
+        path = self.s["linked"].pop(surface, None)
         if path:
             self._unlink(path)
         if self.reap:
             log = self._log_for(surface)
             if log:
-                target = os.path.join(self.log_dir, log)
                 if self.dry_run:
                     self._say(f"  would reap {log}")
                 else:
-                    os.unlink(target)
+                    os.unlink(os.path.join(self.log_dir, log))
                     self._say(f"  reaped {log}")
-        self.surface_ws.pop(surface, None)
+        self.s["surface_ws"].pop(surface, None)
 
-    # -- events -----------------------------------------------------------
     def handle(self, e):
         name = e.get("name")
         p = e.get("payload") or {}
         ws = e.get("workspace_id") or p.get("workspace_id")
         surface = e.get("surface_id") or p.get("surface_id")
 
-        if name in ("workspace.created", "workspace.selected"):
+        if name in TITLE_EVENTS:
             title = p.get("custom_title") or p.get("title")
-            if ws and title and self.ws_title.get(ws) != title:
-                self.ws_title[ws] = title
-                self._say(f"{name}: {ws[:8]} = {title!r}")
-                # No rename event exists, so a title is only ever learned here.
-                # Re-point every surface already known to sit in this workspace.
-                for s, w in self.surface_ws.items():
+            if ws and title and self.s["ws_title"].get(ws) != title:
+                self.s["ws_title"][ws] = title
+                # cmux emits no rename event, so a title is only ever learned
+                # here. Re-point every surface already known in this workspace.
+                for s, w in list(self.s["surface_ws"].items()):
                     if w == ws:
                         self.sync(s)
             return
 
         if not surface:
             return
-
         if name == "surface.closed":
-            self._say(f"surface.closed: {surface[:8]}")
-            self.drop(surface)
-            return
-
-        # created/selected/focused all carry the workspace, and a shell may
-        # start recording after its surface appears, so any of them is a fair
-        # moment to try again.
+            return self.drop(surface)
         if ws:
-            self.surface_ws[surface] = ws
-        if name in ("surface.created", "surface.selected", "surface.focused"):
+            self.s["surface_ws"][surface] = ws
+        if name in LINK_EVENTS:
             self.sync(surface)
+
+    def prune(self):
+        for surface in list(self.s["surface_ws"]):
+            if not self._log_for(surface):
+                self.drop(surface)
 
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--log-dir", default=LOG_DIR)
-    ap.add_argument("--replay", type=int, metavar="N",
-                    help="read N retained events and exit instead of following")
+    ap.add_argument("--state", default=STATE)
+    ap.add_argument("--replay", type=int, metavar="N")
+    ap.add_argument("--prune", action="store_true")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--reap", action="store_true",
                     help="also delete the transcript when its tab closes")
     args = ap.parse_args()
 
-    if args.replay:
-        cmd = [CMUX, "events", "--after", "0", "--limit", str(args.replay),
-               "--no-heartbeat", "--no-ack", "--timeout", "10"]
-    else:
-        os.makedirs(os.path.dirname(CURSOR), exist_ok=True)
-        cmd = [CMUX, "events", "--reconnect", "--cursor-file", CURSOR,
-               "--no-heartbeat", "--no-ack"]
+    with State(args.state) as st:
+        linker = Linker(st.d, args.log_dir, dry_run=args.dry_run, reap=args.reap)
 
-    linker = Linker(args.log_dir, dry_run=args.dry_run, reap=args.reap)
-    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, text=True)
-    try:
-        for line in proc.stdout:
-            line = line.strip()
-            if not line:
-                continue
-            try:
-                e = json.loads(line)
-            except json.JSONDecodeError:
-                continue
-            if e.get("type") == "event":
-                linker.handle(e)
-    except KeyboardInterrupt:
-        pass
-    finally:
-        proc.terminate()
+        if args.prune:
+            linker.prune()
+        elif args.replay:
+            out = subprocess.run(
+                [CMUX, "events", "--after", "0", "--limit", str(args.replay),
+                 "--no-heartbeat", "--no-ack", "--timeout", "10"],
+                capture_output=True, text=True).stdout
+            for line in out.splitlines():
+                try:
+                    e = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                if e.get("type") == "event":
+                    linker.handle(e)
+        else:
+            raw = os.environ.get("CMUX_AUTOMATION_EVENT_JSON")
+            if not raw:
+                sys.exit("no CMUX_AUTOMATION_EVENT_JSON; use --replay to test")
+            linker.handle(json.loads(raw))
 
 
 if __name__ == "__main__":

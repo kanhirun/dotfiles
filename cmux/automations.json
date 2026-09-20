@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "rules": [
+    {
+      "id": "shell-log-link-surface",
+      "when": { "event": "surface.*" },
+      "where": { "surface.kind": "terminal" },
+      "then": [
+        {
+          "action": "run",
+          "command": "$HOME/workspace/dotfiles/cmux/shell-log-links",
+          "timeout_seconds": 20
+        }
+      ]
+    },
+    {
+      "id": "shell-log-link-workspace",
+      "when": { "event": "workspace.*" },
+      "then": [
+        {
+          "action": "run",
+          "command": "$HOME/workspace/dotfiles/cmux/shell-log-links",
+          "timeout_seconds": 20
+        }
+      ]
+    }
+  ]
+}
