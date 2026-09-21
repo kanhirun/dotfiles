@@ -84,24 +84,9 @@ return {
       }
     end
 
-    -- <C-f> is the file chord: f is the noun's letter, the same one the
-    -- <leader>f pair carries. It replaced <C-p>, which used to open the
-    -- recent-files picker and is now unbound outside the completion menu.
-    -- Every mode, like <C-q> and <C-\>, and `t` is the one that matters:
-    -- it makes the chord reach from inside the shell and Claude's pane, which
-    -- otherwise swallow it (readline forward-char, which Right also does).
-    -- <C-f> is a legacy control byte (0x06), so it arrives through Zellij with
-    -- no kitty keyboard protocol support.
-    --
-    -- The leader twin is <leader>fF, bound below next to <leader>ff so the
-    -- pair reads as one. Both addresses bind the same function, so <leader>fF
-    -- steps out of a pane the same way, and a file picked from inside a pane
-    -- shares the screen with it.
-    vim.keymap.set({ 'n', 'i', 'v', 'x', 't' }, '<C-f>', find_files, { desc = 'Find Files' })
-
     -- The files changed in the working tree: modified, staged, and untracked
     -- but not ignored -- what `git status` reports. git_files was the wrong
-    -- list; it returns every file in the repo, which <C-f> already covers.
+    -- list; it returns every file in the repo, which <leader>fF already covers.
     local function find_git_changes()
       local from_pane = panes.leave_terminal_window()
       local function attach()
@@ -112,7 +97,7 @@ return {
       end
 
       -- git_status raises outside a work tree, which the dotfiles-adjacent and
-      -- scratch directories are; rg covers those the way <C-f> does.
+      -- scratch directories are; rg covers those the way <leader>fF does.
       local repo = vim.system({ 'git', 'rev-parse', '--is-inside-work-tree' }, { cwd = vim.uv.cwd(), text = true }):wait()
       if repo.code ~= 0 then
         return builtin.find_files { hidden = true, attach_mappings = attach }
@@ -188,9 +173,20 @@ return {
     -- widens the same list from what was opened here to everything on disk.
     -- Recent files were <leader>fr before, and <leader>fo before that, for
     -- vim's own `:oldfiles`, back when the list also carried the uncommitted
-    -- files; that had a <C-k> chord too, now unmapped. <C-f> stays on the
-    -- wide picker (see above), so only <leader>fF has a chord.
+    -- files; that had a <C-k> chord too, now unmapped.
+    --
+    -- <C-f> is the file chord: f is the noun's letter, the same one the
+    -- <leader>f pair carries. It sits on the pair's default, so it and
+    -- <leader>ff bind the same function and the wide picker is leader-only.
+    -- It replaced <C-p>, which used to open this same picker and is now
+    -- unbound outside the completion menu. Every mode, like <C-q> and <C-\>,
+    -- and `t` is the one that matters: it makes the chord reach from inside
+    -- the shell and Claude's pane, which otherwise swallow it (readline
+    -- forward-char, which Right also does). <C-f> is a legacy control byte
+    -- (0x06), so it arrives through Zellij with no kitty keyboard protocol
+    -- support.
     vim.keymap.set('n', '<leader>ff', search_recent_files, { desc = 'Find Recent Files' })
+    vim.keymap.set({ 'n', 'i', 'v', 'x', 't' }, '<C-f>', search_recent_files, { desc = 'Find Recent Files' })
     vim.keymap.set('n', '<leader>fF', find_files, { desc = 'Find Files' })
 
     -- Search directories only; selecting one opens it in oil.nvim.

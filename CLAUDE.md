@@ -88,7 +88,7 @@ The rules that matter most when editing this config:
 - **A chord is an alias, never a sole address.** Chords are invisible — nothing on
   screen reveals them. Each one binds the *same function object* as its `<leader>`
   twin so the two cannot drift apart. See `telescope.lua`: `<C-k>`/`<leader>ss`,
-  `<C-s>`/`<leader>sS`, `<C-f>`/`<leader>fF`.
+  `<C-s>`/`<leader>sS`, `<C-f>`/`<leader>ff`.
 - **Shift widens scope, and means nothing else.** `<leader>ss` document →
   `<leader>sS` workspace; `<leader>sx` buffer diagnostics → `<leader>sX` project;
   `<leader>ff` recent files → `<leader>fF` every file. Bare
