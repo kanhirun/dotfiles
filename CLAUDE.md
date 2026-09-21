@@ -96,7 +96,11 @@ The rules that matter most when editing this config:
   scope wider. `F`'s inventory is the language's `folds.scm`, gathered by range
   rather than by line (`config/node_pick.lua`, sharing `fold_pick`'s candidates);
   labelling every treesitter node instead would need ~255 labels on a 40-line
-  screen against flash's 52.
+  screen against flash's 52. `nvim/after/queries/*/folds.scm` widens that
+  inventory where upstream is too narrow — a call taking a function literal, so
+  `describe`, `it`, `Describe`, `It` and `t.Run` are reachable by name rather
+  than by their argument list. A dense TypeScript spec passes 52 candidates
+  without them; the labels run out furthest from the cursor first.
 - **Shadow freely to enhance, deliberately to replace.** An *enhancement* keeps a vim
   key's meaning and widens its reach: flash on `f` still means "move to text I name," so
   nothing you knew about `f` became false and no justification is owed. A *replacement*

@@ -1,6 +1,7 @@
 -- Labels foldable treesitter nodes in the window, flash-style, and folds what
 -- you pick. "Foldable" is whatever the language's folds.scm captures as
--- @fold: functions, blocks, if/for, literals, and so on.
+-- @fold: functions, blocks, if/for, literals, and so on -- plus whatever
+-- after/queries/*/folds.scm adds to it.
 --
 -- Two pickers share the machinery. "node" gives each node its own label and
 -- folds that one node. "level" gives every node at the same nesting depth

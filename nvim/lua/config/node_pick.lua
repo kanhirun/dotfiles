@@ -7,8 +7,13 @@
 -- carries around 255 distinct node ranges over 170 start positions, against
 -- flash's 52 labels, and nested nodes sharing a start position cannot be told
 -- apart by a label sitting on it. folds.scm is what brings the count back
--- inside the budget, and it does so per language, with no node-type list
--- maintained here.
+-- inside the budget, and it does so per language.
+--
+-- after/queries/*/folds.scm extends that inventory where it is too narrow --
+-- currently block-taking calls, so a test block is reachable by its name. A
+-- dense TypeScript spec already exceeds the 52 labels without them, and the
+-- candidates that lose out are the ones furthest from the cursor, since the
+-- sort below hands out labels nearest-first.
 local M = {}
 
 -- Closest candidates to the cursor take the first labels, as flash does.
