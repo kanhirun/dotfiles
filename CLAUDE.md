@@ -130,8 +130,10 @@ right and is only narrowed; the shell leaves its bottom split for a full-height 
 until it is next hidden.
 
 Nouns keep one letter across every position they appear in. Diagnostics are `x`:
-`g]`/`g[` move between them, `<leader>sx` lists them, `<leader>rx` fixes the one under
-the cursor. Adding a binding for an existing noun should reuse its letter.
+`]x`/`[x` move between them, `<leader>sx` lists them, `<leader>rx` fixes the one under
+the cursor. Adding a binding for an existing noun should reuse its letter. The
+bracket is the direction and the letter is the noun, so a new noun's motion is
+guessable rather than looked up; `g]`/`g[` held this before and taught nothing.
 
 **Setup this repo does not capture**: Caps Lock is remapped to Ctrl via macOS
 System Settings. cmux is the terminal and sits directly under Neovim — there is

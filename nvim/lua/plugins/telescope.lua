@@ -437,7 +437,7 @@ return {
     -- 3. Bug fixes
     --======================
 
-    -- `x` is the diagnostic wherever it appears: g]/g[ move between them
+    -- `x` is the diagnostic wherever it appears: ]x/[x move between them
     -- (lsp.lua), <leader>rx fixes the one under the cursor, and this lists them.
     -- Shift widens scope the same way it does for symbols, so the whole
     -- <leader>s group reads one way.
