@@ -92,8 +92,11 @@ The rules that matter most when editing this config:
 - **Shift widens scope, and means nothing else.** `<leader>ss` document →
   `<leader>sS` workspace; `<leader>sx` buffer diagnostics → `<leader>sX` project;
   `<leader>ff` recent files → `<leader>fF` every file. Bare
-  `f` finds by text, `F` finds the text object enclosing the match — same pattern, one
-  scope wider.
+  `f` finds by text, `F` labels every text object on screen — same pattern, one
+  scope wider. `F`'s inventory is the language's `folds.scm`, gathered by range
+  rather than by line (`config/node_pick.lua`, sharing `fold_pick`'s candidates);
+  labelling every treesitter node instead would need ~255 labels on a 40-line
+  screen against flash's 52.
 - **Shadow freely to enhance, deliberately to replace.** An *enhancement* keeps a vim
   key's meaning and widens its reach: flash on `f` still means "move to text I name," so
   nothing you knew about `f` became false and no justification is owed. A *replacement*

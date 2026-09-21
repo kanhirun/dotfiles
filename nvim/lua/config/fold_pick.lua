@@ -8,17 +8,28 @@
 local M = {}
 
 ---@class FoldPick.Candidate
----@field first number  first line of the fold
----@field last number   last line of the fold
----@field col number    column the label sits at
----@field depth number  how many other foldable nodes enclose it, buffer-wide
+---@field first number    first line of the fold
+---@field last number     last line of the fold
+---@field col number      column the label sits at
+---@field end_col number  last column of the node, on `last`
+---@field depth number    how many other foldable nodes enclose it, buffer-wide
 
 -- Every foldable node in the buffer, with its depth. Buffer-wide for two
 -- reasons: depth stays the same however far you have scrolled into a
 -- function, and the level picker folds a level across the whole file, not
 -- just the part of it in view.
+--
+-- `by_range` gathers for selection rather than for folding. Folding is
+-- line-based, so two nodes spanning the same lines fold identically and a
+-- one-line node hides nothing; both are dropped. Selection is
+-- character-based, so both are real targets and are kept. Nothing computes
+-- depth in that mode -- the containment test below is line-based, so nodes
+-- sharing their lines would each count as enclosing the other, and only the
+-- level picker reads depth.
+---@param opts? {by_range?: boolean}
 ---@return FoldPick.Candidate[]
-function M.all_candidates(buf)
+function M.all_candidates(buf, opts)
+  local by_range = opts and opts.by_range
   local ok, parser = pcall(vim.treesitter.get_parser, buf)
   if not (ok and parser) then
     return {}
@@ -36,22 +47,24 @@ function M.all_candidates(buf)
         -- A node that ends at column 0 finishes on the previous line.
         if ec == 0 then
           er = er - 1
+          ec = #(vim.api.nvim_buf_get_lines(buf, er, er + 1, false)[1] or "") + 1
         end
-        local first, last = sr + 1, er + 1
-        local key = first .. ":" .. last
-        -- One-line nodes hide nothing.
-        if last > first and not seen[key] then
+        local first, last, end_col = sr + 1, er + 1, ec - 1
+        local key = by_range and table.concat({ first, sc, last, end_col }, ":") or (first .. ":" .. last)
+        if (by_range or last > first) and not seen[key] then
           seen[key] = true
-          all[#all + 1] = { first = first, last = last, col = sc, depth = 0 }
+          all[#all + 1] = { first = first, last = last, col = sc, end_col = end_col, depth = 0 }
         end
       end
     end
   end)
 
-  for _, c in ipairs(all) do
-    for _, o in ipairs(all) do
-      if o ~= c and o.first <= c.first and o.last >= c.last then
-        c.depth = c.depth + 1
+  if not by_range then
+    for _, c in ipairs(all) do
+      for _, o in ipairs(all) do
+        if o ~= c and o.first <= c.first and o.last >= c.last then
+          c.depth = c.depth + 1
+        end
       end
     end
   end
@@ -60,11 +73,12 @@ end
 
 -- The candidates whose start line is on screen in the window: the ones that
 -- can carry a label.
+---@param opts? {by_range?: boolean}
 ---@return FoldPick.Candidate[]
-function M.candidates(win)
+function M.candidates(win, opts)
   -- line() treats winid 0 as "no such window", not "current window".
   win = win == 0 and vim.api.nvim_get_current_win() or win
-  local all = M.all_candidates(vim.api.nvim_win_get_buf(win))
+  local all = M.all_candidates(vim.api.nvim_win_get_buf(win), opts)
   local top, bot = vim.fn.line("w0", win), vim.fn.line("w$", win)
 
   local out = {} ---@type FoldPick.Candidate[]

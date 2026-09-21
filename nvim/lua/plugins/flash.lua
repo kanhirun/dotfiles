@@ -16,15 +16,19 @@ return {
     -- candidates instead of making you repeat `;`. Nothing about `f` became false.
     { "f", mode = { "n", "x", "o" }, function() require("flash").jump() end, desc = "Flash" },
     -- Same find, one scope wider: `f` names a position by the characters at it,
-    -- `F` names the structure around it. There is no pattern to type -- the
-    -- labels are on screen the moment it fires, one per treesitter node
-    -- enclosing the cursor, and the pick selects that node.
+    -- `F` names the structures themselves. There is no pattern to type -- every
+    -- text object on screen is labelled the moment it fires, and the pick
+    -- selects that node (config/node_pick.lua).
     -- This one IS a replacement -- vim's F meant backwards-find-on-this-line --
     -- and it is only affordable because the bidirectional `f` above already
     -- absorbed that job, so the capability moved rather than disappeared.
-    { "F", mode = { "n", "x", "o" }, function() require("flash").treesitter() end, desc = "Flash Treesitter" },
-    -- No pattern: labels only the nodes enclosing the cursor.
-    { "S", mode = { "n", "x", "o" }, function() require("flash").treesitter() end, desc = "Flash Treesitter" },
+    --
+    -- `S` was flash's own treesitter(), which labels the cursor's ancestors
+    -- rather than the screen. Those ancestors are on screen and carry labels
+    -- here too, so picking one still selects outward -- what is gone is
+    -- repeating the key to step out one node at a time. Nothing calls
+    -- treesitter() any more and `S` is vim's substitute-line again.
+    { "F", mode = { "n", "x", "o" }, function() require("config.node_pick").pick() end, desc = "Pick Node" },
     -- Labels every foldable node in the window; the pick becomes a manual
     -- fold (config/fold_pick.lua). Bare `z` is vim's fold prefix, so this
     -- sits inside it. Shadows zs, horizontal scroll, which only matters
