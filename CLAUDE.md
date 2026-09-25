@@ -118,7 +118,13 @@ The rules that matter most when editing this config:
 Namespaces in use: `<leader>s` search · `<leader>r` refactor · `<leader>t` test/toggle ·
 `<leader>g` git · `<leader>c` Claude. `<C-]>` toggles Claude and `<C-\>` toggles a
 terminal tab, both from any mode; with a visual selection, `<C-]>` sends it to
-Claude instead. `<C-Space>` returns to Normal mode from every mode and is the only way
+Claude instead. Claude opens on the side away from the window the chord was
+pressed in — the window's centre column against the screen's, so a full-width
+window ties and keeps the right-hand pane it always had, and only a real split
+moves it. `<C-[>` could not have been a second chord for the other side: it is
+byte 0x1B, so binding it binds `<Esc>`. A send has no side of its own, since
+`ClaudeCodeSend` opens through the configured default. `<C-Space>` returns to
+Normal mode from every mode and is the only way
 out of terminal mode: `<Esc>` is bound nowhere and belongs to the program in every
 terminal, which is what Snacks' buffer-local double-tap on Claude's pane already forced.
 `<C-\>` is a replacement — it makes vim's own `<C-\><C-n>` and `<C-\><C-o>` untypable,
@@ -129,9 +135,9 @@ one hides any other (a `BufWinEnter` rule in `terminal.lua`). The `<C-\>` tab is
 buffer (twin of `<leader>-`). `<C-f>`, `<C-j>` and `<C-q>` reach from inside both panes
 and step to an editor window first (`config/panes.lua`), so a picked file or directory
 never replaces a pane; from inside a pane they also move it to the right half of the
-screen, so the file and the pane share it 50/50 side by side. Claude is already on the
-right and is only narrowed; the shell leaves its bottom split for a full-height column
-until it is next hidden.
+screen, so the file and the pane share it 50/50 side by side. Claude is already a
+vertical split and is only narrowed, keeping whichever side it opened on; the shell
+leaves its bottom split for a full-height column until it is next hidden.
 
 Nouns keep one letter across every position they appear in. Diagnostics are `x`:
 `]x`/`[x` move between them, `<leader>sx` lists them, `<leader>rx` fixes the one under

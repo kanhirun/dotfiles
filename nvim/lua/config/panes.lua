@@ -57,11 +57,12 @@ end
 -- from inside it changes that: now the file and the pane are read side by
 -- side, and neither should be a sliver.
 --
--- Side by side means the same shape for both panes. Claude already sits on
--- the right, so it is only narrowed to half the width. The shell opens as a
--- bottom split, and half the height there would leave the file a wide, short
--- strip above it, so the shell is moved to a full-height column on the right
--- first and then narrowed the same way. The move is Vim's own `wincmd L`,
+-- Side by side means the same shape for both panes. Claude is already a
+-- vertical split -- on whichever side it was summoned to -- so it is only
+-- narrowed to half the width and keeps that side. The shell opens as a bottom
+-- split, and half the height there would leave the file a wide, short strip
+-- above it, so the shell is moved to a full-height column on the right first
+-- and then narrowed the same way. The move is Vim's own `wincmd L`,
 -- run inside the pane's window, so the window and its terminal buffer are
 -- untouched and Snacks keeps tracking the same window id. Whatever remains
 -- goes to the editor windows.
