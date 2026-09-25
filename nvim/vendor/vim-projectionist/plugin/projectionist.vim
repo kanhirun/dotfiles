@@ -130,6 +130,10 @@ function! s:Detect(...) abort
   endif
 endfunction
 
+function! ProjectionistDetectPath(path) abort
+  call s:Detect(a:path)
+endfunction
+
 if !exists('g:did_load_ftplugin')
   filetype plugin on
 endif
