@@ -7,17 +7,30 @@
 -- too, where the buffer is a terminal and there is nothing to send. Nothing is
 -- added to the composer on the way in: context arrives only when selected, or
 -- through the <leader>c bindings below.
--- The side away from the window the chord was pressed in, so the pane lands
--- beside what you were reading rather than on top of it. The test is the
--- window's centre column against the screen's: right of centre asks for a left
--- pane, anything else gets a right one. A single full-width window sits exactly
--- on the centre line, so the common case keeps the right-hand pane it always
--- had, and only a genuine split moves it.
-local function far_side()
-  local win = vim.api.nvim_get_current_win()
-  local first = vim.fn.win_screenpos(win)[2]
-  local centre = first + (vim.api.nvim_win_get_width(win) - 1) / 2
-  return centre > (1 + vim.o.columns) / 2 and "left" or "right"
+local function editor_columns()
+  local columns = {}
+  for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+    local buf = vim.api.nvim_win_get_buf(win)
+    if vim.api.nvim_win_get_config(win).relative == ""
+      and vim.bo[buf].buftype ~= "terminal"
+      and not vim.wo[win].winfixwidth then
+      columns[vim.fn.win_screenpos(win)[2]] = true
+    end
+  end
+  return vim.tbl_count(columns)
+end
+
+local function claude_window()
+  local buf = require("claudecode.terminal").get_active_terminal_bufnr()
+  local win = buf and vim.fn.bufwinid(buf) or -1
+  return win ~= -1 and win or nil
+end
+
+local function split_into_thirds(claude)
+  vim.api.nvim_win_set_width(claude, math.floor(vim.o.columns / 3))
+  vim.wo[claude].winfixwidth = true
+  vim.cmd("horizontal wincmd =")
+  vim.wo[claude].winfixwidth = false
 end
 
 local function toggle_claude_or_send()
@@ -32,7 +45,16 @@ local function toggle_claude_or_send()
   -- focus_toggle, not simple_toggle: the ClaudeCode command this replaced was
   -- focus_toggle, so a visible-but-unfocused pane is focused rather than
   -- hidden. The side is only read when the pane is being opened.
-  require("claudecode.terminal").focus_toggle { split_side = far_side() }
+  local was_open = claude_window() ~= nil
+  local thirds = editor_columns() >= 2
+  require("claudecode.terminal").focus_toggle {
+    split_side = "right",
+    split_width_percentage = thirds and 1 / 3 or 0.6,
+  }
+  local claude = claude_window()
+  if thirds and claude and not was_open then
+    split_into_thirds(claude)
+  end
 end
 
 return {

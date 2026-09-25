@@ -123,12 +123,13 @@ The rules that matter most when editing this config:
 Namespaces in use: `<leader>s` search · `<leader>r` refactor · `<leader>t` test/toggle ·
 `<leader>g` git · `<leader>c` Claude. `<C-]>` toggles Claude and `<C-\>` toggles a
 terminal tab, both from any mode; with a visual selection, `<C-]>` sends it to
-Claude instead. Claude opens on the side away from the window the chord was
-pressed in — the window's centre column against the screen's, so a full-width
-window ties and keeps the right-hand pane it always had, and only a real split
-moves it. `<C-[>` could not have been a second chord for the other side: it is
-byte 0x1B, so binding it binds `<Esc>`. A send has no side of its own, since
-`ClaudeCodeSend` opens through the configured default. `<C-Space>` returns to
+Claude instead. Claude always opens on the right. Its width depends on the
+layout it opens into: 3/5 of the screen beside a single editor column, and a
+third when two or more editor columns already sit side by side, with the editors
+evened out so the screen splits into equal thirds. Windows with `winfixwidth` —
+the oil drawers — do not count as columns, so a drawer beside a file still gets
+the 3/5 pane. Only the toggle does this; a send opens through `ClaudeCodeSend`'s
+configured default, which is the 3/5 width on the right. `<C-Space>` returns to
 Normal mode from every mode and is the only way
 out of terminal mode: `<Esc>` is bound nowhere and belongs to the program in every
 terminal, which is what Snacks' buffer-local double-tap on Claude's pane already forced.
@@ -147,7 +148,7 @@ rather than a wider scope, which is the one place Shift means something else.
 and step to an editor window first (`config/panes.lua`), so a picked file or directory
 never replaces a pane; from inside a pane they also move it to the right half of the
 screen, so the file and the pane share it 50/50 side by side. Claude is already a
-vertical split and is only narrowed, keeping whichever side it opened on; the shell
+vertical split on the right and is only narrowed; the shell
 leaves its bottom split for a full-height column until it is next hidden.
 
 Nouns keep one letter across every position they appear in. Diagnostics are `x`:
