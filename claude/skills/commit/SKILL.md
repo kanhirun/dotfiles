@@ -52,6 +52,28 @@ The shape is git's own 50/72 rule (git-commit docs, Tim Pope's post):
 - **Blank line**, then the body wrapped at 72. Git never rewraps: a longer line is shown as-is in `git log`, and a missing blank line makes git treat the whole thing as the subject.
 - **Body**: *why*. The diff already shows how. Skip the body only when the subject is genuinely complete.
 - **Name the observable behavior change.** When bisect fingers this commit, the body should say what to look at without reading the diff. This is the single highest-value habit for debuggability.
+- **`Fixes` opens a subject only when the defect is already on master.** It says the bug shipped and this commit is the repair. A defect introduced on this branch is a fixup instead (below), and the rebase folds it into the commit that caused it.
+
+#### Showing the error
+
+Someone hits the bug, searches for what they saw, and should land on the commit
+that fixed it. Put the error where that search will reach.
+
+- **Subject: the error's shortest identifying form.** The exception class, the
+  error code, the distinctive phrase — `Fixes DeploymentError on the public
+  ALB's port 80 listener`, not `Fixes the listener collision`. The name alone
+  goes in; it shares the ~50 characters with what changed.
+- **Body: the error as it appeared**, indented as a block, above the
+  explanation. Say where it came from — the job, the test, the command — so the
+  whole thing can still be found.
+- **Truncate to what identifies it.** The message and the frame naming your own
+  code earn their place; the library internals under it do not. Mark a cut
+  `[…]`.
+- **Cut what will not recur.** Request ids, timestamps, runner paths and
+  generated ARNs date the commit and match nothing later.
+- **No error, no block.** A bug that produced wrong output rather than a failure
+  gets observed-versus-expected instead. Do not manufacture an error to fill the
+  shape.
 
 The content rule is Linus's, repeated across the kernel lists: a descriptive summary plus a body that explains the reasoning. "Fix bug", "Update code", "Address review comments" name no change and no reason, and are what a reviewer or a bisect will find. A subject should let someone skim `git log --oneline` and know what each commit did; the body should let them know why it was done that way and not another.
 
@@ -75,7 +97,7 @@ git log -S'<the broken code>' --oneline     # or search by content
 git log origin/main..HEAD --format='%h %s'  # the range that may be rewritten
 ```
 
-If the target is not in that last range, it is already upstream. Then it is **not** a fixup — write an ordinary commit saying what it fixes and why the earlier one was wrong.
+If the target is not in that last range, it is already upstream. Then it is **not** a fixup — write an ordinary commit whose subject opens with `Fixes` and names the defect, with a body saying why the earlier commit was wrong. Master is the only place a bug can have been hit, so it is the only place `Fixes` is honest.
 
 ### Stop at the fixup
 
@@ -129,7 +151,9 @@ Verify real Clerk sessions in staging, fixes DEV-1370
 The annotation counts toward the subject length, so leave room for it.
 
 `fixes` for a bug, `resolves` for anything else. Every other commit on the
-branch carries no id at all — not in the subject, not in the body.
+branch carries no id at all — not in the subject, not in the body. A subject
+already opening with `Fixes` still needs the trailing magic word: Linear reads
+the annotation, not the verb.
 
 ### Judging "meets the goal"
 
