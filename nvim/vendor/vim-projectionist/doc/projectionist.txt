@@ -80,6 +80,18 @@ The full list of available properties in a projection is as follows:
         Sets 'makeprg'.  Also loads a |:compiler| plugin if one is available
         matching the executable name.  This is useful to set from a "*"
         projection.  Expansions are shell escaped.
+						*projectionist-match*
+"match" ~
+        A |regular-expression| the glob's match, the text "{}" expands to,
+        must also match for the projection to apply.  Narrows the glob in
+        what the projection applies to, what navigation commands complete, and
+        which related files they find.  To exclude Go tests and
+        subdirectories from "*.go":
+>
+        "match": "\\v^[^/]+(_test)@<!$"
+<
+        Ignored on a key without a "*".  Does not affect the path built from a
+        navigation command's argument.
 						*projectionist-path*
 "path" ~
         Additional directories to prepend to 'path'.  Can be relative to the

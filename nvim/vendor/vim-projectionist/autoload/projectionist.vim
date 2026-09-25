@@ -412,6 +412,7 @@ function! projectionist#query_raw(key, ...) abort
     for pattern in reverse(sort(filter(keys(projections), 'v:val =~# s:valid_key && v:val =~# "\\*"'), function('projectionist#lencmp')))
       let match = s:match(name, pattern)
       if (!empty(match) || pattern ==# '*') && has_key(projections[pattern], a:key)
+            \ && match =~# get(projections[pattern], 'match', '')
         let expansions = extend({'match': match}, attrs)
         call add(candidates, [projections[pattern][a:key], expansions])
       endif
@@ -716,7 +717,7 @@ function! projectionist#navigation_commands() abort
         if !has_key(commands, name)
           let commands[name] = []
         endif
-        let command = [path, pattern]
+        let command = [path, pattern, get(projection, 'match', '')]
         call add(commands[name], command)
       endif
     endfor
@@ -725,11 +726,12 @@ function! projectionist#navigation_commands() abort
   return commands
 endfunction
 
-function! s:find_related_file(patterns) abort
+function! s:find_related_file(patterns, filters) abort
   let alternates = s:query_file_recursive(['related', 'alternate'], {'lnum': 0})
   for alternate in alternates
     for pattern in a:patterns
-      if !empty(s:match(alternate, pattern))
+      let match = s:match(alternate, pattern)
+      if !empty(match) && match =~# a:filters[pattern]
         return alternate
       endif
     endfor
@@ -739,7 +741,7 @@ function! s:find_related_file(patterns) abort
     if pattern !~# '\*'
       continue
     endif
-    for candidate in projectionist#glob(pattern)
+    for candidate in filter(projectionist#glob(pattern), 's:match(v:val, pattern) =~# a:filters[pattern]')
       let candidate_alternates = s:query_file_recursive(
             \ ['related', 'alternate'],
             \ {'lnum': 0, 'file': candidate})
@@ -759,13 +761,17 @@ endfunction
 
 function! s:open_projection(mods, edit, variants, ...) abort
   let formats = []
+  let filters = {}
   for variant in a:variants
-    call add(formats, variant[0] . projectionist#slash() . (variant[1] =~# '\*\*'
-          \ ? variant[1] : substitute(variant[1], '\*', '**/*', '')))
+    let format = variant[0] . projectionist#slash() . (variant[1] =~# '\*\*'
+          \ ? variant[1] : substitute(variant[1], '\*', '**/*', ''))
+    call add(formats, format)
+    let filters[format] = get(variant, 2, '')
   endfor
   let cmd = s:parse(a:mods, a:000)
   if get(cmd.args, -1, '') ==# '`=`'
     let s:last_formats = formats
+    let s:last_filters = filters
     return ''
   endif
   if len(cmd.args)
@@ -775,7 +781,7 @@ function! s:open_projection(mods, edit, variants, ...) abort
     let base = substitute(name, '.*/', '', '')
     call map(formats, 'substitute(substitute(v:val, "\\*\\*\\(/\\=\\)", empty(dir) ? "" : dir . "\\1", ""), "\\*", base, "")')
   else
-    let related_file = s:find_related_file(formats)
+    let related_file = s:find_related_file(formats, filters)
     if !empty(related_file)
       let formats = [related_file]
     else
@@ -805,7 +811,7 @@ function! s:projection_complete(lead, cmdline, _) abort
       continue
     endif
     let glob = substitute(format, '[^/]*\ze\*\*/\*', '', 'g')
-    let results += map(projectionist#glob(glob), 's:match(v:val, format)')
+    let results += filter(map(projectionist#glob(glob), 's:match(v:val, format)'), 'v:val =~# s:last_filters[format]')
   endfor
   call s:uniq(results)
   return map(projectionist#completion_filter(results, a:lead, '/'), 'fnameescape(v:val)')
