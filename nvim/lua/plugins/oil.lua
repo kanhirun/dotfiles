@@ -61,7 +61,12 @@ return {
       -- visual mode are left before the split, since the explorer is a buffer
       -- to be read and edited in Normal mode. Hiding touches none of that: the
       -- mode and the window the press came from are left as they were.
+      -- Two drawers, one mechanism. The wide one splits beside the window you
+      -- are in; the compact one pins itself to the screen's left edge, which is
+      -- what `topleft` buys over `leftabove` -- the latter is relative to the
+      -- current window, so from a right-hand split it lands mid-screen.
       local DRAWER_WIDTH = 30
+      local COMPACT_WIDTH = 28
 
       local function is_ordinary_window(win)
         return vim.api.nvim_win_get_config(win).zindex == nil
@@ -103,7 +108,7 @@ return {
         return true
       end
 
-      local function open_oil_beside()
+      local function open_oil_beside(width, placement)
         local mode = vim.fn.mode()
         if mode == 'v' or mode == 'V' or mode == '\22' or mode == 's' or mode == 'S' then
           vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('<Esc>', true, false, true), 'nx', false)
@@ -111,7 +116,7 @@ return {
         vim.cmd.stopinsert()
         local panes = require('config.panes')
         local from_pane = panes.leave_terminal_window()
-        vim.cmd(('leftabove %dvsplit | Oil'):format(DRAWER_WIDTH))
+        vim.cmd(('%s %dvsplit | Oil'):format(placement, width))
         vim.wo.winfixwidth = true
         vim.w.oil_drawer = true
         if from_pane then
@@ -122,16 +127,24 @@ return {
       -- Closes the drawer if one is open, from inside it too. Otherwise opens
       -- one, unless the cursor is already in an oil buffer filling a regular
       -- window, where a drawer beside it would be oil next to oil: no-op.
-      local function toggle_oil_beside()
+      local function toggle_oil_beside(width, placement)
         if hide_oil() then
           return
         end
         if vim.bo.filetype == 'oil' then
           return
         end
-        open_oil_beside()
+        open_oil_beside(width, placement)
       end
-      vim.keymap.set('n', '<leader>-', toggle_oil_beside, { desc = 'Toggle File Explorer (left split)' })
+
+      -- Either chord closes whichever drawer is open, so the two never stack.
+      local toggle_drawer = function()
+        toggle_oil_beside(DRAWER_WIDTH, 'leftabove')
+      end
+      local toggle_compact = function()
+        toggle_oil_beside(COMPACT_WIDTH, 'topleft')
+      end
+      vim.keymap.set('n', '<leader>-', toggle_drawer, { desc = 'Toggle File Explorer (left split)' })
       -- The chord twin, binding the same function. <C-q> is byte 0x11, so it
       -- needs no kitty keyboard protocol support. It is XON, but Neovim's TUI
       -- turns off flow control, so it arrives like <C-s> does. It costs Vim's
@@ -142,7 +155,18 @@ return {
       --
       -- It was <C-a>, which is now unbound: that gave back Vim's increment
       -- and readline's beginning-of-line in the panes.
-      vim.keymap.set({ 'n', 'i', 'v', 'x', 't' }, '<C-q>', toggle_oil_beside, { desc = 'Toggle File Explorer (left split)' })
+      vim.keymap.set({ 'n', 'i', 'v', 'x', 't' }, '<C-q>', toggle_drawer, { desc = 'Toggle File Explorer (left split)' })
+
+      -- The compact drawer, at the screen's left edge whatever window you are
+      -- in. <C-S-[> is the second binding in this config that depends on the
+      -- kitty keyboard protocol: Ctrl and Shift on `[` has no legacy control
+      -- byte of its own, and Ghostty reports it as its own keycode the way it
+      -- already does for <C-S-Z>. Without that protocol nothing arrives -- it
+      -- does not fall back to <Esc>, which plain <C-[> would be. <leader>_ is
+      -- the twin, binding the same function; Shift on `-` means a variant here
+      -- rather than a wider scope, which is a deviation and recorded as one.
+      vim.keymap.set('n', '<leader>_', toggle_compact, { desc = 'Toggle File Explorer (compact, screen left)' })
+      vim.keymap.set({ 'n', 'i', 'v', 'x', 't' }, '<C-S-[>', toggle_compact, { desc = 'Toggle File Explorer (compact, screen left)' })
     end
   }
 }

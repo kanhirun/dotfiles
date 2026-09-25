@@ -113,7 +113,12 @@ The rules that matter most when editing this config:
 - **Legacy control bytes only.** Zellij sits between the terminal and Neovim, so a
   chord must survive without kitty keyboard protocol support: `<C-Space>` (NUL),
   `<C-\>` (0x1C), `<C-]>` (0x1D), `<C-q>` (0x11). Note that **`<C-[>` is byte 0x1B — it
-  *is* `<Esc>`** and cannot be bound independently.
+  *is* `<Esc>`** and cannot be bound independently. Two bindings now break this
+  rule deliberately, `<C-S-Z>` and `<C-S-[>`: Ctrl with Shift has no legacy byte,
+  so Ghostty reports each as its own keycode and a terminal without the protocol
+  simply never delivers them. That is a clean failure rather than a collision —
+  `<C-S-[>` does *not* decay to `<Esc>` the way `<C-[>` would — which is what
+  makes the exception affordable now that the Zellij layer is gone.
 
 Namespaces in use: `<leader>s` search · `<leader>r` refactor · `<leader>t` test/toggle ·
 `<leader>g` git · `<leader>c` Claude. `<C-]>` toggles Claude and `<C-\>` toggles a
@@ -132,7 +137,13 @@ and stops forwarding the tty quit byte to a job, which is why `<C-Space>` had to
 over the first of those. Only one Snacks terminal pane is ever open at a time: showing
 one hides any other (a `BufWinEnter` rule in `terminal.lua`). The `<C-\>` tab is a plain
 `:terminal` and that rule ignores it. `<C-q>` toggles oil in a split beside the current
-buffer (twin of `<leader>-`). `<C-f>`, `<C-j>` and `<C-q>` reach from inside both panes
+buffer (twin of `<leader>-`), and `<C-S-[>` toggles a narrower one pinned to the
+screen's left edge (twin of `<leader>_`). The difference is `leftabove` against
+`topleft`: the first is relative to the window you are in, so from a right-hand
+split it lands mid-screen, and the second always reaches the edge. Either chord
+closes whichever drawer is open, so the two never stack. `_` marks a variant
+rather than a wider scope, which is the one place Shift means something else.
+`<C-f>`, `<C-j>` and `<C-q>` reach from inside both panes
 and step to an editor window first (`config/panes.lua`), so a picked file or directory
 never replaces a pane; from inside a pane they also move it to the right half of the
 screen, so the file and the pane share it 50/50 side by side. Claude is already a
