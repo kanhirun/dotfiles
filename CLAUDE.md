@@ -92,9 +92,9 @@ The rules that matter most when editing this config:
 - **Shift widens scope, and means nothing else.** `<leader>ss` document →
   `<leader>sS` workspace; `<leader>sx` buffer diagnostics → `<leader>sX` project;
   `<leader>ff` recent files → `<leader>fF` every file. Bare
-  `f` finds by text, `F` labels every text object on screen — same pattern, one
-  scope wider. `F`'s inventory is the language's `folds.scm`, gathered by range
-  rather than by line (`config/node_pick.lua`, sharing `fold_pick`'s candidates);
+  `s` searches by text, `S` labels every text object on screen — same pattern, one
+  scope wider, and the same letter as the `<leader>s` search group. `S`'s
+  inventory is the language's `folds.scm`, gathered by range rather than by line (`config/node_pick.lua`, sharing `fold_pick`'s candidates);
   labelling every treesitter node instead would need ~255 labels on a 40-line
   screen against flash's 52. `nvim/after/queries/*/folds.scm` widens that
   inventory where upstream is too narrow — a call taking a function literal, so
@@ -102,14 +102,14 @@ The rules that matter most when editing this config:
   than by their argument list. A dense TypeScript spec passes 52 candidates
   without them; the labels run out furthest from the cursor first.
 - **Shadow freely to enhance, deliberately to replace.** An *enhancement* keeps a vim
-  key's meaning and widens its reach: flash on `f` still means "move to text I name," so
-  nothing you knew about `f` became false and no justification is owed. A *replacement*
-  puts a different meaning on the key, costs a default, and owes an account of where
-  that job went — `F` is a replacement, acceptable only because bidirectional
-  window-wide `f` already absorbed backwards-find-on-this-line. `t` and `T` are left
-  alone because nothing else does their job. Record which kind a change is.
+  key's meaning and widens its reach: flash's char mode on `f`, `F`, `t` and `T` still
+  means "move to this character," so nothing you knew about them became false and no
+  justification is owed. A *replacement* puts a different meaning on the key, costs a
+  default, and owes an account of where that job went — `s` and `S` are replacements,
+  affordable because vim's own `s` and `S` are only `cl` and `cc`, which still work.
+  Record which kind a change is.
 - **A bare key is not vacant real estate.** Leaving a slot to vim is a legitimate
-  outcome; `s` is unbound on purpose.
+  outcome, even when a mnemonic wants it filled.
 - **Legacy control bytes only.** Zellij sits between the terminal and Neovim, so a
   chord must survive without kitty keyboard protocol support: `<C-Space>` (NUL),
   `<C-\>` (0x1C), `<C-]>` (0x1D), `<C-q>` (0x11). Note that **`<C-[>` is byte 0x1B — it

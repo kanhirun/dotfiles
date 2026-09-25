@@ -62,7 +62,7 @@ function M.open()
       labeler = function() end,
       -- No action, so flash's own jump runs; pos = "range" makes the pick a
       -- visual selection of the node rather than a cursor move to its start,
-      -- which is what lets `F` stand in for a text object after an operator.
+      -- which is what lets `S` stand in for a text object after an operator.
       jump = { pos = "range" },
       -- max_length = 0: every key is a label, none is a search character.
       search = { multi_window = false, max_length = 0, incremental = false },
