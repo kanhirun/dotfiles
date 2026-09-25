@@ -46,7 +46,7 @@ return {
         -- Open/focus the Claude terminal in Normal mode; <i> to start typing.
         -- Also preserves scroll position when refocusing.
         auto_insert = true,
-        split_width_percentage = 0.75,
+        split_width_percentage = 0.6,
       },
       -- Land in Claude's prompt after sending context, instead of only revealing
       -- the split beside the file. Upstream defaults to false, which routes sends
