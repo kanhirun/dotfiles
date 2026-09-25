@@ -32,6 +32,11 @@ git fetch origin && git log --oneline HEAD..origin/master   # behind?
 - **Unpartitioned commits → stop.** A mechanical rename riding with a
   behaviour change is unreviewable; that is the `commit` skill's job, done
   before this one starts.
+- **`fixup!`, `squash!` or `amend!` commits → stop.** The range is not
+  bisectable until they are folded in, and after the push folding them
+  means a force-push. Name each one with its target, and give the exact
+  command: `git rebase -i --autosquash $(git merge-base origin/master HEAD)`.
+  Running it is the user's call.
 - **Behind master → say so.** Rebasing is the user's call, not this skill's.
 - **Uncommitted changes → stop.** Either they belong in the PR or they do not;
   both answers need the user.
