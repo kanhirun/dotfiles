@@ -34,6 +34,16 @@ return {
       })
       vim.keymap.set('n', '-', ':Oil<CR>', { noremap = true, desc = 'Open File Explorer' })
 
+      vim.api.nvim_create_autocmd('FileType', {
+        pattern = 'oil',
+        callback = function()
+          local dir = require('oil').get_current_dir()
+          if dir and vim.fn.exists('*ProjectionistDetectPath') == 1 then
+            vim.fn.ProjectionistDetectPath(dir)
+          end
+        end,
+      })
+
       -- Pairs with bare `-`: the same explorer, opened beside the file instead of
       -- over it, so the buffer being edited stays on screen. A toggle: with an
       -- explorer already showing in this tab, the press hides it instead of
