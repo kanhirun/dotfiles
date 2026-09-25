@@ -1,3 +1,49 @@
+local function edited_uris(edit)
+  local uris = {}
+  for uri in pairs(edit.changes or {}) do
+    uris[uri] = true
+  end
+  for _, change in ipairs(edit.documentChanges or {}) do
+    if change.textDocument then
+      uris[change.textDocument.uri] = true
+    elseif change.kind == 'rename' then
+      uris[change.newUri] = true
+    elseif change.kind == 'create' then
+      uris[change.uri] = true
+    end
+  end
+  return vim.tbl_keys(uris)
+end
+
+local function rename_and_save(_, result, ctx)
+  if not result then
+    vim.notify("Language server couldn't provide rename result", vim.log.levels.INFO)
+    return
+  end
+  local client = assert(vim.lsp.get_client_by_id(ctx.client_id))
+  local uris = edited_uris(result)
+  local already_modified = {}
+  for _, uri in ipairs(uris) do
+    local bufnr = vim.uri_to_bufnr(uri)
+    already_modified[bufnr] = vim.api.nvim_buf_is_loaded(bufnr) and vim.bo[bufnr].modified
+  end
+  vim.lsp.util.apply_workspace_edit(result, client.offset_encoding)
+  local kept = {}
+  for _, uri in ipairs(uris) do
+    local bufnr = vim.uri_to_bufnr(uri)
+    if already_modified[bufnr] then
+      table.insert(kept, vim.fn.fnamemodify(vim.api.nvim_buf_get_name(bufnr), ':.'))
+    elseif vim.api.nvim_buf_is_loaded(bufnr) and vim.bo[bufnr].modified then
+      vim.api.nvim_buf_call(bufnr, function()
+        vim.cmd 'silent update'
+      end)
+    end
+  end
+  if #kept > 0 then
+    vim.notify('Renamed, but left unsaved because they had other changes: ' .. table.concat(kept, ', '), vim.log.levels.WARN)
+  end
+end
+
 return {
   'neovim/nvim-lspconfig',
   dependencies = {
@@ -11,6 +57,10 @@ return {
     vim.api.nvim_create_autocmd('LspAttach', {
       group = vim.api.nvim_create_augroup('kickstart-lsp-attach', { clear = true }),
       callback = function(event)
+        local attached = vim.lsp.get_client_by_id(event.data.client_id)
+        if attached then
+          attached.handlers['textDocument/rename'] = rename_and_save
+        end
 
         -- ===========
         -- Keymaps
