@@ -118,7 +118,10 @@ The rules that matter most when editing this config:
   so Ghostty reports each as its own keycode and a terminal without the protocol
   simply never delivers them. That is a clean failure rather than a collision —
   `<C-S-[>` does *not* decay to `<Esc>` the way `<C-[>` would — which is what
-  makes the exception affordable now that the Zellij layer is gone.
+  makes the exception affordable now that the Zellij layer is gone. `<C-S-f>`
+  and `<C-S-s>` are the third and fourth, twins of `<leader>fF` and
+  `<leader>sS`. Without the protocol they fold into `<C-f>` and `<C-s>`, which
+  is harmless because each lands on a picker from the same pair.
 
 Namespaces in use: `<leader>s` search · `<leader>r` refactor · `<leader>t` test/toggle ·
 `<leader>g` git · `<leader>c` Claude. `<C-]>` toggles Claude and `<C-\>` toggles a
