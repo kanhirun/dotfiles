@@ -264,4 +264,11 @@ Both provide frecency-based directory jumping.
 ## Special Configurations
 
 - **Project-specific Vim configs**: Enabled via `.exrc` files (with security enabled)
-- **vim-projectionist**: Uses `.projections.json` for project navigation
+- **vim-projectionist**: Uses `.projections.json` for project navigation. It is
+  vendored at `nvim/vendor/vim-projectionist`, a copy of upstream `tpope/vim-projectionist`
+  at `5ff7bf7` (2024-12-21), loaded by `dir =` in `nvim/lua/plugins/projectionist.lua`
+  rather than fetched by lazy.nvim. The one addition is the `"match"` key
+  (`:help projectionist-match`): a regex the glob's match (`{}`) must also satisfy,
+  which is how `*.go` excludes `*_test.go`. It is distributed under Vim's license,
+  which permits a modified public copy; that is the deliberate exception to keeping
+  licensed material out of this repo, so do not remove it on those grounds.
