@@ -10,6 +10,9 @@ return {
       -- spec's full Describe/Context/It path instead, which is the point of
       -- writing them that way.
       vim.g['test#go#ginkgo#options'] = '-v'
+      -- An installed `ginkgo` drifts from the version go.mod pins and warns
+      -- on every run; `go run` builds the CLI the module itself requires.
+      vim.g['test#go#ginkgo#executable'] = 'go run github.com/onsi/ginkgo/v2/ginkgo'
 
       -- vim-test decides a JS/TS file is a test file only if package.json
       -- names the runner -- and it reads package.json from the cwd, never from
