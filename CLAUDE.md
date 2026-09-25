@@ -87,8 +87,9 @@ The rules that matter most when editing this config:
   `<C-w>`). Something new belongs on `<leader>`, not on a chord.
 - **A chord is an alias, never a sole address.** Chords are invisible — nothing on
   screen reveals them. Each one binds the *same function object* as its `<leader>`
-  twin so the two cannot drift apart. See `telescope.lua`: `<C-k>`/`<leader>ss`,
-  `<C-s>`/`<leader>sS`, `<C-f>`/`<leader>ff`.
+  twin so the two cannot drift apart. See `telescope.lua`: `<C-s>`/`<leader>ss`,
+  `<C-S-s>`/`<leader>sS`, `<C-f>`/`<leader>ff`, `<C-S-f>`/`<leader>fF`. Shift on
+  the chord widens scope the same way Shift on the leader letter does.
 - **Shift widens scope, and means nothing else.** `<leader>ss` document →
   `<leader>sS` workspace; `<leader>sx` buffer diagnostics → `<leader>sX` project;
   `<leader>ff` recent files → `<leader>fF` every file. Bare

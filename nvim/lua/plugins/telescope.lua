@@ -428,7 +428,7 @@ return {
     -- Terminals send <C-s> as byte 0x13, and Neovim's TUI turns off XON/XOFF
     -- flow control, so it arrives through Zellij like the other chords.
     vim.keymap.set('n', '<leader>ss', search_document_symbols, { desc = 'Search Symbols (document)' })
-    vim.keymap.set('n', '<C-s>', search_workspace_symbols, { desc = 'Search Symbols (workspace)' })
+    vim.keymap.set('n', '<C-s>', search_document_symbols, { desc = 'Search Symbols (document)' })
     vim.keymap.set('n', '<leader>sS', search_workspace_symbols, { desc = 'Search Symbols (workspace)' })
     vim.keymap.set('n', '<C-S-s>', search_workspace_symbols, { desc = 'Search Symbols (workspace)' })
 
