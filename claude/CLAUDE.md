@@ -86,33 +86,8 @@ tokens, connection strings, environment dumps, and pasted keys.
 
 # Code comments
 
-Do not use comments to explain what can be inferred by reading the code. Use
-them only for what would otherwise be confusing or non-intuitive: hidden
-consequences, surprising behavior, why a non-default was chosen, what must
-happen before an unusual operation. Keep them short. Redundant comments are
-noise and drift out of date.
-
-Before writing such a comment, read the corresponding test file. A test that
-names the behavior has already explained it, and a comment restating it is
-the redundancy above, with a second copy free to drift. Point at the test
-rather than paraphrasing it.
-
-Test files are the exception, and comments there are welcome: say what the
-case pins down, why this input and not another, what broke before and must
-not again. That context has nowhere else to live.
-
-Comment edits need no report. Change them and move on — do not list what was
-cut, kept or reworded, or why. If a reason matters it belongs in the comment;
-if it does not, it does not belong in a message either. The diff shows the
-rest.
-
-Sort a comment by where it lands. Behavior at the boundary — what a caller
-sees, what the thing guarantees, why the contract is this shape — is what a
-test exercises, so the test is its home and the code should point there.
-Anything inside — why this implementation over the obvious one, an ordering
-that must hold, a consequence invisible from outside — no test can express,
-so it belongs in the code. A comment restating the boundary is the duplicate;
-a comment on the internals is the one worth keeping.
+Write no comments. None in production code, none in test files, no doc
+comments. Leave comments that are already there alone.
 
 # Commit messages
 
