@@ -147,7 +147,6 @@ local function terminal_tab()
 end
 
 vim.keymap.set({ 'n', 'i', 'v', 'x', 't' }, '<C-\\>', terminal_tab, { desc = 'Toggle terminal tab' })
-vim.keymap.set('n', '<leader>tt', terminal_tab, { desc = 'Toggle terminal tab' })
 
 -- ================ Custom Commands =======================
 vim.api.nvim_create_user_command('Projections', 'edit .projections.json', {})
