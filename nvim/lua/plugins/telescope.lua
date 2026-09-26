@@ -194,6 +194,7 @@ return {
     -- fd respects .gitignore; the 'find' fallback does not, so it will surface
     -- build output (cdk.out, dist, ...) in repos that gitignore it.
     local function search_directories()
+      local from_pane = panes.leave_terminal_window()
       local find_command = vim.fn.executable 'fd' == 1
           and { 'fd', '--type', 'd', '--hidden', '--exclude', '.git' }
           or { 'find', '.', '(', '-name', '.git', '-o', '-name', 'node_modules', ')', '-prune', '-o', '-type', 'd', '-print' }
@@ -214,6 +215,9 @@ return {
               -- DirChanged to hook -- record the jump ourselves.
               require('config.zoxide').add(entry.path)
               require('oil').open(entry.path)
+              if from_pane then
+                panes.balance_panes()
+              end
             end)
           end)
 
