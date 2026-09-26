@@ -51,7 +51,7 @@ return {
         preset = 'none', -- We'll define our own keymaps
         ['<C-y>'] = { 'accept' },
         ['<C-n>'] = { 'select_next' },
-        ['<C-p>'] = { 'select_prev' },
+        ['<C-p>'] = { 'select_prev', 'fallback' },
         ['<C-u>'] = { 'scroll_documentation_up' },
         ['<C-d>'] = { 'scroll_documentation_down' },
       },
