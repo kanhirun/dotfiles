@@ -5,7 +5,7 @@
   co = checkout
   d  = diff -U1
   ds = diff --staged
-  l  = log
+  l  = log --format='%h %s'
   r  = reset
   s  = status
   st = stash
