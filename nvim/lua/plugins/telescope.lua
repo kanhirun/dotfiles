@@ -185,10 +185,10 @@ return {
     -- forward-char, which Right also does). <C-f> is a legacy control byte
     -- (0x06), so it arrives through Zellij with no kitty keyboard protocol
     -- support.
-    vim.keymap.set('n', '<leader>ff', search_recent_files, { desc = 'Find Recent Files' })
-    vim.keymap.set({ 'n', 'i', 'v', 'x', 't' }, '<C-f>', search_recent_files, { desc = 'Find Recent Files' })
-    vim.keymap.set('n', '<leader>fF', find_files, { desc = 'Find Files' })
-    vim.keymap.set({ 'n', 'i', 'v', 'x', 't' }, '<C-S-f>', find_files, { desc = 'Find Files' })
+    vim.keymap.set('n', '<leader>fp', search_recent_files, { desc = 'Find Recent Files' })
+    vim.keymap.set({ 'n', 'i', 'v', 'x', 't' }, '<C-p>', search_recent_files, { desc = 'Find Recent Files' })
+    vim.keymap.set('n', '<leader>fP', find_files, { desc = 'Find Files' })
+    vim.keymap.set({ 'n', 'i', 'v', 'x', 't' }, '<C-S-p>', find_files, { desc = 'Find Files' })
 
     -- Search directories only; selecting one opens it in oil.nvim.
     -- fd respects .gitignore; the 'find' fallback does not, so it will surface
@@ -232,7 +232,6 @@ return {
     -- Find, not Search: a directory is located by the name you type, the same
     -- way a file is. Deliberately no chord -- directories are reached far less
     -- often than files, and the chord tier is a fixed budget.
-    vim.keymap.set('n', '<leader>fd', search_directories, { desc = 'Find Directories' })
 
     -- Jump to any directory zoxide knows about (same database as `j` in the
     -- shell) and open it in oil. The picker opens on the full frecency
@@ -326,7 +325,10 @@ return {
         :find()
     end
 
-    vim.keymap.set({ 'n', 'i', 'v', 'x', 't' }, '<C-j>', jump_to_zoxide_directory, { desc = 'Jump to zoxide directory' })
+    vim.keymap.set('n', '<leader>ff', jump_to_zoxide_directory, { desc = 'Find Folders (zoxide)' })
+    vim.keymap.set({ 'n', 'i', 'v', 'x', 't' }, '<C-f>', jump_to_zoxide_directory, { desc = 'Find Folders (zoxide)' })
+    vim.keymap.set('n', '<leader>fF', search_directories, { desc = 'Find Folders (all)' })
+    vim.keymap.set({ 'n', 'i', 'v', 'x', 't' }, '<C-S-f>', search_directories, { desc = 'Find Folders (all)' })
 
     --======================
     -- 2. Content search

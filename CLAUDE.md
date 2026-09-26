@@ -88,11 +88,13 @@ The rules that matter most when editing this config:
 - **A chord is an alias, never a sole address.** Chords are invisible — nothing on
   screen reveals them. Each one binds the *same function object* as its `<leader>`
   twin so the two cannot drift apart. See `telescope.lua`: `<C-s>`/`<leader>ss`,
-  `<C-S-s>`/`<leader>sS`, `<C-f>`/`<leader>ff`, `<C-S-f>`/`<leader>fF`. Shift on
+  `<C-S-s>`/`<leader>sS`, `<C-f>`/`<leader>ff`, `<C-S-f>`/`<leader>fF`,
+  `<C-p>`/`<leader>fp`, `<C-S-p>`/`<leader>fP`. Shift on
   the chord widens scope the same way Shift on the leader letter does.
 - **Shift widens scope, and means nothing else.** `<leader>ss` document →
   `<leader>sS` workspace; `<leader>sx` buffer diagnostics → `<leader>sX` project;
-  `<leader>ff` recent files → `<leader>fF` every file. Bare
+  `<leader>ff` folders zoxide ranks → `<leader>fF` every folder;
+  `<leader>fp` recent files → `<leader>fP` every file. Bare
   `s` searches by text, `S` labels every text object on screen — same pattern, one
   scope wider, and the same letter as the `<leader>s` search group. `S`'s
   inventory is the language's `folds.scm`, gathered by range rather than by line (`config/node_pick.lua`, sharing `fold_pick`'s candidates);
@@ -119,10 +121,11 @@ The rules that matter most when editing this config:
   so Ghostty reports each as its own keycode and a terminal without the protocol
   simply never delivers them. That is a clean failure rather than a collision —
   `<C-S-[>` does *not* decay to `<Esc>` the way `<C-[>` would — which is what
-  makes the exception affordable now that the Zellij layer is gone. `<C-S-f>`
-  and `<C-S-s>` are the third and fourth, twins of `<leader>fF` and
-  `<leader>sS`. Without the protocol they fold into `<C-f>` and `<C-s>`, which
-  is harmless because each lands on a picker from the same pair.
+  makes the exception affordable now that the Zellij layer is gone. `<C-S-f>`,
+  `<C-S-p>` and `<C-S-s>` are the third, fourth and fifth, twins of
+  `<leader>fF`, `<leader>fP` and `<leader>sS`. Without the protocol they fold
+  into `<C-f>`, `<C-p>` and `<C-s>`, which is harmless because each lands on a
+  picker from the same pair.
 
 Namespaces in use: `<leader>s` search · `<leader>r` refactor · `<leader>t` test/toggle ·
 `<leader>g` git · `<leader>c` Claude. `<C-]>` toggles Claude and `<C-\>` toggles a
@@ -148,7 +151,7 @@ screen's left edge (twin of `<leader>_`). The difference is `leftabove` against
 split it lands mid-screen, and the second always reaches the edge. Either chord
 closes whichever drawer is open, so the two never stack. `_` marks a variant
 rather than a wider scope, which is the one place Shift means something else.
-`<C-f>`, `<C-j>` and `<C-q>` reach from inside both panes
+`<C-f>`, `<C-S-f>`, `<C-p>`, `<C-S-p>` and `<C-q>` reach from inside both panes
 and step to an editor window first (`config/panes.lua`), so a picked file or directory
 never replaces a pane; from inside a pane they also move it to the right half of the
 screen, so the file and the pane share it 50/50 side by side. Claude is already a
