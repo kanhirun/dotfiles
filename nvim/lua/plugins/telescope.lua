@@ -394,31 +394,160 @@ return {
     --
     -- The path set is gathered here rather than inside the finder: the dynamic
     -- finder runs in plenary's async context, where a blocking wait isn't safe.
+    local function kind_of(item)
+      return (item.kind or item.text:match '^%[(.-)%]' or ''):lower()
+    end
+
+    local function wanted(item)
+      return vim.tbl_contains(SYMBOL_KINDS, kind_of(item))
+    end
+
+    local function record_pick()
+      local entry = require('telescope.actions.state').get_selected_entry()
+      if entry and entry.value then
+        require('config.symbol_history').record(entry.value)
+      end
+    end
+
+    local function attach_history()
+      require('telescope.actions.set').select:enhance { pre = record_pick }
+      return true
+    end
+
+    local function open_buffer_symbols()
+      local bufs = vim.tbl_filter(function(info)
+        return vim.bo[info.bufnr].buftype == ''
+          and info.name ~= ''
+          and #vim.lsp.get_clients { bufnr = info.bufnr, method = 'textDocument/documentSymbol' } > 0
+      end, vim.fn.getbufinfo { buflisted = 1, bufloaded = 1 })
+      local current = vim.api.nvim_get_current_buf()
+      table.sort(bufs, function(a, b)
+        if (a.bufnr == current) ~= (b.bufnr == current) then
+          return a.bufnr == current
+        end
+        return a.lastused > b.lastused
+      end)
+
+      local per_buf, pending = {}, #bufs
+      for i, info in ipairs(bufs) do
+        per_buf[i] = {}
+        vim.lsp.buf_request_all(
+          info.bufnr,
+          'textDocument/documentSymbol',
+          { textDocument = vim.lsp.util.make_text_document_params(info.bufnr) },
+          function(results)
+            for client_id, res in pairs(results) do
+              local client = vim.lsp.get_client_by_id(client_id)
+              if res.result and client then
+                vim.list_extend(per_buf[i], vim.lsp.util.symbols_to_items(res.result, info.bufnr, client.offset_encoding))
+              end
+            end
+            pending = pending - 1
+          end
+        )
+      end
+      vim.wait(500, function()
+        return pending == 0
+      end, 10)
+
+      local items = {}
+      for _, list in ipairs(per_buf) do
+        for _, item in ipairs(list) do
+          if wanted(item) then
+            table.insert(items, item)
+          end
+        end
+      end
+      return items
+    end
+
+    local function recent_symbols()
+      local seen, seed = {}, {}
+      local function add(item)
+        local key = vim.fs.normalize(item.filename) .. '\0' .. item.text
+        if not seen[key] then
+          seen[key] = true
+          table.insert(seed, item)
+        end
+      end
+      for _, item in ipairs(require('config.symbol_history').list()) do
+        add(item)
+      end
+      for _, item in ipairs(open_buffer_symbols()) do
+        add(item)
+      end
+      return seed
+    end
+
+    local function workspace_requester(bufnr)
+      local channel = require('plenary.async.control').channel
+      local cancel = function() end
+      return function(prompt)
+        local tx, rx = channel.oneshot()
+        cancel()
+        cancel = vim.lsp.buf_request_all(bufnr, 'workspace/symbol', { query = prompt }, tx)
+        local items = {}
+        for client_id, res in pairs(rx()) do
+          local client = vim.lsp.get_client_by_id(client_id)
+          if res.error then
+            vim.schedule(function()
+              vim.notify('workspace/symbol: ' .. res.error.message, vim.log.levels.ERROR)
+            end)
+          elseif res.result and client then
+            for _, item in ipairs(vim.lsp.util.symbols_to_items(res.result, bufnr, client.offset_encoding)) do
+              if wanted(item) then
+                table.insert(items, item)
+              end
+            end
+          end
+        end
+        return items
+      end
+    end
+
     local function search_workspace_symbols()
       local git = git_paths()
-      local opts = { symbols = SYMBOL_KINDS }
-      local inner = require('telescope.make_entry').gen_from_lsp_symbols(opts)
+      local seed = recent_symbols()
+      local query = workspace_requester(vim.api.nvim_get_current_buf())
+      local inner = require('telescope.make_entry').gen_from_lsp_symbols {}
+      local conf = require('telescope.config').values
 
-      -- The dynamic finder skips nil entries, which is the whole filter.
-      opts.entry_maker = function(item)
-        local entry = inner(item)
-        if not entry or not git or not entry.filename then
-          return entry
-        end
-        local abs = vim.fs.normalize(entry.filename)
-        if not vim.startswith(abs, git.root .. '/') or not git.paths[abs] then
-          return nil
-        end
-        return entry
-      end
-
-      builtin.lsp_dynamic_workspace_symbols(opts)
+      require('telescope.pickers')
+        .new({}, {
+          prompt_title = 'Workspace Symbols',
+          finder = require('telescope.finders').new_dynamic {
+            entry_maker = function(item)
+              local entry = inner(item)
+              if not entry or not git or not entry.filename then
+                return entry
+              end
+              local abs = vim.fs.normalize(entry.filename)
+              if not vim.startswith(abs, git.root .. '/') or not git.paths[abs] then
+                return nil
+              end
+              return entry
+            end,
+            fn = function(prompt)
+              if prompt == '' then
+                return seed
+              end
+              return query(prompt)
+            end,
+          },
+          previewer = conf.qflist_previewer {},
+          sorter = require('telescope.sorters').highlighter_only {},
+          attach_mappings = function(_, map)
+            map('i', '<c-space>', require('telescope.actions').to_fuzzy_refine)
+            return attach_history()
+          end,
+        })
+        :find()
     end
 
     -- Document symbols only ever cover the current buffer, so the gitignore
     -- filter has nothing to do here; the kind list still earns its place.
     local function search_document_symbols()
-      builtin.lsp_document_symbols { symbols = SYMBOL_KINDS }
+      builtin.lsp_document_symbols { symbols = SYMBOL_KINDS, attach_mappings = attach_history }
     end
 
     -- One function per scope. lsp.lua used to bind <leader>gs/<leader>gS to
