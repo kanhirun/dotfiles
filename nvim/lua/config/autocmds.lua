@@ -15,6 +15,15 @@ vim.api.nvim_create_autocmd('DirChanged', {
   end,
 })
 
+vim.api.nvim_create_autocmd('BufEnter', {
+  group = zoxide,
+  pattern = 'oil://*',
+  desc = 'Record the directory oil is showing in zoxide',
+  callback = function(args)
+    require('config.zoxide').add(require('oil').get_current_dir(args.buf))
+  end,
+})
+
 -- ================ reload files changed on disk ================
 -- 'autoread' only reloads a buffer when checktime runs, and Neovim runs it on
 -- its own only for the buffer being entered. A hidden buffer that Claude
