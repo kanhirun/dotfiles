@@ -7,6 +7,19 @@ vim.keymap.set('n', '//', ':noh<CR>', { silent = true })
 vim.keymap.set('n', '0', '^', { noremap = true })
 vim.keymap.set('n', '^', '0', { noremap = true })
 
+local function paste_reindented(key)
+  return function()
+    local keys = '"' .. vim.v.register .. vim.v.count1 .. key
+    if vim.fn.getregtype(vim.v.register):sub(1, 1) == 'V' then
+      keys = keys .. '`[=`]'
+    end
+    return keys
+  end
+end
+
+vim.keymap.set('n', 'p', paste_reindented 'p', { expr = true, desc = 'Paste after, reindented' })
+vim.keymap.set('n', 'P', paste_reindented 'P', { expr = true, desc = 'Paste before, reindented' })
+
 -- ================ Suspend ===============================
 -- <C-z> suspends Neovim from every mode, as it already does in Normal. Unmapped
 -- in terminal mode it is forwarded to the job, and Claude Code answers 0x1A by
