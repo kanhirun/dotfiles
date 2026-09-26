@@ -3,6 +3,8 @@
 -- Everything that records a directory goes through M.add.
 local M = {}
 
+local last
+
 --- Record a directory in zoxide's frecency database.
 --- @param path string absolute or cwd-relative directory path
 function M.add(path)
@@ -15,6 +17,10 @@ function M.add(path)
   -- for the same directory. `:p` resolves all of that; the gsub drops the
   -- trailing slash `:p` adds to directories.
   local dir = (vim.fn.fnamemodify(path, ':p'):gsub('/$', ''))
+  if dir == last then
+    return
+  end
+  last = dir
 
   -- Fire and forget: a blocking :wait() here would stall every jump.
   vim.system { 'zoxide', 'add', dir }
