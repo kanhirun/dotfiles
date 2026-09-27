@@ -56,6 +56,17 @@ return {
           select.select_textobject(object, "textobjects")
         end, { desc = "Select " .. object })
       end
+
+      local move = require("nvim-treesitter-textobjects.move")
+      for key, go in pairs({ ["]c"] = move.goto_next_start, ["[c"] = move.goto_previous_start }) do
+        vim.keymap.set({ "n", "x", "o" }, key, function()
+          if vim.wo.diff then
+            vim.cmd.normal({ vim.v.count1 .. key, bang = true })
+          else
+            go("@class.outer", "textobjects")
+          end
+        end, { desc = key == "]c" and "Next class" or "Previous class" })
+      end
     end,
   },
 
