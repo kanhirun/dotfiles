@@ -92,6 +92,11 @@ The rules that matter most when editing this config:
   `<C-j>`/`<leader>fp`, `<C-M-j>`/`<leader>fP`. Alt on the chord widens scope
   the way Shift on the leader letter does — a deliberate split, since
   Ctrl+Shift is awkward to hold and has no legacy byte.
+- **`<C-n>`/`<C-p>` mean next/previous in whatever list is active.** A
+  Telescope picker's results, the completion menu, a snippet's placeholders
+  (`completion.lua`: the menu first, then the snippet, then vim's own), and vim's
+  defaults everywhere else. Neither is a teleport slot, which is why the file
+  picker left `<C-p>` for `<C-j>`, and why snippets have no `<Tab>` jump.
 - **Shift widens scope, and means nothing else.** `<leader>ss` document →
   `<leader>sS` workspace; `<leader>sx` buffer diagnostics → `<leader>sX` project;
   `<leader>ff` folders zoxide ranks → `<leader>fF` every folder;

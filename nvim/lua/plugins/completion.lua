@@ -22,25 +22,17 @@ return {
           -- Also load UltiSnips format from snippets/ directory
           require('luasnip.loaders.from_snipmate').load({ paths = vim.fn.stdpath('config') .. '/snippets/' })
           
-          -- UltiSnips-style Tab behavior: expand OR jump forward
-          vim.keymap.set({'i', 's'}, '<Tab>', function()
-            if luasnip.expand_or_jumpable() then
-              luasnip.expand_or_jump()
-            else
-              -- Fallback to regular Tab when no snippet action available
-              vim.api.nvim_feedkeys(vim.keycode '<Tab>', 'n', false)
+          vim.keymap.set('s', '<C-n>', function()
+            if luasnip.jumpable(1) then
+              luasnip.jump(1)
             end
-          end, { desc = 'Expand snippet or jump forward', silent = true })
-          
-          -- S-Tab to jump backward in snippets
-          vim.keymap.set({'i', 's'}, '<S-Tab>', function()
+          end, { desc = 'Next snippet placeholder' })
+          vim.keymap.set('s', '<C-p>', function()
             if luasnip.jumpable(-1) then
               luasnip.jump(-1)
-            else
-              vim.api.nvim_feedkeys(vim.keycode '<S-Tab>', 'n', false)
             end
-          end, { desc = 'Jump to previous snippet placeholder', silent = true })
-          
+          end, { desc = 'Previous snippet placeholder' })
+
           -- C-y to accept completion (this will be handled by blink.cmp)
         end,
       },
@@ -50,8 +42,8 @@ return {
       keymap = {
         preset = 'none', -- We'll define our own keymaps
         ['<C-y>'] = { 'accept' },
-        ['<C-n>'] = { 'select_next' },
-        ['<C-p>'] = { 'select_prev', 'fallback' },
+        ['<C-n>'] = { 'select_next', 'snippet_forward', 'fallback' },
+        ['<C-p>'] = { 'select_prev', 'snippet_backward', 'fallback' },
         ['<C-u>'] = { 'scroll_documentation_up' },
         ['<C-d>'] = { 'scroll_documentation_down' },
       },
