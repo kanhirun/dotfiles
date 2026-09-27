@@ -68,12 +68,18 @@ return {
               select.select_textobject(object, "textobjects")
             end, { buffer = ev.buf, desc = "Select " .. object })
           end
-          vim.keymap.set({ "n", "x", "o" }, "]t", function()
+          local function next_test()
             move.goto_next_start("@test.outer", "textobjects")
-          end, { buffer = ev.buf, desc = "Next test" })
-          vim.keymap.set({ "n", "x", "o" }, "[t", function()
+          end
+          local function previous_test()
             move.goto_previous_start("@test.outer", "textobjects")
-          end, { buffer = ev.buf, desc = "Previous test" })
+          end
+          for _, key in ipairs({ "]t", "gt" }) do
+            vim.keymap.set({ "n", "x", "o" }, key, next_test, { buffer = ev.buf, desc = "Next test" })
+          end
+          for _, key in ipairs({ "[t", "gT" }) do
+            vim.keymap.set({ "n", "x", "o" }, key, previous_test, { buffer = ev.buf, desc = "Previous test" })
+          end
         end,
       })
       for key, go in pairs({ ["]c"] = move.goto_next_start, ["[c"] = move.goto_previous_start }) do
