@@ -217,6 +217,15 @@ line. What follows is the shape, and what breaks it.
   then exits. `script` starts the inner zsh you type into, which sources `zshrc`
   again and falls through because `$SHELL_TRANSCRIPT` is already set. Every prompt
   you see is the inner one.
+- **The inner shell boots through cmux's `ZDOTDIR`.** cmux loads its shell
+  integration from a `ZDOTDIR` bootstrap that restores the real `ZDOTDIR` as it
+  runs, so only the outer shell gets it — and the outer shell never reaches a
+  prompt, where `_cmux_fix_path` puts the `claude` wrapper shim first on `PATH`.
+  Without it `~/.local/bin/claude` wins, cmux's hooks are never injected, and
+  Claude sends no notifications — in a plain tab or inside Neovim, which
+  inherits the `PATH`. So the outer shell points `ZDOTDIR` back at
+  `$CMUX_SHELL_INTEGRATION_DIR` before `script`, stashing a real one in
+  `CMUX_ZSH_ZDOTDIR` for the bootstrap to restore.
 - **`script` must stay a child, never an `exec`.** The cleanup trap runs in the
   outer shell after `script` returns. `exec script` reads like a tidy-up and
   silently ends deletion.

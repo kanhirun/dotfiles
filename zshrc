@@ -61,6 +61,10 @@ if [[ -o interactive && -z $SHELL_TRANSCRIPT && -z $NO_TRANSCRIPT && -z $CLAUDEC
     # turn any stray interrupt into a deleted log mid-session.
     trap 'rm -f "$SHELL_TRANSCRIPT"' EXIT HUP TERM
 
+    if [[ -n $CMUX_SHELL_INTEGRATION_DIR ]]; then
+      [[ -n ${ZDOTDIR+x} ]] && export CMUX_ZSH_ZDOTDIR=$ZDOTDIR
+      export ZDOTDIR=$CMUX_SHELL_INTEGRATION_DIR
+    fi
     script -q -a "$SHELL_TRANSCRIPT"
     exit
   fi
