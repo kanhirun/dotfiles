@@ -28,6 +28,37 @@ end
 vim.keymap.set({ 'n', 'x' }, ']z', fold_jump(true), { desc = 'Next fold' })
 vim.keymap.set({ 'n', 'x' }, '[z', fold_jump(false), { desc = 'Previous fold' })
 
+local function fold_object(inner)
+  return function()
+    local count, line = vim.v.count1, vim.fn.line '.'
+    vim.cmd 'normal! \27'
+    vim.api.nvim_win_set_cursor(0, { line, 0 })
+    if vim.fn.foldlevel(line) < count then
+      return
+    end
+    local closing = vim.fn.foldclosed(line) == -1 and count or count - 1
+    local view = vim.fn.winsaveview()
+    if closing > 0 then
+      vim.cmd('normal! ' .. closing .. 'zc')
+    end
+    local first, last = vim.fn.foldclosed(line), vim.fn.foldclosedend(line)
+    if closing > 0 then
+      vim.cmd('normal! ' .. closing .. 'zo')
+    end
+    vim.fn.winrestview(view)
+    if inner then
+      first, last = first + 1, last - 1
+    end
+    if first > last then
+      return
+    end
+    vim.cmd('normal! ' .. first .. 'GV' .. last .. 'G')
+  end
+end
+
+vim.keymap.set({ 'x', 'o' }, 'iz', fold_object(true), { desc = 'Inside fold' })
+vim.keymap.set({ 'x', 'o' }, 'az', fold_object(false), { desc = 'Around fold' })
+
 vim.keymap.set('n', 'p', paste_reindented 'p', { expr = true, desc = 'Paste after, reindented' })
 vim.keymap.set('n', 'P', paste_reindented 'P', { expr = true, desc = 'Paste before, reindented' })
 
