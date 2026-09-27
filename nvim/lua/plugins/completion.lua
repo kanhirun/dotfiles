@@ -28,18 +28,18 @@ return {
               luasnip.expand_or_jump()
             else
               -- Fallback to regular Tab when no snippet action available
-              return '<Tab>'
+              vim.api.nvim_feedkeys(vim.keycode '<Tab>', 'n', false)
             end
-          end, { desc = 'Expand snippet or jump forward', expr = true, silent = true })
+          end, { desc = 'Expand snippet or jump forward', silent = true })
           
           -- S-Tab to jump backward in snippets
           vim.keymap.set({'i', 's'}, '<S-Tab>', function()
             if luasnip.jumpable(-1) then
               luasnip.jump(-1)
             else
-              return '<S-Tab>'
+              vim.api.nvim_feedkeys(vim.keycode '<S-Tab>', 'n', false)
             end
-          end, { desc = 'Jump to previous snippet placeholder', expr = true, silent = true })
+          end, { desc = 'Jump to previous snippet placeholder', silent = true })
           
           -- C-y to accept completion (this will be handled by blink.cmp)
         end,
