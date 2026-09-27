@@ -46,6 +46,20 @@ return {
   },
 
   {
+    "nvim-treesitter/nvim-treesitter-textobjects",
+    branch = "main",
+    config = function()
+      require("nvim-treesitter-textobjects").setup({ select = { lookahead = true } })
+      local select = require("nvim-treesitter-textobjects.select")
+      for key, object in pairs({ af = "@function.outer", ["if"] = "@function.inner" }) do
+        vim.keymap.set({ "x", "o" }, key, function()
+          select.select_textobject(object, "textobjects")
+        end, { desc = "Select " .. object })
+      end
+    end,
+  },
+
+  {
     "nvim-treesitter/nvim-treesitter-context",
     config = function()
       require('treesitter-context').setup {
