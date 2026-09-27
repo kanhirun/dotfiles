@@ -186,9 +186,9 @@ return {
     -- (0x06), so it arrives through Zellij with no kitty keyboard protocol
     -- support.
     vim.keymap.set('n', '<leader>fp', search_recent_files, { desc = 'Find Recent Files' })
-    vim.keymap.set({ 'n', 'i', 'v', 'x', 't' }, '<C-p>', search_recent_files, { desc = 'Find Recent Files' })
+    vim.keymap.set({ 'n', 'i', 'v', 'x', 't' }, '<C-j>', search_recent_files, { desc = 'Find Recent Files' })
     vim.keymap.set('n', '<leader>fP', find_files, { desc = 'Find Files' })
-    vim.keymap.set({ 'n', 'i', 'v', 'x', 't' }, '<C-M-p>', find_files, { desc = 'Find Files' })
+    vim.keymap.set({ 'n', 'i', 'v', 'x', 't' }, '<C-M-j>', find_files, { desc = 'Find Files' })
 
     -- Search directories only; selecting one opens it in oil.nvim.
     -- fd respects .gitignore; the 'find' fallback does not, so it will surface
