@@ -146,10 +146,10 @@ return {
             select.select_textobject("@test.inner", "textobjects")
           end, { buffer = ev.buf, desc = "Select @test.inner" })
           for key, go in pairs({
-            ["]t"] = { move.goto_next_start, "Next test start" },
-            ["[t"] = { move.goto_previous_start, "Previous test start" },
-            gt = { move.goto_next_end, "Next test end" },
-            gT = { move.goto_previous_end, "Previous test end" },
+            gt = { move.goto_next_start, "Next test start" },
+            gT = { move.goto_previous_start, "Previous test start" },
+            ["]t"] = { move.goto_next_end, "Next test end" },
+            ["[t"] = { move.goto_previous_end, "Previous test end" },
           }) do
             vim.keymap.set({ "n", "x", "o" }, key, function()
               go[1]("@test.outer", "textobjects")
@@ -157,14 +157,19 @@ return {
           end
         end,
       })
-      for key, go in pairs({ ["]c"] = move.goto_next_start, ["[c"] = move.goto_previous_start }) do
+      for key, go in pairs({
+        gc = { move.goto_next_start, "Next class start" },
+        gC = { move.goto_previous_start, "Previous class start" },
+        ["]c"] = { move.goto_next_end, "Next class end" },
+        ["[c"] = { move.goto_previous_end, "Previous class end" },
+      }) do
         vim.keymap.set({ "n", "x", "o" }, key, function()
-          if vim.wo.diff then
+          if vim.wo.diff and key:sub(1, 1) ~= "g" then
             vim.cmd.normal({ vim.v.count1 .. key, bang = true })
           else
-            go("@class.outer", "textobjects")
+            go[1]("@class.outer", "textobjects")
           end
-        end, { desc = key == "]c" and "Next class" or "Previous class" })
+        end, { desc = go[2] })
       end
     end,
   },

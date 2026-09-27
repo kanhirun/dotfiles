@@ -174,6 +174,18 @@ the cursor. Adding a binding for an existing noun should reuse its letter. The
 bracket is the direction and the letter is the noun, so a new noun's motion is
 guessable rather than looked up; `g]`/`g[` held this before and taught nothing.
 
+A noun with extent has two edges, and each has one address: `g` and the letter
+go to the start of the next one, `g` and Shift to the start of the previous,
+and the bracket goes to the end. Tests are `gt`/`gT` and `]t`/`[t`, folds
+`gz`/`gZ` and `]z`/`[z`, classes `gc`/`gC` and `]c`/`[c`. The start is the move
+made most, so it gets the easier reach; the end is what `v` extends to, so
+`v2]t` from a test's start selects it and the next. Nouns with no extent, like
+diagnostics, keep only the bracket, and vim's own brackets (`]]`, `]m`, `]s`,
+`]q`) still mean start or next. `gc` is taken from vim's comment operator,
+which now lives on `<leader>//`, since `//` reads as a comment:
+`<leader>//{motion}`, `<leader>///` for a line, and `<leader>//` in visual and
+operator-pending mode. `<leader>/` alone is unbound.
+
 **Setup this repo does not capture**: Caps Lock is remapped to Ctrl via macOS
 System Settings. cmux is the terminal and sits directly under Neovim — there is
 no multiplexer in between. It reads Ghostty's config from

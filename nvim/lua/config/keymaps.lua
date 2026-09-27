@@ -17,16 +17,18 @@ local function paste_reindented(key)
   end
 end
 
-local function fold_jump(forward)
+local function fold_jump(keys)
   return function()
     for _ = 1, vim.v.count1 do
-      vim.cmd(forward and 'normal! zj' or 'normal! zk[z')
+      vim.cmd('normal! ' .. keys)
     end
   end
 end
 
-vim.keymap.set({ 'n', 'x' }, ']z', fold_jump(true), { desc = 'Next fold' })
-vim.keymap.set({ 'n', 'x' }, '[z', fold_jump(false), { desc = 'Previous fold' })
+vim.keymap.set({ 'n', 'x' }, 'gz', fold_jump 'zj', { desc = 'Next fold start' })
+vim.keymap.set({ 'n', 'x' }, 'gZ', fold_jump 'zk[z', { desc = 'Previous fold start' })
+vim.keymap.set({ 'n', 'x' }, ']z', fold_jump 'zj]z', { desc = 'Next fold end' })
+vim.keymap.set({ 'n', 'x' }, '[z', fold_jump 'zk', { desc = 'Previous fold end' })
 
 pcall(vim.keymap.del, { 'n', 'x', 'o' }, 'gc')
 pcall(vim.keymap.del, 'n', 'gcc')
