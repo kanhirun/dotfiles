@@ -17,6 +17,17 @@ local function paste_reindented(key)
   end
 end
 
+local function fold_jump(forward)
+  return function()
+    for _ = 1, vim.v.count1 do
+      vim.cmd(forward and 'normal! zj' or 'normal! zk[z')
+    end
+  end
+end
+
+vim.keymap.set({ 'n', 'x' }, ']z', fold_jump(true), { desc = 'Next fold' })
+vim.keymap.set({ 'n', 'x' }, '[z', fold_jump(false), { desc = 'Previous fold' })
+
 vim.keymap.set('n', 'p', paste_reindented 'p', { expr = true, desc = 'Paste after, reindented' })
 vim.keymap.set('n', 'P', paste_reindented 'P', { expr = true, desc = 'Paste before, reindented' })
 
