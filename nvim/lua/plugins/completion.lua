@@ -73,7 +73,18 @@ return {
       },
 
       snippets = { preset = 'luasnip' },
-      fuzzy = { implementation = 'lua' },
+      fuzzy = {
+        implementation = 'lua',
+        sorts = {
+          function(a, b)
+            local sa, sb = a.score + (a.score_offset or 0), b.score + (b.score_offset or 0)
+            if sa ~= sb then
+              return sa > sb
+            end
+          end,
+          'sort_text',
+        },
+      },
       signature = { enabled = true },
     },
   },
