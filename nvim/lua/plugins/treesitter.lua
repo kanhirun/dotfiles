@@ -59,26 +59,101 @@ return {
 
       local move = require("nvim-treesitter-textobjects.move")
 
+      local function test_ranges(buf)
+        local lang = vim.treesitter.language.get_lang(vim.bo[buf].filetype)
+        local query = lang and vim.treesitter.query.get(lang, "textobjects")
+        if not query then
+          return {}
+        end
+        local root = vim.treesitter.get_parser(buf, lang):parse()[1]:root()
+        local ranges, seen = {}, {}
+        for _, match in query:iter_matches(root, buf, 0, -1) do
+          for id, nodes in pairs(match) do
+            if query.captures[id] == "test.outer" then
+              for _, node in ipairs(nodes) do
+                local key = table.concat({ node:range() }, ":")
+                if not seen[key] then
+                  seen[key] = true
+                  ranges[#ranges + 1] = { node:range() }
+                end
+              end
+            end
+          end
+        end
+        return ranges
+      end
+
+      local function same(a, b)
+        return a[1] == b[1] and a[2] == b[2] and a[3] == b[3] and a[4] == b[4]
+      end
+
+      local function contains(outer, inner)
+        return not same(outer, inner)
+          and (outer[1] < inner[1] or (outer[1] == inner[1] and outer[2] <= inner[2]))
+          and (outer[3] > inner[3] or (outer[3] == inner[3] and outer[4] >= inner[4]))
+      end
+
+      local function enclosing(ranges, range)
+        local best
+        for _, r in ipairs(ranges) do
+          if contains(r, range) and (not best or contains(best, r)) then
+            best = r
+          end
+        end
+        return best
+      end
+
+      local function select_tests()
+        local count = vim.v.count1
+        select.select_textobject("@test.outer", "textobjects")
+        if count == 1 then
+          return
+        end
+        local first = vim.fn.getpos("v")
+        local ranges = test_ranges(0)
+        local selected
+        for _, r in ipairs(ranges) do
+          if r[1] == first[2] - 1 and r[2] == first[3] - 1 then
+            selected = r
+          end
+        end
+        if not selected then
+          return
+        end
+        local parent = enclosing(ranges, selected)
+        local siblings = {}
+        for _, r in ipairs(ranges) do
+          local up = enclosing(ranges, r)
+          if (up == parent or (up and parent and same(up, parent))) and r[1] > selected[3] then
+            siblings[#siblings + 1] = r
+          end
+        end
+        table.sort(siblings, function(a, b)
+          return a[1] < b[1]
+        end)
+        local last = siblings[math.min(count - 1, #siblings)]
+        if last then
+          vim.api.nvim_win_set_cursor(0, { last[3] + 1, math.max(last[4] - 1, 0) })
+        end
+      end
+
       vim.api.nvim_create_autocmd({ "BufReadPost", "BufNewFile" }, {
         group = vim.api.nvim_create_augroup("test_textobjects", { clear = true }),
         pattern = { "*_test.go", "*.test.[jt]s", "*.spec.[jt]s", "*.test.[jt]sx", "*.spec.[jt]sx" },
         callback = function(ev)
-          for key, object in pairs({ at = "@test.outer", it = "@test.inner" }) do
-            vim.keymap.set({ "x", "o" }, key, function()
-              select.select_textobject(object, "textobjects")
-            end, { buffer = ev.buf, desc = "Select " .. object })
-          end
-          local function next_test()
-            move.goto_next_start("@test.outer", "textobjects")
-          end
-          local function previous_test()
-            move.goto_previous_start("@test.outer", "textobjects")
-          end
-          for _, key in ipairs({ "]t", "gt" }) do
-            vim.keymap.set({ "n", "x", "o" }, key, next_test, { buffer = ev.buf, desc = "Next test" })
-          end
-          for _, key in ipairs({ "[t", "gT" }) do
-            vim.keymap.set({ "n", "x", "o" }, key, previous_test, { buffer = ev.buf, desc = "Previous test" })
+          vim.keymap.set({ "x", "o" }, "at", select_tests, { buffer = ev.buf, desc = "Select @test.outer" })
+          vim.keymap.set({ "x", "o" }, "it", function()
+            select.select_textobject("@test.inner", "textobjects")
+          end, { buffer = ev.buf, desc = "Select @test.inner" })
+          for key, go in pairs({
+            ["]t"] = { move.goto_next_start, "Next test start" },
+            ["[t"] = { move.goto_previous_start, "Previous test start" },
+            gt = { move.goto_next_end, "Next test end" },
+            gT = { move.goto_previous_end, "Previous test end" },
+          }) do
+            vim.keymap.set({ "n", "x", "o" }, key, function()
+              go[1]("@test.outer", "textobjects")
+            end, { buffer = ev.buf, desc = go[2] })
           end
         end,
       })
