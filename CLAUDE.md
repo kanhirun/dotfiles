@@ -167,10 +167,14 @@ guessable rather than looked up; `g]`/`g[` held this before and taught nothing.
 
 **Setup this repo does not capture**: Caps Lock is remapped to Ctrl via macOS
 System Settings. cmux is the terminal and sits directly under Neovim — there is
-no multiplexer in between, and `~/.config/ghostty/config` does not exist, so
-cmux's built-in Ghostty defaults apply. Both affect which chords are reachable;
-see the note on legacy control bytes above, which was written for a Zellij layer
-that is no longer installed.
+no multiplexer in between. It reads Ghostty's config from
+`~/.config/ghostty/config`, a symlink to `ghostty/config` in this repo
+(`ln -s ~/workspace/dotfiles/ghostty/config ~/.config/ghostty/config`; apply
+edits with `cmux reload-config`). The one setting there is
+`macos-option-as-alt = left`: without it left Option types characters such as
+`π`, and the `<C-M-*>` chords arrive as plain `<C-*>`. Right Option still types
+them. Both affect which chords are reachable; see the note on legacy control
+bytes above, which was written for a Zellij layer that is no longer installed.
 
 ### Window Management (Hammerspoon)
 - `Cmd+Ctrl+H`: Move window to left half and other windows to right
