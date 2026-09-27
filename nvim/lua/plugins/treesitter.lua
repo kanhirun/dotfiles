@@ -58,6 +58,24 @@ return {
       end
 
       local move = require("nvim-treesitter-textobjects.move")
+
+      vim.api.nvim_create_autocmd({ "BufReadPost", "BufNewFile" }, {
+        group = vim.api.nvim_create_augroup("test_textobjects", { clear = true }),
+        pattern = { "*_test.go", "*.test.[jt]s", "*.spec.[jt]s", "*.test.[jt]sx", "*.spec.[jt]sx" },
+        callback = function(ev)
+          for key, object in pairs({ at = "@test.outer", it = "@test.inner" }) do
+            vim.keymap.set({ "x", "o" }, key, function()
+              select.select_textobject(object, "textobjects")
+            end, { buffer = ev.buf, desc = "Select " .. object })
+          end
+          vim.keymap.set({ "n", "x", "o" }, "]t", function()
+            move.goto_next_start("@test.outer", "textobjects")
+          end, { buffer = ev.buf, desc = "Next test" })
+          vim.keymap.set({ "n", "x", "o" }, "[t", function()
+            move.goto_previous_start("@test.outer", "textobjects")
+          end, { buffer = ev.buf, desc = "Previous test" })
+        end,
+      })
       for key, go in pairs({ ["]c"] = move.goto_next_start, ["[c"] = move.goto_previous_start }) do
         vim.keymap.set({ "n", "x", "o" }, key, function()
           if vim.wo.diff then
