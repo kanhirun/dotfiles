@@ -20,6 +20,22 @@ return {
 
   config = function()
     local actions = require 'telescope.actions'
+
+    local picker_keys = {
+      i = { ['<C-s>'] = actions.select_vertical },
+      n = { ['<C-s>'] = actions.select_vertical },
+    }
+    for _, chord in ipairs { '<C-f>', '<C-M-f>', '<C-j>', '<C-M-j>', '<C-g>' } do
+      local function switch(prompt_bufnr)
+        actions.close(prompt_bufnr)
+        vim.schedule(function()
+          vim.api.nvim_feedkeys(vim.keycode(chord), 'm', false)
+        end)
+      end
+      picker_keys.i[chord] = switch
+      picker_keys.n[chord] = switch
+    end
+
     require('telescope').setup {
       defaults = {
         -- `%.git/` needs the slash: `.github/` must stay in. It is only
@@ -30,10 +46,7 @@ return {
         -- <C-v> stays. The picker's buffer-local map wins over the global
         -- <C-s> workspace-symbols chord while a picker is open. Both modes,
         -- since a pick is made from either.
-        mappings = {
-          i = { ['<C-s>'] = actions.select_vertical },
-          n = { ['<C-s>'] = actions.select_vertical },
-        },
+        mappings = picker_keys,
       },
       extensions = {
         ['ui-select'] = {

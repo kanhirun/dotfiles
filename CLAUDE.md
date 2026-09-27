@@ -163,6 +163,10 @@ never replaces a pane; from inside a pane they also move it to the right half of
 screen, so the file and the pane share it 50/50 side by side. Claude is already a
 vertical split on the right and is only narrowed; the shell
 leaves its bottom split for a full-height column until it is next hidden.
+The same five picker chords — `<C-f>`, `<C-M-f>`, `<C-j>`, `<C-M-j>`, `<C-g>` —
+also work from inside an open Telescope picker: they close it and open theirs,
+so a wrong picker is left by chording to the right one (`telescope.lua`,
+`picker_keys`). That replaces Telescope's own `<C-f>`, preview scroll left.
 
 Nouns keep one letter across every position they appear in. Diagnostics are `x`:
 `]x`/`[x` move between them, `<leader>sx` lists them, `<leader>rx` fixes the one under
