@@ -134,7 +134,9 @@ local function match_levels(win, state)
   local labels = state:labels()
   local ret = {}
   for _, it in ipairs(M.candidates(win)) do
-    local label = labels[it.depth + 1]
+    local label = labels[vim.api.nvim_win_call(win, function()
+      return vim.fn.foldlevel(it.first)
+    end)]
     if label then
       ret[#ret + 1] = to_match(win, it, label)
     end
@@ -142,60 +144,28 @@ local function match_levels(win, state)
   return ret
 end
 
----@param how "toggle"|"open"|"close"
-local function fold_lines(first, last, how)
-  local closed = vim.fn.foldclosed(first) == first
-  if how == "toggle" then
-    how = closed and "open" or "close"
-  end
-  if how == "open" then
-    if closed then
-      vim.cmd(("%dfoldopen"):format(first))
-    end
-  elseif vim.fn.foldlevel(first) > vim.fn.foldlevel(first - 1) and vim.fn.foldlevel(last) > vim.fn.foldlevel(last + 1) then
-    -- A fold already spans these lines; close it rather than nesting a twin.
-    vim.cmd(("%dfoldclose"):format(first))
-  else
-    vim.cmd(("%d,%dfold"):format(first, last))
-    -- :fold normally leaves the new fold closed. Only close it if it did not,
-    -- since an unconditional foldclose would close the enclosing fold too.
-    if vim.fn.foldclosed(first) ~= first then
-      vim.cmd(("%dfoldclose"):format(first))
-    end
-  end
-end
-
 local function in_win(win, fn)
   vim.api.nvim_win_call(win, function()
-    if vim.wo.foldmethod ~= "manual" then
-      vim.notify("foldmethod is " .. vim.wo.foldmethod .. "; fold_pick needs manual", vim.log.levels.WARN)
-      return
-    end
     vim.wo.foldenable = true
     fn()
   end)
 end
 
----@param match {win:number, pos:number[], fold_last:number}
+---@param match {win:number, pos:number[]}
 function M.fold(match)
   in_win(match.win, function()
-    fold_lines(match.pos[1], match.fold_last, "toggle")
+    local first = match.pos[1]
+    if vim.fn.foldclosed(first) == first then
+      vim.cmd(("%dfoldopen"):format(first))
+    else
+      vim.cmd(("%dfoldclose"):format(first))
+    end
   end)
 end
 
--- Folds every node in the buffer at the picked label's depth, not only the
--- ones that were on screen to be labelled. All the visible ones closed
--- already means open the level; anything else means close it, so one press
--- never leaves a level half-folded. Only the visible ones vote because a node
--- hidden inside a closed ancestor cannot report its own state.
 function M.fold_level(match, state)
-  local group = {}
-  for _, c in ipairs(M.all_candidates(vim.api.nvim_win_get_buf(match.win))) do
-    if c.depth == match.fold_depth then
-      group[#group + 1] = c
-    end
-  end
   in_win(match.win, function()
+    local level = vim.fn.foldlevel(match.pos[1])
     local all_closed = true
     for _, m in ipairs(state.results) do
       if m.label == match.label and vim.fn.foldclosed(m.pos[1]) ~= m.pos[1] then
@@ -203,34 +173,7 @@ function M.fold_level(match, state)
         break
       end
     end
-    local how = all_closed and "open" or "close"
-
-    -- Innermost first: closing an outer fold hides the inner start lines,
-    -- and :fold on a hidden line would attach to the wrong fold.
-    table.sort(group, function(a, b)
-      return a.first > b.first
-    end)
-
-    -- An Ex range that falls inside a closed fold is silently widened to the
-    -- whole fold, so a node hidden under a closed ancestor cannot be folded
-    -- or opened in place. Each closed ancestor is opened first and noted;
-    -- they are all closed again afterwards, innermost first, since closing an
-    -- outer one would hide the line the inner one is closed by.
-    local reopened = {}
-    for _, c in ipairs(group) do
-      while true do
-        local closed = vim.fn.foldclosed(c.first)
-        if closed == -1 or closed == c.first then
-          break
-        end
-        vim.cmd(("%dfoldopen"):format(closed))
-        reopened[#reopened + 1] = closed
-      end
-      fold_lines(c.first, c.last, how)
-    end
-    for i = #reopened, 1, -1 do
-      vim.cmd(("%dfoldclose"):format(reopened[i]))
-    end
+    vim.wo.foldlevel = all_closed and level or math.max(level - 1, 0)
   end)
 end
 

@@ -24,9 +24,10 @@ vim.opt.exrc = true
 vim.opt.secure = true
 
 -- Folding settings
--- manual: folds exist only where fold_pick (zs) creates them.
-vim.opt.foldmethod = "manual"
-vim.opt.foldenable = false
+vim.opt.foldmethod = "expr"
+vim.opt.foldexpr = "v:lua.vim.treesitter.foldexpr()"
+vim.opt.foldenable = true
+vim.opt.foldlevel = 99
 
 -- ================ UI Configuration =========================
 vim.opt.guicursor = "a:blinkon0"
