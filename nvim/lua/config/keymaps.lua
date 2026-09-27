@@ -28,6 +28,18 @@ end
 vim.keymap.set({ 'n', 'x' }, ']z', fold_jump(true), { desc = 'Next fold' })
 vim.keymap.set({ 'n', 'x' }, '[z', fold_jump(false), { desc = 'Previous fold' })
 
+pcall(vim.keymap.del, { 'n', 'x', 'o' }, 'gc')
+pcall(vim.keymap.del, 'n', 'gcc')
+vim.keymap.set({ 'n', 'x' }, '<leader>//', function()
+  return require('vim._comment').operator()
+end, { expr = true, desc = 'Toggle comment' })
+vim.keymap.set('n', '<leader>///', function()
+  return require('vim._comment').operator() .. '_'
+end, { expr = true, desc = 'Toggle comment line' })
+vim.keymap.set('o', '<leader>//', function()
+  require('vim._comment').textobject()
+end, { desc = 'Comment textobject' })
+
 local function fold_object(inner)
   return function()
     local count, line = vim.v.count1, vim.fn.line '.'
