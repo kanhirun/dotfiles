@@ -188,7 +188,7 @@ return {
     vim.keymap.set('n', '<leader>fp', search_recent_files, { desc = 'Find Recent Files' })
     vim.keymap.set({ 'n', 'i', 'v', 'x', 't' }, '<C-p>', search_recent_files, { desc = 'Find Recent Files' })
     vim.keymap.set('n', '<leader>fP', find_files, { desc = 'Find Files' })
-    vim.keymap.set({ 'n', 'i', 'v', 'x', 't' }, '<C-S-p>', find_files, { desc = 'Find Files' })
+    vim.keymap.set({ 'n', 'i', 'v', 'x', 't' }, '<C-M-p>', find_files, { desc = 'Find Files' })
 
     -- Search directories only; selecting one opens it in oil.nvim.
     -- fd respects .gitignore; the 'find' fallback does not, so it will surface
@@ -328,7 +328,7 @@ return {
     vim.keymap.set('n', '<leader>ff', jump_to_zoxide_directory, { desc = 'Find Folders (zoxide)' })
     vim.keymap.set({ 'n', 'i', 'v', 'x', 't' }, '<C-f>', jump_to_zoxide_directory, { desc = 'Find Folders (zoxide)' })
     vim.keymap.set('n', '<leader>fF', search_directories, { desc = 'Find Folders (all)' })
-    vim.keymap.set({ 'n', 'i', 'v', 'x', 't' }, '<C-S-f>', search_directories, { desc = 'Find Folders (all)' })
+    vim.keymap.set({ 'n', 'i', 'v', 'x', 't' }, '<C-M-f>', search_directories, { desc = 'Find Folders (all)' })
 
     --======================
     -- 2. Content search
@@ -605,7 +605,7 @@ return {
     vim.keymap.set('n', '<leader>ss', search_document_symbols, { desc = 'Search Symbols (document)' })
     vim.keymap.set('n', '<C-s>', search_document_symbols, { desc = 'Search Symbols (document)' })
     vim.keymap.set('n', '<leader>sS', search_workspace_symbols, { desc = 'Search Symbols (workspace)' })
-    vim.keymap.set('n', '<C-S-s>', search_workspace_symbols, { desc = 'Search Symbols (workspace)' })
+    vim.keymap.set('n', '<C-M-s>', search_workspace_symbols, { desc = 'Search Symbols (workspace)' })
 
     -- gd lives in lsp.lua's LspAttach handler, buffer-local. It was bound here
     -- too, globally, to the identical function -- removed.
