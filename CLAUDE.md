@@ -184,7 +184,9 @@ diagnostics, keep only the bracket, and vim's own brackets (`]]`, `]m`, `]s`,
 `]q`) still mean start or next. `gc` is taken from vim's comment operator,
 which now lives on `<leader>//`, since `//` reads as a comment:
 `<leader>//{motion}`, `<leader>///` for a line, and `<leader>//` in visual and
-operator-pending mode. `<leader>/` alone is unbound.
+operator-pending mode. `<leader>/` alone is unbound. In Go a class is a
+`struct` or `interface` type declaration, never a struct literal, through the
+`@type.outer` capture in `nvim/after/queries/go/textobjects.scm`.
 
 **Setup this repo does not capture**: Caps Lock is remapped to Ctrl via macOS
 System Settings. cmux is the terminal and sits directly under Neovim — there is

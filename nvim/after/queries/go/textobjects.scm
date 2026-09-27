@@ -27,3 +27,11 @@
     _+ @test.inner
     "}")
   (#lua-match? @_name "^Test")) @test.outer
+
+(type_declaration
+  (type_spec
+    (type_identifier)
+    [
+      (struct_type)
+      (interface_type)
+    ])) @type.outer

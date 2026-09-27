@@ -157,6 +157,7 @@ return {
           end
         end,
       })
+      local class_captures = { go = "@type.outer" }
       for key, go in pairs({
         gc = { move.goto_next_start, "Next class start" },
         gC = { move.goto_previous_start, "Previous class start" },
@@ -167,7 +168,7 @@ return {
           if vim.wo.diff and key:sub(1, 1) ~= "g" then
             vim.cmd.normal({ vim.v.count1 .. key, bang = true })
           else
-            go[1]("@class.outer", "textobjects")
+            go[1](class_captures[vim.bo.filetype] or "@class.outer", "textobjects")
           end
         end, { desc = go[2] })
       end
