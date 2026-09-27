@@ -479,7 +479,47 @@ return {
       return seed
     end
 
+    local function match_rank(prompt, text)
+      local name = text:match '^%[.-%]%s+(.*)$' or text
+      local leaf = name:match '[%w_$]+$' or name
+      local q, lname, lleaf = prompt:lower(), name:lower(), leaf:lower()
+      if lleaf == q or lname == q then
+        return 0
+      end
+      if vim.startswith(lleaf, q) or vim.startswith(lname, q) then
+        return 1
+      end
+    end
+
+    local function rank_symbols(items, prompt, current_file)
+      local keyed = {}
+      for i, item in ipairs(items) do
+        local rank = match_rank(prompt, item.text)
+        if rank then
+          table.insert(keyed, {
+            item = item,
+            rank = rank,
+            elsewhere = vim.fs.normalize(item.filename or '') == current_file and 0 or 1,
+            index = i,
+          })
+        end
+      end
+      table.sort(keyed, function(a, b)
+        if a.rank ~= b.rank then
+          return a.rank < b.rank
+        end
+        if a.elsewhere ~= b.elsewhere then
+          return a.elsewhere < b.elsewhere
+        end
+        return a.index < b.index
+      end)
+      return vim.tbl_map(function(k)
+        return k.item
+      end, keyed)
+    end
+
     local function workspace_requester(bufnr)
+      local current_file = vim.fs.normalize(vim.api.nvim_buf_get_name(bufnr))
       local channel = require('plenary.async.control').channel
       local cancel = function() end
       return function(prompt)
@@ -501,7 +541,7 @@ return {
             end
           end
         end
-        return items
+        return rank_symbols(items, prompt, current_file)
       end
     end
 
