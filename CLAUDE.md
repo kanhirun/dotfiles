@@ -179,7 +179,11 @@ go to the start of the next one, `g` and Shift to the start of the previous,
 and the bracket goes to the end. Tests are `gt`/`gT` and `]t`/`[t`, folds
 `gz`/`gZ` and `]z`/`[z`, classes `gc`/`gC` and `]c`/`[c`, functions `gf`/`gF`
 and `]f`/`[f`. `gf` gives up vim's go-to-file, deliberately: `<C-w>f` and
-`:e <cfile>` still do it. The start is the move
+`:e <cfile>` still do it. In a test file the letters follow what the file
+shows: `gt` reaches only tests (`It`, `t.Run`, `it`, `test`) and `gc` the
+blocks that group them (`Describe`, `Context`, `When`, `describe`), through the
+`@it.outer` and `@describe.outer` captures in `nvim/after/queries/*/textobjects.scm`.
+`it`/`at` still select either. The start is the move
 made most, so it gets the easier reach; the end is what `v` extends to, so
 `v2]t` from a test's start selects it and the next. Nouns with no extent, like
 diagnostics, keep only the bracket, and vim's own brackets (`]]`, `]m`, `]s`,

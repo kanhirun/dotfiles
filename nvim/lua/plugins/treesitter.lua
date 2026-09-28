@@ -137,6 +137,14 @@ return {
         end
       end
 
+      local function outside_diff(key, go)
+        if vim.wo.diff and key:sub(1, 1) ~= "g" then
+          vim.cmd.normal({ vim.v.count1 .. key, bang = true })
+        else
+          go()
+        end
+      end
+
       vim.api.nvim_create_autocmd({ "BufReadPost", "BufNewFile" }, {
         group = vim.api.nvim_create_augroup("test_textobjects", { clear = true }),
         pattern = { "*_test.go", "*.test.[jt]s", "*.spec.[jt]s", "*.test.[jt]sx", "*.spec.[jt]sx" },
@@ -152,7 +160,19 @@ return {
             ["[t"] = { move.goto_previous_end, "Previous test end" },
           }) do
             vim.keymap.set({ "n", "x", "o" }, key, function()
-              go[1]("@test.outer", "textobjects")
+              go[1]("@it.outer", "textobjects")
+            end, { buffer = ev.buf, desc = go[2] })
+          end
+          for key, go in pairs({
+            gc = { move.goto_next_start, "Next describe start" },
+            gC = { move.goto_previous_start, "Previous describe start" },
+            ["]c"] = { move.goto_next_end, "Next describe end" },
+            ["[c"] = { move.goto_previous_end, "Previous describe end" },
+          }) do
+            vim.keymap.set({ "n", "x", "o" }, key, function()
+              outside_diff(key, function()
+                go[1]("@describe.outer", "textobjects")
+              end)
             end, { buffer = ev.buf, desc = go[2] })
           end
         end,
@@ -165,11 +185,9 @@ return {
         ["[c"] = { move.goto_previous_end, "Previous class end" },
       }) do
         vim.keymap.set({ "n", "x", "o" }, key, function()
-          if vim.wo.diff and key:sub(1, 1) ~= "g" then
-            vim.cmd.normal({ vim.v.count1 .. key, bang = true })
-          else
+          outside_diff(key, function()
             go[1](class_captures[vim.bo.filetype] or "@class.outer", "textobjects")
-          end
+          end)
         end, { desc = go[2] })
       end
       for key, go in pairs({
