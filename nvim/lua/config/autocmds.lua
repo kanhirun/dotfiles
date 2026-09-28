@@ -24,6 +24,21 @@ vim.api.nvim_create_autocmd('BufEnter', {
   end,
 })
 
+vim.api.nvim_create_autocmd('BufReadPost', {
+  group = vim.api.nvim_create_augroup('restore_cursor', { clear = true }),
+  desc = 'Put the cursor where it was when the file was last closed',
+  callback = function(ev)
+    local ft = vim.bo[ev.buf].filetype
+    if vim.bo[ev.buf].buftype ~= '' or ft == 'gitcommit' or ft == 'gitrebase' then
+      return
+    end
+    local line = vim.api.nvim_buf_get_mark(ev.buf, '"')[1]
+    if line > 0 and line <= vim.api.nvim_buf_line_count(ev.buf) then
+      vim.cmd 'normal! g`"'
+    end
+  end,
+})
+
 -- ================ reload files changed on disk ================
 -- 'autoread' only reloads a buffer when checktime runs, and Neovim runs it on
 -- its own only for the buffer being entered. A hidden buffer that Claude
