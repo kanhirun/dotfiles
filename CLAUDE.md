@@ -177,7 +177,9 @@ guessable rather than looked up; `g]`/`g[` held this before and taught nothing.
 A noun with extent has two edges, and each has one address: `g` and the letter
 go to the start of the next one, `g` and Shift to the start of the previous,
 and the bracket goes to the end. Tests are `gt`/`gT` and `]t`/`[t`, folds
-`gz`/`gZ` and `]z`/`[z`, classes `gc`/`gC` and `]c`/`[c`. The start is the move
+`gz`/`gZ` and `]z`/`[z`, classes `gc`/`gC` and `]c`/`[c`, functions `gf`/`gF`
+and `]f`/`[f`. `gf` gives up vim's go-to-file, deliberately: `<C-w>f` and
+`:e <cfile>` still do it. The start is the move
 made most, so it gets the easier reach; the end is what `v` extends to, so
 `v2]t` from a test's start selects it and the next. Nouns with no extent, like
 diagnostics, keep only the bracket, and vim's own brackets (`]]`, `]m`, `]s`,

@@ -172,6 +172,16 @@ return {
           end
         end, { desc = go[2] })
       end
+      for key, go in pairs({
+        gf = { move.goto_next_start, "Next function start" },
+        gF = { move.goto_previous_start, "Previous function start" },
+        ["]f"] = { move.goto_next_end, "Next function end" },
+        ["[f"] = { move.goto_previous_end, "Previous function end" },
+      }) do
+        vim.keymap.set({ "n", "x", "o" }, key, function()
+          go[1]("@function.outer", "textobjects")
+        end, { desc = go[2] })
+      end
     end,
   },
 
