@@ -12,13 +12,13 @@
         body: (statement_block
           .
           "{"
-          _+ @test.inner
+          _+ @test.inner @describe.inner
           "}"))
       (function_expression
         body: (statement_block
           .
           "{"
-          _+ @test.inner
+          _+ @test.inner @describe.inner
           "}"))
     ]
     .)

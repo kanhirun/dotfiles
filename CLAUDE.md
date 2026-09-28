@@ -183,7 +183,8 @@ and `]f`/`[f`. `gf` gives up vim's go-to-file, deliberately: `<C-w>f` and
 shows: `gt` reaches only tests (`It`, `t.Run`, `it`, `test`) and `gc` the
 blocks that group them (`Describe`, `Context`, `When`, `describe`), through the
 `@it.outer` and `@describe.outer` captures in `nvim/after/queries/*/textobjects.scm`.
-`it`/`at` still select either. The start is the move
+`it`/`at` still select either, and `ic`/`ac` select the grouping block, as
+they select a class elsewhere. The start is the move
 made most, so it gets the easier reach; the end is what `v` extends to, so
 `v2]t` from a test's start selects it and the next. Nouns with no extent, like
 diagnostics, keep only the bracket, and vim's own brackets (`]]`, `]m`, `]s`,
@@ -192,7 +193,8 @@ which now lives on `<leader>//`, since `//` reads as a comment:
 `<leader>//{motion}`, `<leader>///` for a line, and `<leader>//` in visual and
 operator-pending mode. `<leader>/` alone is unbound. In Go a class is a
 `struct` or `interface` type declaration, never a struct literal, through the
-`@type.outer` capture in `nvim/after/queries/go/textobjects.scm`.
+`@type.outer` capture in `nvim/after/queries/go/textobjects.scm`, and `ic`
+selects its fields or methods through `@type.inner`.
 
 **Setup this repo does not capture**: Caps Lock is remapped to Ctrl via macOS
 System Settings. cmux is the terminal and sits directly under Neovim — there is

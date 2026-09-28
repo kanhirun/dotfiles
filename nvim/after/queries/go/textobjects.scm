@@ -10,7 +10,7 @@
       body: (block
         .
         "{"
-        _+ @test.inner
+        _+ @test.inner @describe.inner
         "}"))
     .)
   (#any-of? @_name
@@ -44,7 +44,7 @@
       body: (block
         .
         "{"
-        _+ @test.inner
+        _+ @test.inner @describe.inner
         "}")))
   (#any-of? @_name "DescribeTable" "FDescribeTable" "PDescribeTable")) @test.outer @describe.outer
 
@@ -64,3 +64,19 @@
       (struct_type)
       (interface_type)
     ])) @type.outer
+
+(type_declaration
+  (type_spec
+    (type_identifier)
+    [
+      (struct_type
+        (field_declaration_list
+          .
+          "{"
+          _+ @type.inner
+          "}"))
+      (interface_type
+        "{"
+        _+ @type.inner
+        "}")
+    ]))

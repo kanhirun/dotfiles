@@ -56,6 +56,12 @@ return {
           select.select_textobject(object, "textobjects")
         end, { desc = "Select " .. object })
       end
+      local class_captures = { go = "@type" }
+      for key, part in pairs({ ac = ".outer", ic = ".inner" }) do
+        vim.keymap.set({ "x", "o" }, key, function()
+          select.select_textobject((class_captures[vim.bo.filetype] or "@class") .. part, "textobjects")
+        end, { desc = "Select @class" .. part })
+      end
 
       local move = require("nvim-treesitter-textobjects.move")
 
@@ -153,6 +159,11 @@ return {
           vim.keymap.set({ "x", "o" }, "it", function()
             select.select_textobject("@test.inner", "textobjects")
           end, { buffer = ev.buf, desc = "Select @test.inner" })
+          for key, object in pairs({ ac = "@describe.outer", ic = "@describe.inner" }) do
+            vim.keymap.set({ "x", "o" }, key, function()
+              select.select_textobject(object, "textobjects")
+            end, { buffer = ev.buf, desc = "Select " .. object })
+          end
           for key, go in pairs({
             gt = { move.goto_next_start, "Next test start" },
             gT = { move.goto_previous_start, "Previous test start" },
@@ -177,7 +188,6 @@ return {
           end
         end,
       })
-      local class_captures = { go = "@type.outer" }
       for key, go in pairs({
         gc = { move.goto_next_start, "Next class start" },
         gC = { move.goto_previous_start, "Previous class start" },
@@ -186,7 +196,7 @@ return {
       }) do
         vim.keymap.set({ "n", "x", "o" }, key, function()
           outside_diff(key, function()
-            go[1](class_captures[vim.bo.filetype] or "@class.outer", "textobjects")
+            go[1]((class_captures[vim.bo.filetype] or "@class") .. ".outer", "textobjects")
           end)
         end, { desc = go[2] })
       end
