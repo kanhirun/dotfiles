@@ -10,7 +10,8 @@ vim.keymap.set('n', '^', '0', { noremap = true })
 local function paste_reindented(key)
   return function()
     local keys = '"' .. vim.v.register .. vim.v.count1 .. key
-    if vim.fn.getregtype(vim.v.register):sub(1, 1) == 'V' then
+    local regtype = vim.fn.getregtype(vim.v.register):sub(1, 1)
+    if regtype == 'V' or (regtype == 'v' and #vim.fn.getreg(vim.v.register, 1, true) > 1) then
       keys = keys .. '`[=`]'
     end
     return keys
