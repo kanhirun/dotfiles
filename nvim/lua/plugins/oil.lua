@@ -154,17 +154,6 @@ return {
         toggle_oil_beside(COMPACT_WIDTH, 'topleft')
       end
       vim.keymap.set('n', '<leader>-', toggle_drawer, { desc = 'Toggle File Explorer (left split)' })
-      -- The chord twin, binding the same function. <C-q> is byte 0x11, so it
-      -- needs no kitty keyboard protocol support. It is XON, but Neovim's TUI
-      -- turns off flow control, so it arrives like <C-s> does. It costs Vim's
-      -- alternative to <C-v> (blockwise Visual in Normal mode, literal insert
-      -- in Insert mode) and readline's quoted-insert inside the panes. Zellij
-      -- binds Ctrl-q to quit by default; that binding has to be removed in
-      -- the Zellij config or the chord never gets this far.
-      --
-      -- It was <C-a>, which is now unbound: that gave back Vim's increment
-      -- and readline's beginning-of-line in the panes.
-      vim.keymap.set({ 'n', 'i', 'v', 'x', 't' }, '<C-q>', toggle_drawer, { desc = 'Toggle File Explorer (left split)' })
 
       -- The compact drawer, at the screen's left edge whatever window you are
       -- in. <C-S-[> is the second binding in this config that depends on the
