@@ -312,8 +312,73 @@ Both provide frecency-based directory jumping.
 - **vim-projectionist**: Uses `.projections.json` for project navigation. It is
   vendored at `nvim/vendor/vim-projectionist`, a copy of upstream `tpope/vim-projectionist`
   at `5ff7bf7` (2024-12-21), loaded by `dir =` in `nvim/lua/plugins/projectionist.lua`
-  rather than fetched by lazy.nvim. The one addition is the `"match"` key
-  (`:help projectionist-match`): a regex the glob's match (`{}`) must also satisfy,
-  which is how `*.go` excludes `*_test.go`. It is distributed under Vim's license,
+  rather than fetched by lazy.nvim. Its additions: the `"match"` key
+  (`:help projectionist-match`), a regex the glob's match (`{}`) must also satisfy,
+  which is how `*.go` excludes `*_test.go`; navigation arguments that stay on the
+  current file's side (`:help projectionist-side`); and `ProjectionistDetectPath`.
+  It is distributed under Vim's license,
   which permits a modified public copy; that is the deliberate exception to keeping
   licensed material out of this repo, so do not remove it on those grounds.
+
+### Writing `.projections.json`
+
+`.projections.json` is in the global gitignore, so a project's projections are never
+committed and this is the only place their conventions are written down. They follow
+one shape.
+
+**Two axes, one command each.** A navigation command named for a layer —
+`:Edomain`, `:Vrepository` — moves between layers and stays on the side it started
+from: from a test file it lands on the layer's test file, from production code on
+its production file. `:A` is the only way across, and it stays in the layer. Neither
+command does the other's job, so no layer needs a paired `domaintest` type, and a new
+layer gets both moves by following the same shape.
+
+The shape, per layer:
+
+```json
+"internal/domain/*.go": {
+  "type": "domain",
+  "match": "\\v^[^/]+(_test)@<!$",
+  "alternate": "internal/domain/{}_test.go",
+  "related": "internal/repository/{}.go"
+},
+"internal/domain/*_test.go": {
+  "type": "domain",
+  "match": "\\v^[^/]+$"
+},
+"internal/*_test.go": {
+  "type": "test",
+  "alternate": "internal/{}.go",
+  "related": [
+    "internal/domain/{basename}_test.go",
+    "internal/repository/{basename}_test.go"
+  ]
+}
+```
+
+- **Both sides carry the layer's type.** The production glob excludes tests with
+  `match`. The test glob gives test files the same type, which is what lets `:Edomain`
+  land on one. Without it the fork's `match` filter rejects every test file as a
+  destination, and `:Edomain` from a test file fails with "Invalid number of
+  arguments".
+- **`related` points at the same side.** Production files relate to production files,
+  and the shared `*_test.go` projection relates to `{basename}_test.go` in each layer.
+  Only the most specific projection with a `related` key is consulted, so the test-side
+  globs leave `related` and `alternate` out and the shared projection supplies both.
+- **Add the file itself as a projection at the root:**
+
+  ```json
+  ".projections.json": { "type": "projections" }
+  ```
+
+  A key with no `*` is a single file, and `:Eprojections` opens it from anywhere in the
+  project, so the projections are one command away while you are changing them.
+
+**An argument sticks too.** `:Edomain allocation` expands one path per `domain` glob
+— `allocation.go` and `allocation_test.go` — and the fork tries first the glob that
+ends like the current file's (`:help projectionist-side`): `_test.go` from a test file,
+`.go` from production code. The side is fixed by where you stand, with or without an
+argument. Each side's glob therefore needs its own text after the `*`: a test glob
+written as `test/*.go` ends in `.go` and ties with production code. From a file no
+typed glob matches, such as `.projections.json` itself, the order is arbitrary; type
+the full name (`:Edomain allocation_test`) there.

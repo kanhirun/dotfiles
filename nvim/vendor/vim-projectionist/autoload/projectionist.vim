@@ -726,6 +726,28 @@ function! projectionist#navigation_commands() abort
   return commands
 endfunction
 
+function! s:side() abort
+  let file = get(b:, 'projectionist_file', expand('%:p'))
+  for [path, projections] in s:all()
+    let pre = path
+    if s:slash(pre[-1 : -1]) !=# '/'
+      let pre .= projectionist#slash()
+    endif
+    if strpart(file, 0, len(pre)) !=# pre
+      continue
+    endif
+    let name = strpart(file, len(pre))
+    for pattern in reverse(sort(filter(keys(projections), 'v:val =~# s:valid_key && v:val =~# "\\*"'), function('projectionist#lencmp')))
+      let match = s:match(name, pattern)
+      if !empty(match) && has_key(projections[pattern], 'type')
+            \ && match =~# get(projections[pattern], 'match', '')
+        return matchstr(pattern, '[^*]*$')
+      endif
+    endfor
+  endfor
+  return ''
+endfunction
+
 function! s:find_related_file(patterns, filters) abort
   let alternates = s:query_file_recursive(['related', 'alternate'], {'lnum': 0})
   for alternate in alternates
@@ -776,6 +798,11 @@ function! s:open_projection(mods, edit, variants, ...) abort
   endif
   if len(cmd.args)
     call filter(formats, 'v:val =~# "\\*"')
+    let side = s:side()
+    if !empty(side)
+      let formats = filter(copy(formats), 'matchstr(v:val, "[^*]*$") ==# side')
+            \ + filter(copy(formats), 'matchstr(v:val, "[^*]*$") !=# side')
+    endif
     let name = s:slash(join(cmd.args, ' '))
     let dir = matchstr(name, '.*\ze/')
     let base = substitute(name, '.*/', '', '')

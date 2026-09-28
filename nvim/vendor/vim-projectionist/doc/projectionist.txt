@@ -126,6 +126,15 @@ The full list of available properties in a projection is as follows:
         `:Dfoo`: delegates to |:read|
         `:Ofoo`: delegates to |:drop|
 
+						*projectionist-side*
+        When a type has several globs and a navigation command is given an
+        argument, the globs that end with the same text as the current file's
+        glob are tried first.  The current file's glob is the longest one with
+        a "type" that it matches.  With "*.go" and "*_test.go" both of type
+        "domain", `:Edomain physical` from a test file opens physical_test.go,
+        and from any other ".go" file opens physical.go.  A file no typed glob
+        matches keeps the projections' own order.
+
                                                 *g:projectionist_heuristics*
 In addition to ".projections.json", projections can be defined globally
 through use of the |projectionist-autocmds| API or through the variable
