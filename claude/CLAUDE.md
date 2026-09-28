@@ -110,3 +110,9 @@ Find it in commits I wrote by hand, not in the last fifteen subjects —
 recent history is often yours, and the survey will return your own
 drift as if it were the house style. Filter on commits without a
 `Co-Authored-By` trailer.
+
+# Committing
+
+Don't explain the committing strategy: how the tree is staged, how
+intermediate states are built, how each commit is verified. Do it, and
+report the commits that resulted.
