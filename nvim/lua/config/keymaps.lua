@@ -220,3 +220,7 @@ local function terminal_tab()
 end
 
 vim.keymap.set({ 'n', 'i', 'v', 'x', 't' }, '<C-\\>', terminal_tab, { desc = 'the terminal tab' })
+
+vim.api.nvim_create_user_command('KeyScore', function()
+  require('config.keyscore').report()
+end, { desc = 'Grade how easy the keymap is to press' })

@@ -199,6 +199,15 @@ as *move*: `]m` is `move to [m]ethod end`, `[m` `move back to [m]ethod end`.
 A picker's title is the same string as its key's description, defined once
 beside the picker in `telescope.lua`, so the phrase typed is the phrase shown.
 
+**Every keymap change is graded.** `:KeyScore` scores the running keymap by the
+effort model in `config/keyscore.lua` — per-keystroke cost by finger and row,
+transition cost (alternation free, rolls cheap, same-finger bigrams dear),
+modifier cost — and averages each key's efficiency (the cheapest key of the same
+shape over its actual cost) into a grade out of 100. The artifact's Part IX
+carries the grade and a history row per change, and Appendix B every key's score;
+a keymap change is incomplete until both are updated. The model and its
+constants are stated in Appendix A, and changing them is a Book One change.
+
 Nouns keep one letter across every position they appear in. Diagnostics are `x`:
 `]x`/`[x` move between them, `<leader>sx` lists them, `<leader>rx` fixes the one under
 the cursor. Adding a binding for an existing noun should reuse its letter. The
