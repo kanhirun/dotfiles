@@ -61,12 +61,61 @@ local function toggle_claude_or_send()
   open_or_focus_claude()
 end
 
+local function mention(line1, line2)
+  local path = vim.fn.expand("%:.")
+  if path == "" or vim.bo.buftype ~= "" then
+    return ""
+  end
+  return "@" .. path .. "#L" .. line1 .. (line1 == line2 and "" or "-" .. line2) .. " "
+end
+
+local function when_connected(fn)
+  local claudecode = require("claudecode")
+  local waited = 0
+  local timer = vim.uv.new_timer()
+  timer:start(100, 100, vim.schedule_wrap(function()
+    waited = waited + 100
+    if claudecode.is_claude_connected() or waited >= 15000 then
+      timer:stop()
+      timer:close()
+      vim.defer_fn(fn, 300)
+    end
+  end))
+end
+
+local function ask(opts)
+  local text = (opts.range > 0 and mention(opts.line1, opts.line2) or "") .. opts.args
+  local terminal = require("claudecode.terminal")
+  local running = terminal.get_active_terminal_bufnr() ~= nil
+  if claude_window() ~= vim.api.nvim_get_current_win() then
+    open_or_focus_claude()
+  end
+  if text == "" then
+    return
+  end
+  local function send()
+    terminal.send_to_terminal(text, { submit = opts.args ~= "" })
+  end
+  if running then
+    send()
+  else
+    when_connected(send)
+  end
+end
+
 return {
   -- Claude Code in Neovim: pairs the editor with the Claude Code CLI
   -- https://github.com/coder/claudecode.nvim
   {
     "coder/claudecode.nvim",
     dependencies = { "folke/snacks.nvim" },
+    init = function()
+      vim.api.nvim_create_user_command("Ask", ask, {
+        nargs = "*",
+        range = true,
+        desc = "Ask the agent, with the range as context",
+      })
+    end,
     opts = {
       terminal = {
         -- Open/focus the Claude terminal in Normal mode; <i> to start typing.

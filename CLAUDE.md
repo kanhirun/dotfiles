@@ -133,6 +133,16 @@ The rules that matter most when editing this config:
   terminal. They need Option to act as Alt (Ghostty's `macos-option-as-alt`).
   `<C-M-[>` would be Esc Esc, so the compact drawer stays on `<C-S-[>`.
 
+**Keys and commands are named for what they do, never for the tool.** The key is
+the abstraction; the plugin is its implementation (axiom 13). Git is the one
+exemption. `<leader>c` still takes its letter from Claude and is recorded as the
+deviation; `<leader>a` is free for *agent*. The command line is the third tier:
+a config-defined Ex command is named for the verb and takes a range when it acts
+on text, the range being its text object. `:[range]Ask {prompt}` asks the agent,
+sending the range as an `@file#L10-20` mention (`plugins/claudecode.lua`); the
+plugin's `:ClaudeCode…` commands are implementation, and nothing new should bind
+to them.
+
 Namespaces in use: `<leader>s` search · `<leader>r` refactor · `<leader>t` test/toggle ·
 `<leader>g` git · `<leader>c` Claude. `<C-]>` toggles Claude and `<C-\>` toggles a
 terminal tab, both from any mode; with a visual selection, `<C-]>` sends it to
