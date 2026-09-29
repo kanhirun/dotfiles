@@ -78,27 +78,6 @@ return {
     -- oil's <C-q> in oil.lua, so both reach from a pane the same way.
     local panes = require('config.panes')
 
-    -- `hidden` walks dotfiles too: `.github/workflows`, `.envrc`, `.zshrc`.
-    -- rg still honours .gitignore, so the ignored trees stay out; `.git/`
-    -- itself is dropped by file_ignore_patterns above. `post` on
-    -- action_set.select runs after the file has landed in the editor window
-    -- and is reset when the next picker starts, so it stays scoped to this
-    -- one picker (see search_recent_files below for the longer note).
-    local ALL_FILES = '[f]ind all [F]iles'
-    local function find_files()
-      local from_pane = panes.leave_terminal_window()
-      builtin.find_files {
-        prompt_title = ALL_FILES,
-        hidden = true,
-        attach_mappings = function()
-          if from_pane then
-            require('telescope.actions.set').select:enhance { post = panes.balance_panes }
-          end
-          return true
-        end,
-      }
-    end
-
     -- The files changed in the working tree: modified, staged, and untracked
     -- but not ignored -- what `git status` reports. git_files was the wrong
     -- list; it returns every file in the repo, which <leader>fF already covers.
@@ -137,31 +116,39 @@ return {
     -- The cwd's recent files, most recent first. options.lua raises the shada
     -- cap to 1000 precisely so this per-project slice is not starved; there is
     -- no further limit here, and the fuzzy matcher narrows the rest.
-    local RECENT_FILES = '[f]ind recent [f]iles'
-    local function search_recent_files()
+    local FILES = '[f]ind [f]iles'
+    local function find_files()
       local from_pane = panes.leave_terminal_window()
       local cwd = vim.uv.cwd()
       local results, seen = {}, {}
+      local function add(rel)
+        if not seen[rel] then
+          seen[rel] = true
+          table.insert(results, rel)
+        end
+      end
 
       for _, path in ipairs(vim.v.oldfiles) do
         local abs = vim.fs.normalize(path)
         -- oldfiles keeps paths that have since been deleted, hence fs_stat.
         if
-          not seen[abs]
-          and not path:match '%.git/COMMIT_EDITMSG$'
+          not path:match '%.git/COMMIT_EDITMSG$'
           and vim.startswith(abs, cwd .. '/')
           and vim.uv.fs_stat(abs)
         then
-          seen[abs] = true
           -- gen_from_file joins relative paths against cwd and displays them as-is
-          table.insert(results, abs:sub(#cwd + 2))
+          add(abs:sub(#cwd + 2))
         end
+      end
+      local listed = vim.system({ 'rg', '--files', '--hidden', '--glob', '!.git' }, { cwd = cwd, text = true }):wait()
+      for _, rel in ipairs(vim.split(listed.stdout or '', '\n', { trimempty = true })) do
+        add(rel)
       end
 
       local conf = require('telescope.config').values
       require('telescope.pickers')
         .new({}, {
-          prompt_title = RECENT_FILES,
+          prompt_title = FILES,
           finder = require('telescope.finders').new_table {
             results = results,
             entry_maker = require('telescope.make_entry').gen_from_file { cwd = cwd },
@@ -202,45 +189,11 @@ return {
     -- forward-char, which Right also does). <C-f> is a legacy control byte
     -- (0x06), so it arrives through Zellij with no kitty keyboard protocol
     -- support.
-    vim.keymap.set('n', '<leader>ff', search_recent_files, { desc = RECENT_FILES })
-    vim.keymap.set('n', '<leader>fF', find_files, { desc = ALL_FILES })
+    vim.keymap.set('n', '<leader>ff', find_files, { desc = FILES })
 
     -- Search directories only; selecting one opens it in oil.nvim.
     -- fd respects .gitignore; the 'find' fallback does not, so it will surface
     -- build output (cdk.out, dist, ...) in repos that gitignore it.
-    local ALL_DIRS = '[f]ind all [D]ir'
-    local function search_directories()
-      local from_pane = panes.leave_terminal_window()
-      local find_command = vim.fn.executable 'fd' == 1
-          and { 'fd', '--type', 'd', '--hidden', '--exclude', '.git' }
-          or { 'find', '.', '(', '-name', '.git', '-o', '-name', 'node_modules', ')', '-prune', '-o', '-type', 'd', '-print' }
-
-      builtin.find_files {
-        prompt_title = ALL_DIRS,
-        find_command = find_command,
-        attach_mappings = function(prompt_bufnr, _)
-          local actions = require 'telescope.actions'
-          local action_state = require 'telescope.actions.state'
-
-          actions.select_default:replace(function()
-            local entry = action_state.get_selected_entry()
-            actions.close(prompt_bufnr)
-            -- entry.path is already joined against the picker's cwd
-            vim.schedule(function()
-              -- Browsing here never changes the cwd, so there is no
-              -- DirChanged to hook -- record the jump ourselves.
-              require('config.zoxide').add(entry.path)
-              require('oil').open(entry.path)
-              if from_pane then
-                panes.balance_panes()
-              end
-            end)
-          end)
-
-          return true
-        end,
-      }
-    end
 
     -- Deliberately no chord. Directories are reached far less often than files,
     -- and the chord tier is a fixed budget -- spending one here means not
@@ -280,35 +233,40 @@ return {
     -- control byte (0x0A, linefeed), so it arrives through Zellij with no kitty
     -- keyboard protocol support. In the shell it was a second Enter, which
     -- Enter still is; Claude Code does not bind it.
-    local FRECENT_DIRS = '[f]ind frecent [d]ir'
-    local function jump_to_zoxide_directory()
+    local DIRS = '[f]ind [d]irs'
+    local function find_dirs()
       local from_pane = panes.leave_terminal_window()
-      local entries, score_width = zoxide_entries()
-      if #entries == 0 then
-        return vim.notify('No frecent directories under ' .. vim.fn.fnamemodify(vim.fn.getcwd(), ':~'), vim.log.levels.WARN)
+      local cwd = vim.fn.getcwd()
+      local dirs, seen = {}, {}
+      local function add(dir)
+        if not seen[dir] then
+          seen[dir] = true
+          table.insert(dirs, dir)
+        end
       end
-
-      local displayer = require('telescope.pickers.entry_display').create {
-        separator = '  ',
-        items = { { width = score_width }, { remaining = true } },
-      }
+      for _, item in ipairs((zoxide_entries())) do
+        add(item.dir)
+      end
+      local find_command = vim.fn.executable 'fd' == 1
+          and { 'fd', '--type', 'd', '--hidden', '--exclude', '.git' }
+          or { 'find', '.', '(', '-name', '.git', '-o', '-name', 'node_modules', ')', '-prune', '-o', '-type', 'd', '-print' }
+      local listed = vim.system(find_command, { cwd = cwd, text = true }):wait()
+      for _, rel in ipairs(vim.split(listed.stdout or '', '\n', { trimempty = true })) do
+        add(vim.fs.normalize(cwd .. '/' .. rel))
+      end
+      if #dirs == 0 then
+        return vim.notify('No directories under ' .. vim.fn.fnamemodify(cwd, ':~'), vim.log.levels.WARN)
+      end
 
       require('telescope.pickers')
         .new({}, {
-          prompt_title = FRECENT_DIRS,
+          prompt_title = DIRS,
           finder = require('telescope.finders').new_table {
-            results = entries,
+            results = dirs,
             -- Only the path is the ordinal, so the score never fuzzy-matches.
-            entry_maker = function(item)
-              local shown = item.dir == vim.fn.getcwd() and '.' or vim.fn.fnamemodify(item.dir, ':.')
-              return {
-                value = item.dir,
-                path = item.dir,
-                ordinal = shown,
-                display = function()
-                  return displayer { { item.score, 'TelescopeResultsComment' }, shown }
-                end,
-              }
+            entry_maker = function(dir)
+              local shown = dir == cwd and '.' or vim.fn.fnamemodify(dir, ':.')
+              return { value = dir, path = dir, ordinal = shown, display = shown }
             end,
           },
           sorter = require('telescope.config').values.generic_sorter {},
@@ -338,8 +296,7 @@ return {
         :find()
     end
 
-    vim.keymap.set('n', '<leader>fd', jump_to_zoxide_directory, { desc = FRECENT_DIRS })
-    vim.keymap.set('n', '<leader>fD', search_directories, { desc = ALL_DIRS })
+    vim.keymap.set('n', '<leader>fd', find_dirs, { desc = DIRS })
 
     --======================
     -- 2. Content search
