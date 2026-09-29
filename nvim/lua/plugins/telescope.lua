@@ -527,11 +527,109 @@ return {
     -- so the move gives a mnemonic and frees a chord that had two other jobs.
     -- Terminals send <C-s> as byte 0x13, and Neovim's TUI turns off XON/XOFF
     -- flow control, so it arrives through Zellij like the other chords.
+    local GO_DECLARATIONS = {
+      method = {
+        pattern = '^func ',
+        parse = function(line)
+          local receiver, name = line:match '^func%s+(%b())%s*([%w_]+)'
+          if receiver then
+            local inner = vim.trim(receiver:sub(2, -2):gsub('%b[]', ''))
+            local recv = inner:match '^[%w_]+%s+(%*?%s*[%w_.]+)$' or inner
+            return 'Method', ('(%s).%s'):format(recv:gsub('%s', ''), name)
+          end
+          name = line:match '^func%s+([%w_]+)'
+          return name and 'Function', name
+        end,
+      },
+      class = {
+        pattern = '^type \\w+ (struct|interface)',
+        parse = function(line)
+          local name, kind = line:match '^type%s+([%w_]+)%s+(%a+)'
+          return name and (kind == 'struct' and 'Struct' or 'Interface'), name
+        end,
+      },
+    }
+
+    local function go_declarations(noun)
+      local cwd = vim.uv.cwd()
+      local spec = GO_DECLARATIONS[noun]
+      local out = vim.system({
+        'rg', '--no-heading', '--line-number', '--column', '--type', 'go',
+        '--glob', '!*.pb.go', '--glob', '!*.pb.*.go', spec.pattern,
+      }, { cwd = cwd, text = true }):wait()
+      local items = {}
+      for _, row in ipairs(vim.split(out.stdout or '', '\n', { trimempty = true })) do
+        local path, lnum, col, line = row:match '^(.-):(%d+):(%d+):(.*)$'
+        local kind, name = spec.parse(line or '')
+        if kind then
+          table.insert(items, {
+            filename = vim.fs.normalize(cwd .. '/' .. path),
+            lnum = tonumber(lnum),
+            col = tonumber(col),
+            kind = kind,
+            text = ('[%s] %s'):format(kind, name),
+          })
+        end
+      end
+      return items
+    end
+
+    local function find_declarations(noun, kinds, title)
+      local items = go_declarations(noun)
+      if #items == 0 then
+        return search_workspace_symbols(kinds, title)
+      end
+      local results, seen = {}, {}
+      local function add(item)
+        local key = vim.fs.normalize(item.filename) .. '\0' .. item.text
+        if not seen[key] then
+          seen[key] = true
+          table.insert(results, item)
+        end
+      end
+      for _, item in ipairs(recent_symbols(kinds)) do
+        add(item)
+      end
+      for _, item in ipairs(items) do
+        add(item)
+      end
+      local displayer = require('telescope.pickers.entry_display').create {
+        separator = '  ',
+        items = { { width = 48 }, { remaining = true } },
+      }
+      local conf = require('telescope.config').values
+      require('telescope.pickers')
+        .new({}, {
+          prompt_title = title,
+          finder = require('telescope.finders').new_table {
+            results = results,
+            entry_maker = function(item)
+              local name = item.text:match '^%[.-%]%s+(.*)$' or item.text
+              local where = vim.fn.fnamemodify(item.filename, ':.')
+              return {
+                value = item,
+                ordinal = name,
+                filename = item.filename,
+                lnum = item.lnum,
+                col = item.col,
+                display = function()
+                  return displayer { name, { where .. ':' .. item.lnum, 'TelescopeResultsComment' } }
+                end,
+              }
+            end,
+          },
+          sorter = conf.generic_sorter {},
+          previewer = conf.qflist_previewer {},
+          attach_mappings = attach_history,
+        })
+        :find()
+    end
+
     vim.keymap.set('n', '<leader>fc', function()
-      search_workspace_symbols(CLASS_KINDS, '[f]ind [c]lass')
+      find_declarations('class', CLASS_KINDS, '[f]ind [c]lass')
     end, { desc = '[f]ind [c]lass' })
     vim.keymap.set('n', '<leader>fm', function()
-      search_workspace_symbols(METHOD_KINDS, '[f]ind [m]ethod')
+      find_declarations('method', METHOD_KINDS, '[f]ind [m]ethod')
     end, { desc = '[f]ind [m]ethod' })
     vim.keymap.set('n', '<leader>sc', function()
       search_document_symbols(CLASS_KINDS, '[s]earch [c]lasses')

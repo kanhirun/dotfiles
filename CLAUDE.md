@@ -103,10 +103,13 @@ The rules that matter most when editing this config:
   kind, never as "symbols": `<leader>fc`/`<leader>fm` [f]ind a [c]lass or
   [m]ethod across the project by name (an empty prompt shows the last five
   picked of that kind), and `<leader>sc`/`<leader>sm` [s]earch this file's
-  classes or methods, its outline. The kinds are the `CLASS_KINDS` and
-  `METHOD_KINDS` lists in `telescope.lua`, which Go's gopls reports well; lua_ls
-  reports no useful kinds for workspace symbols, so the finders find nothing
-  there. Grep splits the same way: `<leader>fp` [f]inds by gre[p] across the
+  classes or methods, its outline. In Go the finders list every declaration
+  with ripgrep when they open (`GO_DECLARATIONS` in `telescope.lua`: `func` lines
+  for methods, `type … struct|interface` for classes, `*.pb.go` excluded) and
+  fuzzy-match by name, because gopls caps a workspace-symbol answer at 100
+  results of every kind and the kind filter ran after the cap. Outside Go they
+  fall back to the language server's search, filtered by `CLASS_KINDS` and
+  `METHOD_KINDS`. Grep splits the same way: `<leader>fp` [f]inds by gre[p] across the
   project and lands in one file, `<leader>sp` [s]earches this buffer's lines by
   gre[p] (the live buffer, so unsaved edits count; a leading `'` matches
   exactly). Grep takes `p` because **`g` in the leader tier is git**: its group
