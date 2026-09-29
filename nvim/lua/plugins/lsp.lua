@@ -151,8 +151,8 @@ return {
         end, 'Fix Imports')
         map('gD', vim.lsp.buf.declaration, '[G]oto [D]eclaration')
 
-        map('gr', require('telescope.builtin').lsp_references, '[G]oto [R]eferences')
-        map('gi', require('telescope.builtin').lsp_implementations, '[G]oto [I]mplementation')
+        map('<leader>sr', require('telescope.builtin').lsp_references, 'Search References')
+        map('<leader>si', require('telescope.builtin').lsp_implementations, 'Search Implementations')
         map('gd', require('telescope.builtin').lsp_definitions, '[G]oto [D]efinition')
         -- Document and workspace symbols live at <leader>ss / <leader>sS in
         -- telescope.lua, the workspace one with a <C-s> chord. They used to be

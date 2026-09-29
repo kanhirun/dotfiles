@@ -33,6 +33,9 @@ vim.keymap.set({ 'n', 'x' }, '[z', fold_jump 'zk', { desc = 'Previous fold end' 
 
 pcall(vim.keymap.del, { 'n', 'x', 'o' }, 'gc')
 pcall(vim.keymap.del, 'n', 'gcc')
+for _, lhs in ipairs({ 'gra', 'gri', 'grn', 'grr', 'grt', 'grx' }) do
+  pcall(vim.keymap.del, { 'n', 'x' }, lhs)
+end
 vim.keymap.set({ 'n', 'x' }, '<leader>//', function()
   return require('vim._comment').operator()
 end, { expr = true, desc = 'Toggle comment' })

@@ -174,6 +174,15 @@ the cursor. Adding a binding for an existing noun should reuse its letter. The
 bracket is the direction and the letter is the noun, so a new noun's motion is
 guessable rather than looked up; `g]`/`g[` held this before and taught nothing.
 
+`g` holds two readings of *go*: a noun letter goes to the next region of that
+kind, and a reference letter follows the name under the cursor to the one place
+it points — `gd` definition, `gD` declaration, `gy` type. **`d`, `D` and `y` are
+reserved on `g`**: no noun may take them, in any file. A goto that returns a list
+is not a motion and lives on `<leader>s`: references are `<leader>sr`,
+implementations `<leader>si`. `gi` and `gr` are vim's, and Neovim's `gra`/`gri`/
+`grn`/`grr`/`grt`/`grx` are deleted in `config/keymaps.lua` so `<leader>r` and
+`<leader>s` stay the one address.
+
 A noun with extent has two edges, and each has one address: `g` and the letter
 go to the start of the next one, `g` and Shift to the start of the previous,
 and the bracket goes to the end. Tests are `gt`/`gT` and `]t`/`[t`, folds
