@@ -1,7 +1,7 @@
 -- ================ Key Mappings ==========================
 
 -- Clear search highlights with //
-vim.keymap.set('n', '//', ':noh<CR>', { silent = true })
+vim.keymap.set('n', '<leader>s/', '<cmd>nohlsearch<CR>', { desc = 'Search Highlight Off' })
 
 -- Make 0 go to first character rather than beginning of line
 vim.keymap.set('n', '0', '^', { noremap = true })

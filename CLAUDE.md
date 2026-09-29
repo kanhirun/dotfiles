@@ -181,7 +181,8 @@ reserved on `g`**: no noun may take them, in any file. A goto that returns a lis
 is not a motion and lives on `<leader>s`: references are `<leader>sr`,
 implementations `<leader>si`. `gi` and `gr` are vim's, and Neovim's `gra`/`gri`/
 `grn`/`grr`/`grt`/`grx` are deleted in `config/keymaps.lua` so `<leader>r` and
-`<leader>s` stay the one address.
+`<leader>s` stay the one address. The search highlight clears with `<leader>s/`;
+a mapping on `//` would make `/` a prefix and stall it.
 
 A noun with extent has two edges, and each has one address: `g` and the letter
 go to the start of the next one, `g` and Shift to the start of the previous,
