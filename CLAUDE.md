@@ -91,7 +91,7 @@ The rules that matter most when editing this config:
   `<C-\>` the terminal, `<C-Space>` the way out of any mode. Pickers are
   sequences: the file and directory chords were given back, so each picker has
   one address. `<C-g>` (`<leader>fg`), `<C-s>` (`<leader>ss`) and `<C-M-s>`
-  (`<leader>sS`) remain. Chords are invisible, so each binds the *same function
+  (`<leader>fs`) remain. Chords are invisible, so each binds the *same function
   object* as its `<leader>` twin and the two cannot drift apart. Alt on the chord
   widens scope the way Shift on the leader letter does, since Ctrl+Shift is
   awkward to hold and has no legacy byte.
@@ -100,8 +100,11 @@ The rules that matter most when editing this config:
   (`completion.lua`: the menu first, then the snippet, then vim's own), and vim's
   defaults everywhere else. Neither is a teleport slot, which is why the file
   picker has no `<C-p>`, and why snippets have no `<Tab>` jump.
-- **Shift widens scope, and means nothing else.** `<leader>ss` document →
-  `<leader>sS` workspace; `<leader>sx` buffer diagnostics → `<leader>sX` project;
+- **Find takes a name; search scans.** `<leader>f` is for a thing you name as you
+  type, `<leader>s` for content or a list you read down. Symbols fall on both
+  sides: `<leader>fs` [f]inds a [s]ymbol across the project by name, and
+  `<leader>ss` [s]earches the [s]ymbols of this file, its outline.
+- **Shift widens scope, and means nothing else.** `<leader>sx` buffer diagnostics → `<leader>sX` project;
   `<leader>ff` recent files → `<leader>fF` every file;
   `<leader>fd` directories zoxide ranks → `<leader>fD` every directory, both
   under the cwd; a picked directory opens in oil and the cwd stays put. Bare

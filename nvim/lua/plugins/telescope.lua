@@ -609,7 +609,7 @@ return {
     -- flow control, so it arrives through Zellij like the other chords.
     vim.keymap.set('n', '<leader>ss', search_document_symbols, { desc = '[s]earch [s]ymbols' })
     vim.keymap.set('n', '<C-s>', search_document_symbols, { desc = '[S]ymbols in this buffer' })
-    vim.keymap.set('n', '<leader>sS', search_workspace_symbols, { desc = '[s]earch all [S]ymbols' })
+    vim.keymap.set('n', '<leader>fs', search_workspace_symbols, { desc = '[f]ind a [s]ymbol' })
     vim.keymap.set('n', '<C-M-s>', search_workspace_symbols, { desc = 'all [S]ymbols' })
 
     -- gd lives in lsp.lua's LspAttach handler, buffer-local. It was bound here
