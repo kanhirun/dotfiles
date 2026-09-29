@@ -42,10 +42,10 @@ return {
       -- <leader>sd and <leader>th also existed, so both keys had to wait out
       -- timeoutlen (1000ms, unset) before firing. Grouping frees <leader>s,
       -- <leader>a and <leader>l, and <leader>th joins this group cleanly.
-      vim.keymap.set('n', '<leader>tn', ':TestNearest<CR>', { silent = true, desc = "Run nearest test" })
-      vim.keymap.set('n', '<leader>tf', ':TestFile<CR>', { silent = true, desc = "Run file tests" })
-      vim.keymap.set('n', '<leader>ta', ':TestSuite<CR>', { silent = true, desc = "Run all tests" })
-      vim.keymap.set('n', '<leader>tl', ':TestLast<CR>', { silent = true, desc = "Run last test" })
+      vim.keymap.set('n', '<leader>tn', ':TestNearest<CR>', { silent = true, desc = "[t]est [n]earest" })
+      vim.keymap.set('n', '<leader>tf', ':TestFile<CR>', { silent = true, desc = "[t]est [f]ile" })
+      vim.keymap.set('n', '<leader>ta', ':TestSuite<CR>', { silent = true, desc = "[t]est [a]ll" })
+      vim.keymap.set('n', '<leader>tl', ':TestLast<CR>', { silent = true, desc = "[t]est [l]ast" })
     end
   }
 }

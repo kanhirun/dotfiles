@@ -54,13 +54,13 @@ return {
       for key, object in pairs({ af = "@function.outer", ["if"] = "@function.inner" }) do
         vim.keymap.set({ "x", "o" }, key, function()
           select.select_textobject(object, "textobjects")
-        end, { desc = "Select " .. object })
+        end, { desc = (key == "af" and "[a]round" or "[i]nside") .. " a [f]unction" })
       end
       local class_captures = { go = "@type" }
       for key, part in pairs({ ac = ".outer", ic = ".inner" }) do
         vim.keymap.set({ "x", "o" }, key, function()
           select.select_textobject((class_captures[vim.bo.filetype] or "@class") .. part, "textobjects")
-        end, { desc = "Select @class" .. part })
+        end, { desc = (key == "ac" and "[a]round" or "[i]nside") .. " a [c]lass" })
       end
 
       local move = require("nvim-treesitter-textobjects.move")
@@ -155,30 +155,30 @@ return {
         group = vim.api.nvim_create_augroup("test_textobjects", { clear = true }),
         pattern = { "*_test.go", "*.test.[jt]s", "*.spec.[jt]s", "*.test.[jt]sx", "*.spec.[jt]sx" },
         callback = function(ev)
-          vim.keymap.set({ "x", "o" }, "at", select_tests, { buffer = ev.buf, desc = "Select @test.outer" })
+          vim.keymap.set({ "x", "o" }, "at", select_tests, { buffer = ev.buf, desc = "[a]round a [t]est" })
           vim.keymap.set({ "x", "o" }, "it", function()
             select.select_textobject("@test.inner", "textobjects")
-          end, { buffer = ev.buf, desc = "Select @test.inner" })
+          end, { buffer = ev.buf, desc = "[i]nside a [t]est" })
           for key, object in pairs({ ac = "@describe.outer", ic = "@describe.inner" }) do
             vim.keymap.set({ "x", "o" }, key, function()
               select.select_textobject(object, "textobjects")
-            end, { buffer = ev.buf, desc = "Select " .. object })
+            end, { buffer = ev.buf, desc = (key == "ac" and "[a]round" or "[i]nside") .. " a [c]ontext" })
           end
           for key, go in pairs({
-            gt = { move.goto_next_start, "Next test start" },
-            gT = { move.goto_previous_start, "Previous test start" },
-            ["]t"] = { move.goto_next_end, "Next test end" },
-            ["[t"] = { move.goto_previous_end, "Previous test end" },
+            gt = { move.goto_next_start, "[g]o to [t]est" },
+            gT = { move.goto_previous_start, "[g]o to previous [T]est" },
+            ["]t"] = { move.goto_next_end, "forward to a [t]est's end" },
+            ["[t"] = { move.goto_previous_end, "back to a [t]est's end" },
           }) do
             vim.keymap.set({ "n", "x", "o" }, key, function()
               go[1]("@it.outer", "textobjects")
             end, { buffer = ev.buf, desc = go[2] })
           end
           for key, go in pairs({
-            gc = { move.goto_next_start, "Next describe start" },
-            gC = { move.goto_previous_start, "Previous describe start" },
-            ["]c"] = { move.goto_next_end, "Next describe end" },
-            ["[c"] = { move.goto_previous_end, "Previous describe end" },
+            gc = { move.goto_next_start, "[g]o to [c]ontext" },
+            gC = { move.goto_previous_start, "[g]o to previous [C]ontext" },
+            ["]c"] = { move.goto_next_end, "forward to a [c]ontext's end" },
+            ["[c"] = { move.goto_previous_end, "back to a [c]ontext's end" },
           }) do
             vim.keymap.set({ "n", "x", "o" }, key, function()
               outside_diff(key, function()
@@ -189,10 +189,10 @@ return {
         end,
       })
       for key, go in pairs({
-        gc = { move.goto_next_start, "Next class start" },
-        gC = { move.goto_previous_start, "Previous class start" },
-        ["]c"] = { move.goto_next_end, "Next class end" },
-        ["[c"] = { move.goto_previous_end, "Previous class end" },
+        gc = { move.goto_next_start, "[g]o to [c]lass" },
+        gC = { move.goto_previous_start, "[g]o to previous [C]lass" },
+        ["]c"] = { move.goto_next_end, "forward to a [c]lass's end" },
+        ["[c"] = { move.goto_previous_end, "back to a [c]lass's end" },
       }) do
         vim.keymap.set({ "n", "x", "o" }, key, function()
           outside_diff(key, function()
@@ -201,10 +201,10 @@ return {
         end, { desc = go[2] })
       end
       for key, go in pairs({
-        gf = { move.goto_next_start, "Next function start" },
-        gF = { move.goto_previous_start, "Previous function start" },
-        ["]f"] = { move.goto_next_end, "Next function end" },
-        ["[f"] = { move.goto_previous_end, "Previous function end" },
+        gf = { move.goto_next_start, "[g]o to [f]unction" },
+        gF = { move.goto_previous_start, "[g]o to previous [F]unction" },
+        ["]f"] = { move.goto_next_end, "forward to a [f]unction's end" },
+        ["[f"] = { move.goto_previous_end, "back to a [f]unction's end" },
       }) do
         vim.keymap.set({ "n", "x", "o" }, key, function()
           go[1]("@function.outer", "textobjects")

@@ -1,7 +1,7 @@
 -- ================ Key Mappings ==========================
 
 -- Clear search highlights with //
-vim.keymap.set('n', '<leader>s/', '<cmd>nohlsearch<CR>', { desc = 'Search Highlight Off' })
+vim.keymap.set('n', '<leader>s/', '<cmd>nohlsearch<CR>', { desc = '[s]earch highlight off [/]' })
 
 -- Make 0 go to first character rather than beginning of line
 vim.keymap.set('n', '0', '^', { noremap = true })
@@ -26,10 +26,10 @@ local function fold_jump(keys)
   end
 end
 
-vim.keymap.set({ 'n', 'x' }, 'gz', fold_jump 'zj', { desc = 'Next fold start' })
-vim.keymap.set({ 'n', 'x' }, 'gZ', fold_jump 'zk[z', { desc = 'Previous fold start' })
-vim.keymap.set({ 'n', 'x' }, ']z', fold_jump 'zj]z', { desc = 'Next fold end' })
-vim.keymap.set({ 'n', 'x' }, '[z', fold_jump 'zk', { desc = 'Previous fold end' })
+vim.keymap.set({ 'n', 'x' }, 'gz', fold_jump 'zj', { desc = '[g]o to fold [z]' })
+vim.keymap.set({ 'n', 'x' }, 'gZ', fold_jump 'zk[z', { desc = '[g]o to previous fold [Z]' })
+vim.keymap.set({ 'n', 'x' }, ']z', fold_jump 'zj]z', { desc = "forward to a fold's end [z]" })
+vim.keymap.set({ 'n', 'x' }, '[z', fold_jump 'zk', { desc = "back to a fold's end [z]" })
 
 pcall(vim.keymap.del, { 'n', 'x', 'o' }, 'gc')
 pcall(vim.keymap.del, 'n', 'gcc')
@@ -38,13 +38,13 @@ for _, lhs in ipairs({ 'gra', 'gri', 'grn', 'grr', 'grt', 'grx' }) do
 end
 vim.keymap.set({ 'n', 'x' }, '<leader>//', function()
   return require('vim._comment').operator()
-end, { expr = true, desc = 'Toggle comment' })
+end, { expr = true, desc = 'comment [//]' })
 vim.keymap.set('n', '<leader>///', function()
   return require('vim._comment').operator() .. '_'
-end, { expr = true, desc = 'Toggle comment line' })
+end, { expr = true, desc = 'comment this line [///]' })
 vim.keymap.set('o', '<leader>//', function()
   require('vim._comment').textobject()
-end, { desc = 'Comment textobject' })
+end, { desc = 'a comment [//]' })
 
 local function fold_object(inner)
   return function()
@@ -74,11 +74,11 @@ local function fold_object(inner)
   end
 end
 
-vim.keymap.set({ 'x', 'o' }, 'iz', fold_object(true), { desc = 'Inside fold' })
-vim.keymap.set({ 'x', 'o' }, 'az', fold_object(false), { desc = 'Around fold' })
+vim.keymap.set({ 'x', 'o' }, 'iz', fold_object(true), { desc = '[i]nside a fold [z]' })
+vim.keymap.set({ 'x', 'o' }, 'az', fold_object(false), { desc = '[a]round a fold [z]' })
 
-vim.keymap.set('n', 'p', paste_reindented 'p', { expr = true, desc = 'Paste after, reindented' })
-vim.keymap.set('n', 'P', paste_reindented 'P', { expr = true, desc = 'Paste before, reindented' })
+vim.keymap.set('n', 'p', paste_reindented 'p', { expr = true, desc = '[p]aste after, reindented' })
+vim.keymap.set('n', 'P', paste_reindented 'P', { expr = true, desc = '[P]aste before, reindented' })
 
 -- ================ Suspend ===============================
 -- <C-z> suspends Neovim from every mode, as it already does in Normal. Unmapped
@@ -87,7 +87,7 @@ vim.keymap.set('n', 'P', paste_reindented 'P', { expr = true, desc = 'Paste befo
 -- goes dead. Insert mode has no default for it since 'insertmode' was removed.
 -- Global, so it also covers Claude's pane and the shell: neither Snacks nor
 -- claudecode binds the key buffer-locally.
-vim.keymap.set({ 'i', 't' }, '<C-z>', '<Cmd>suspend<CR>', { desc = 'Suspend Neovim' })
+vim.keymap.set({ 'i', 't' }, '<C-z>', '<Cmd>suspend<CR>', { desc = 'suspend Neovim' })
 
 -- Shift makes it a different key, not the same one. Ghostty speaks the kitty
 -- keyboard protocol, so Neovim reads <C-S-Z> as its own keycode rather than
@@ -95,7 +95,7 @@ vim.keymap.set({ 'i', 't' }, '<C-z>', '<Cmd>suspend<CR>', { desc = 'Suspend Neov
 -- Normal, where plain <C-z> suspends. In terminal mode it is then forwarded to
 -- the job as bare 0x1A, which is the dead-pane case above. Hence every mode
 -- here, not just the two.
-vim.keymap.set({ 'n', 'v', 'o', 'i', 't' }, '<C-S-z>', '<Cmd>suspend<CR>', { desc = 'Suspend Neovim' })
+vim.keymap.set({ 'n', 'v', 'o', 'i', 't' }, '<C-S-z>', '<Cmd>suspend<CR>', { desc = 'suspend Neovim' })
 
 -- ================ Universal Normal Mode =================
 -- <C-Space> returns to Normal mode from wherever you are: one press, one key,
@@ -118,9 +118,9 @@ vim.keymap.set({ 'n', 'v', 'o', 'i', 't' }, '<C-S-z>', '<Cmd>suspend<CR>', { des
 -- <C-Space> echoes the Space leader and is unclaimed by vim, blink.cmp (preset
 -- 'none'), oil, fugitive and telescope. Terminals send it as NUL, so it
 -- survives terminal mode with no kitty keyboard protocol support.
-vim.keymap.set('t', '<C-Space>', '<C-\\><C-n>', { desc = 'Go to Normal mode' })
-vim.keymap.set({ 'n', 'i', 'v', 'o' }, '<C-Space>', '<Esc>', { desc = 'Go to Normal mode' })
-vim.keymap.set('c', '<C-Space>', '<C-c>', { desc = 'Go to Normal mode' })
+vim.keymap.set('t', '<C-Space>', '<C-\\><C-n>', { desc = 'back to Normal mode' })
+vim.keymap.set({ 'n', 'i', 'v', 'o' }, '<C-Space>', '<Esc>', { desc = 'back to Normal mode' })
+vim.keymap.set('c', '<C-Space>', '<C-c>', { desc = 'back to Normal mode' })
 
 -- ================ Terminal in a Tab =====================
 -- <C-\> is a legacy control byte (0x1C), so like <C-]>'s 0x1D it survives
@@ -219,4 +219,4 @@ local function terminal_tab()
   vim.cmd.startinsert()
 end
 
-vim.keymap.set({ 'n', 'i', 'v', 'x', 't' }, '<C-\\>', terminal_tab, { desc = 'Toggle terminal tab' })
+vim.keymap.set({ 'n', 'i', 'v', 'x', 't' }, '<C-\\>', terminal_tab, { desc = 'the terminal tab' })

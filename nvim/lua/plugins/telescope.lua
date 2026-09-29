@@ -128,8 +128,8 @@ return {
     -- which the statusline already shows.
     --
     -- <leader>fg is the leader twin, and reads as find-git either way round.
-    vim.keymap.set({ 'n', 'i', 'v', 'x', 't' }, '<C-g>', find_git_changes, { desc = 'Find Git Changes' })
-    vim.keymap.set('n', '<leader>fg', find_git_changes, { desc = 'Find Git Changes' })
+    vim.keymap.set({ 'n', 'i', 'v', 'x', 't' }, '<C-g>', find_git_changes, { desc = '[G]it changes' })
+    vim.keymap.set('n', '<leader>fg', find_git_changes, { desc = '[f]ind [g]it changes' })
 
     -- The cwd's recent files, most recent first. options.lua raises the shada
     -- cap to 1000 precisely so this per-project slice is not starved; there is
@@ -198,8 +198,8 @@ return {
     -- forward-char, which Right also does). <C-f> is a legacy control byte
     -- (0x06), so it arrives through Zellij with no kitty keyboard protocol
     -- support.
-    vim.keymap.set('n', '<leader>ff', search_recent_files, { desc = 'Find Recent Files' })
-    vim.keymap.set('n', '<leader>fF', find_files, { desc = 'Find Files' })
+    vim.keymap.set('n', '<leader>ff', search_recent_files, { desc = '[f]ind recent [f]iles' })
+    vim.keymap.set('n', '<leader>fF', find_files, { desc = '[f]ind all [F]iles' })
 
     -- Search directories only; selecting one opens it in oil.nvim.
     -- fd respects .gitignore; the 'find' fallback does not, so it will surface
@@ -336,8 +336,8 @@ return {
         :find()
     end
 
-    vim.keymap.set('n', '<leader>fd', jump_to_zoxide_directory, { desc = 'Find Folders (zoxide)' })
-    vim.keymap.set('n', '<leader>fD', search_directories, { desc = 'Find Folders (all)' })
+    vim.keymap.set('n', '<leader>fd', jump_to_zoxide_directory, { desc = '[f]ind frecent [d]ir' })
+    vim.keymap.set('n', '<leader>fD', search_directories, { desc = '[f]ind all [D]ir' })
 
     --======================
     -- 2. Content search
@@ -363,7 +363,7 @@ return {
 
     -- Leader-only now that <C-g> carries git changes, and <leader>sg is where the
     -- Find/Search split puts it: a grep searches content, not names.
-    vim.keymap.set('n', '<leader>sg', live_grep, { desc = 'Live Grep' })
+    vim.keymap.set('n', '<leader>sg', live_grep, { desc = '[s]earch by [g]rep' })
 
     -- Kinds worth jumping to. Telescope lowercases these before comparing, so
     -- they match the LSP kind names; drop the list to get everything back.
@@ -611,10 +611,10 @@ return {
     -- so the move gives a mnemonic and frees a chord that had two other jobs.
     -- Terminals send <C-s> as byte 0x13, and Neovim's TUI turns off XON/XOFF
     -- flow control, so it arrives through Zellij like the other chords.
-    vim.keymap.set('n', '<leader>ss', search_document_symbols, { desc = 'Search Symbols (document)' })
-    vim.keymap.set('n', '<C-s>', search_document_symbols, { desc = 'Search Symbols (document)' })
-    vim.keymap.set('n', '<leader>sS', search_workspace_symbols, { desc = 'Search Symbols (workspace)' })
-    vim.keymap.set('n', '<C-M-s>', search_workspace_symbols, { desc = 'Search Symbols (workspace)' })
+    vim.keymap.set('n', '<leader>ss', search_document_symbols, { desc = '[s]earch [s]ymbols' })
+    vim.keymap.set('n', '<C-s>', search_document_symbols, { desc = '[S]ymbols in this buffer' })
+    vim.keymap.set('n', '<leader>sS', search_workspace_symbols, { desc = '[s]earch all [S]ymbols' })
+    vim.keymap.set('n', '<C-M-s>', search_workspace_symbols, { desc = 'all [S]ymbols' })
 
     -- gd lives in lsp.lua's LspAttach handler, buffer-local. It was bound here
     -- too, globally, to the identical function -- removed.
@@ -627,13 +627,13 @@ return {
     -- (lsp.lua), <leader>rx fixes the one under the cursor, and this lists them.
     -- Shift widens scope the same way it does for symbols, so the whole
     -- <leader>s group reads one way.
-    vim.keymap.set('n', '<leader>sx', builtin.diagnostics, { desc = 'Search Diagnostics' })
+    vim.keymap.set('n', '<leader>sx', builtin.diagnostics, { desc = '[s]earch diagnostics [x]' })
     -- Fires workspace/diagnostic first so servers can report on files that were
     -- never opened (gopls supports it; ts_ls is push-only and ignores it), then
     -- scopes the results to cwd.
     vim.keymap.set('n', '<leader>sX', function()
       builtin.diagnostics { workspace = true, root_dir = true }
-    end, { desc = 'Search Diagnostics (project-wide)' })
+    end, { desc = '[s]earch all diagnostics [X]' })
 
   end,
 }

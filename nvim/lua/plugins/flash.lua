@@ -17,7 +17,7 @@ return {
     -- A replacement: vim's `s` is `cl`, which still does its job. It reaches the
     -- window instead of the line and labels the candidates instead of making you
     -- repeat `;`.
-    { "s", mode = { "n", "x", "o" }, function() require("flash").jump() end, desc = "Flash" },
+    { "s", mode = { "n", "x", "o" }, function() require("flash").jump() end, desc = "[s]earch by text, and jump" },
     -- Same search, one scope wider: `s` names a position by the characters at it,
     -- `S` names the structures themselves. There is no pattern to type -- every
     -- text object on screen is labelled the moment it fires, and the pick
@@ -29,16 +29,16 @@ return {
     -- here too, so picking one still selects outward -- what is gone is
     -- repeating the key to step out one node at a time. Nothing calls
     -- treesitter() any more.
-    { "S", mode = { "n", "x", "o" }, function() require("config.node_pick").pick() end, desc = "Pick Node" },
+    { "S", mode = { "n", "x", "o" }, function() require("config.node_pick").pick() end, desc = "[S]elect any text object on screen" },
     -- Labels every foldable node in the window; the pick becomes a manual
     -- fold (config/fold_pick.lua). Bare `z` is vim's fold prefix, so this
     -- sits inside it. Shadows zs, horizontal scroll, which only matters
     -- with nowrap.
-    { "zs", mode = "n", function() require("config.fold_pick").pick("node") end, desc = "Fold Pick" },
+    { "zs", mode = "n", function() require("config.fold_pick").pick("node") end, desc = "fold [z]: [s]witch one open or shut" },
     -- Shift widens scope: zs folds one node, zS folds every node at the
     -- picked nesting level. Labels are digits, so `3` reads as "level 3".
-    { "zS", mode = "n", fold_pick_level, desc = "Fold Pick Level" },
-    { "zl", mode = "n", fold_pick_level, desc = "Fold Pick Level" },
+    { "zS", mode = "n", fold_pick_level, desc = "fold [z]: [S]et the level" },
+    { "zl", mode = "n", fold_pick_level, desc = "fold [z]: [l]evel" },
     -- { "r", mode = "o", function() require("flash").remote() end, desc = "Remote Flash" },
     -- { "<c-s>", mode = { "c" }, function() require("flash").toggle() end, desc = "Toggle Flash Search" },
   },

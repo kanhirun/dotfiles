@@ -26,12 +26,12 @@ return {
             if luasnip.jumpable(1) then
               luasnip.jump(1)
             end
-          end, { desc = 'Next snippet placeholder' })
+          end, { desc = '[N]ext snippet placeholder' })
           vim.keymap.set('s', '<C-p>', function()
             if luasnip.jumpable(-1) then
               luasnip.jump(-1)
             end
-          end, { desc = 'Previous snippet placeholder' })
+          end, { desc = '[P]revious snippet placeholder' })
 
           -- C-y to accept completion (this will be handled by blink.cmp)
         end,

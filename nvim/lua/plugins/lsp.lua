@@ -68,7 +68,7 @@ return {
 
         local map = function(keys, func, desc, mode)
           mode = mode or 'n'
-          vim.keymap.set(mode, keys, func, { buffer = event.buf, desc = 'LSP: ' .. desc })
+          vim.keymap.set(mode, keys, func, { buffer = event.buf, desc = desc })
         end
 
         -- `x` is the diagnostic, everywhere it appears: ]x/[x move between
@@ -77,20 +77,20 @@ return {
         --
         -- Neovim 0.11+ also ships ]d/[d as defaults; those still work, they
         -- just aren't the address this config teaches.
-        map(']x', vim.diagnostic.goto_next, 'Next Diagnostic')
-        map('[x', vim.diagnostic.goto_prev, 'Previous Diagnostic')
+        map(']x', vim.diagnostic.goto_next, 'forward to a diagnostic [x]')
+        map('[x', vim.diagnostic.goto_prev, 'back to a diagnostic [x]')
 
         -- <leader>r is Refactor. Every member changes the code rather than
         -- navigating it, which is what keeps it out of the bare `g` namespace.
         -- rn stays where it was -- it is both the existing muscle memory and the
         -- near-universal convention, worth more than a tidier letter.
-        map('<leader>rn', vim.lsp.buf.rename, 'Rename')
-        map('<leader>ra', vim.lsp.buf.code_action, 'Code Action', { 'n', 'x' })
+        map('<leader>rn', vim.lsp.buf.rename, '[r]e[n]ame')
+        map('<leader>ra', vim.lsp.buf.code_action, '[r]efactor: code [a]ction', { 'n', 'x' })
         -- Skip the menu: apply the fix for the diagnostic under the cursor when
         -- the server offers exactly one. Falls back to a picker if there are several.
         map('<leader>rx', function()
           vim.lsp.buf.code_action { apply = true, context = { only = { 'quickfix' } } }
-        end, 'Fix Diagnostic')
+        end, '[r]efactor: fi[x] this diagnostic')
         -- Shift widens scope, as everywhere else: rx fixes the diagnostic under
         -- the cursor, rX asks the server for every auto-fixable problem at once
         -- with no cursor positioning. Needs server-side `source.fixAll` support.
@@ -99,7 +99,7 @@ return {
             apply = true,
             context = { only = { 'source.fixAll' }, diagnostics = {} },
           }
-        end, 'Fix All in Buffer')
+        end, '[r]efactor: fi[X] every diagnostic')
         -- Fix imports: drop the unused ones, then organize what is left.
         --
         -- Two requests, not one. `source.organizeImports` is the portable
@@ -148,12 +148,12 @@ return {
           if not applied then
             vim.notify('Imports already clean', vim.log.levels.INFO)
           end
-        end, 'Fix Imports')
-        map('gD', vim.lsp.buf.declaration, '[G]oto [D]eclaration')
+        end, '[f]ix [i]mports')
+        map('gD', vim.lsp.buf.declaration, '[g]o to [D]eclaration')
 
-        map('<leader>sr', require('telescope.builtin').lsp_references, 'Search References')
-        map('<leader>si', require('telescope.builtin').lsp_implementations, 'Search Implementations')
-        map('gd', require('telescope.builtin').lsp_definitions, '[G]oto [D]efinition')
+        map('<leader>sr', require('telescope.builtin').lsp_references, '[s]earch [r]eferences')
+        map('<leader>si', require('telescope.builtin').lsp_implementations, '[s]earch [i]mplementations')
+        map('gd', require('telescope.builtin').lsp_definitions, '[g]o to [d]efinition')
         -- Document and workspace symbols live at <leader>ss / <leader>sS in
         -- telescope.lua, the workspace one with a <C-s> chord. They used to be
         -- bound here too, calling the same builtins with no options -- so the
@@ -162,7 +162,7 @@ return {
         -- Type definition joins gd/gr/gi/gD on bare g rather than sitting alone
         -- under <leader>g, which is now the Git group (git.lua). gt is vim's
         -- next-tab, so this takes gy -- the usual address for it.
-        map('gy', require('telescope.builtin').lsp_type_definitions, '[G]oto T[y]pe Definition')
+        map('gy', require('telescope.builtin').lsp_type_definitions, '[g]o to t[y]pe')
 
         local function client_supports_method(client, method, bufnr)
           if vim.fn.has 'nvim-0.11' == 1 then
@@ -260,7 +260,7 @@ return {
         if client and client_supports_method(client, vim.lsp.protocol.Methods.textDocument_inlayHint, event.buf) then
           map('<leader>th', function()
             vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled { bufnr = event.buf })
-          end, '[T]oggle Inlay [H]ints')
+          end, '[t]oggle inlay [h]ints')
         end
       end,
     })

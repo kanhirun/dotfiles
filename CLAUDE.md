@@ -183,6 +183,12 @@ are `<C-Space>` and then the sequence. `<C-g>` also works from inside an open
 Telescope picker: it closes it and opens the git changes (`telescope.lua`,
 `picker_keys`).
 
+**Every key's description is the phrase it is said as**, with the typed keys in
+brackets in the case they are typed: `[g]o to [t]est`, `[g]o to previous [T]est`,
+`[f]ind all [D]ir`. which-key shows it, so a prefix's popup reads as sentences.
+A letter no honest word contains goes in brackets at the end, `[g]o to fold [z]`,
+which marks it as learned rather than spelled. Write the phrase first when adding
+a key; if none fits, the key is probably in the wrong place.
 
 Nouns keep one letter across every position they appear in. Diagnostics are `x`:
 `]x`/`[x` move between them, `<leader>sx` lists them, `<leader>rx` fixes the one under

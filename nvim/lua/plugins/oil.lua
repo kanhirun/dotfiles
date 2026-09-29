@@ -31,7 +31,7 @@ return {
           ["g\\"] = { "actions.toggle_trash", mode = "n" },
         }
       })
-      vim.keymap.set('n', '-', ':Oil<CR>', { noremap = true, desc = 'Open File Explorer' })
+      vim.keymap.set('n', '-', ':Oil<CR>', { noremap = true, desc = 'the explorer, here [-]' })
 
       vim.api.nvim_create_autocmd('FileType', {
         pattern = 'oil',
@@ -153,7 +153,7 @@ return {
       local toggle_compact = function()
         toggle_oil_beside(COMPACT_WIDTH, 'topleft')
       end
-      vim.keymap.set('n', '<leader>-', toggle_drawer, { desc = 'Toggle File Explorer (left split)' })
+      vim.keymap.set('n', '<leader>-', toggle_drawer, { desc = 'the explorer, beside [-]' })
 
       -- The compact drawer, at the screen's left edge whatever window you are
       -- in. <C-S-[> is the second binding in this config that depends on the
@@ -163,8 +163,8 @@ return {
       -- does not fall back to <Esc>, which plain <C-[> would be. <leader>_ is
       -- the twin, binding the same function; Shift on `-` means a variant here
       -- rather than a wider scope, which is a deviation and recorded as one.
-      vim.keymap.set('n', '<leader>_', toggle_compact, { desc = 'Toggle File Explorer (compact, screen left)' })
-      vim.keymap.set({ 'n', 'i', 'v', 'x', 't' }, '<C-S-[>', toggle_compact, { desc = 'Toggle File Explorer (compact, screen left)' })
+      vim.keymap.set('n', '<leader>_', toggle_compact, { desc = 'the explorer, compact at the left edge [_]' })
+      vim.keymap.set({ 'n', 'i', 'v', 'x', 't' }, '<C-S-[>', toggle_compact, { desc = 'the explorer, compact at the left edge [_]' })
     end
   }
 }
