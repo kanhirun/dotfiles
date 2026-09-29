@@ -294,6 +294,9 @@ return {
     -- configured with `vim.lsp.config()` and started with `vim.lsp.enable()`; the
     -- tables below are merged on top of nvim-lspconfig's own `lsp/<name>.lua`.
     local servers = {
+      buf_ls = {
+        cmd = { 'buf', 'lsp', 'serve', '--timeout=0', '--log-format=text' },
+      },
       pyright = {},
       ts_ls = {
         settings = {

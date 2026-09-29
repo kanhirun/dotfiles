@@ -41,7 +41,7 @@ direnv allow  # After creating/modifying .envrc
 
 ### Neovim Configuration (`nvim/init.lua`)
 - **Plugin Manager**: lazy.nvim
-- **LSP Support**: Mason + nvim-lspconfig for Python (pyright), TypeScript (ts_ls), and Lua (lua_ls)
+- **LSP Support**: Mason + nvim-lspconfig for Go (gopls, from goenv rather than Mason), Python (pyright), TypeScript (ts_ls), Lua (lua_ls) and Protobuf (buf_ls, run as `buf lsp serve` — lspconfig's default `buf beta lsp` is deprecated — with Mason's own `buf`, since the nodenv shim only resolves under Node 18)
 - **Fuzzy Finding**: Telescope with fzf backend
 - **Autocompletion**: Blink.cmp with LuaSnip
 - **Key Mappings**: Leader is Space. **Read the Keyboard Architecture below before adding or moving any binding.**
