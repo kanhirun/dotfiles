@@ -147,10 +147,10 @@ return {
     },
     -- Upstream defaults use a <leader>a prefix, which vim-test already takes
     keys = {
-      { "<leader>c", nil, desc = "AI/Claude Code" },
+      { "<leader>a", nil, desc = "Agent" },
       -- The same function object as <C-]> below, so the twin cannot drift from
       -- the chord; in Normal mode there is never a selection, so it only toggles.
-      { "<leader>cc", toggle_claude_or_send, desc = "Toggle Claude" },
+      { "<leader>aa", toggle_claude_or_send, desc = "Toggle agent" },
       -- Toggles the pane from every mode, including from inside it, and sends
       -- the selection when there is one. <C-]>'s only built-in is the ctags
       -- jump, and navigation here is entirely LSP with no tags file anywhere,
@@ -161,22 +161,22 @@ return {
         "<C-]>",
         toggle_claude_or_send,
         mode = { "n", "i", "v", "x", "t" },
-        desc = "Toggle Claude (or send selection)",
+        desc = "Toggle agent (or send selection)",
       },
-      { "<leader>cf", "<cmd>ClaudeCodeFocus<cr>", desc = "Focus Claude" },
-      { "<leader>cr", "<cmd>ClaudeCode --resume<cr>", desc = "Resume Claude" },
-      { "<leader>cC", "<cmd>ClaudeCode --continue<cr>", desc = "Continue Claude" },
-      { "<leader>cm", "<cmd>ClaudeCodeSelectModel<cr>", desc = "Select Claude model" },
-      { "<leader>cb", "<cmd>ClaudeCodeAdd %<cr>", desc = "Add current buffer" },
-      { "<leader>cs", "<cmd>ClaudeCodeSend<cr>", mode = "v", desc = "Send to Claude" },
+      { "<leader>af", "<cmd>ClaudeCodeFocus<cr>", desc = "Focus agent" },
+      { "<leader>ar", "<cmd>ClaudeCode --resume<cr>", desc = "Resume a session" },
+      { "<leader>ac", "<cmd>ClaudeCode --continue<cr>", desc = "Continue the last session" },
+      { "<leader>am", "<cmd>ClaudeCodeSelectModel<cr>", desc = "Select model" },
+      { "<leader>ab", "<cmd>ClaudeCodeAdd %<cr>", desc = "Add current buffer" },
+      { "<leader>as", "<cmd>ClaudeCodeSend<cr>", mode = "v", desc = "Send to agent" },
       {
-        "<leader>cs",
+        "<leader>as",
         "<cmd>ClaudeCodeTreeAdd<cr>",
         desc = "Add file",
         ft = { "oil", "NvimTree", "neo-tree", "minifiles", "netrw", "snacks_picker_list" },
       },
-      { "<leader>ca", "<cmd>ClaudeCodeDiffAccept<cr>", desc = "Accept diff" },
-      { "<leader>cd", "<cmd>ClaudeCodeDiffDeny<cr>", desc = "Deny diff" },
+      { "<leader>ay", "<cmd>ClaudeCodeDiffAccept<cr>", desc = "Accept diff" },
+      { "<leader>an", "<cmd>ClaudeCodeDiffDeny<cr>", desc = "Deny diff" },
     },
   }
 }

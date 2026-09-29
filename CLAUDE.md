@@ -135,8 +135,9 @@ The rules that matter most when editing this config:
 
 **Keys and commands are named for what they do, never for the tool.** The key is
 the abstraction; the plugin is its implementation (axiom 13). Git is the one
-exemption. `<leader>c` still takes its letter from Claude and is recorded as the
-deviation; `<leader>a` is free for *agent*. The command line is the third tier:
+exemption, which is why the agent group is `<leader>a`, not `<leader>c`: `aa`
+toggles, `ay`/`an` accept and deny a diff, `ac` continues the last session. The
+command line is the third tier:
 a config-defined Ex command is named for the verb and takes a range when it acts
 on text, the range being its text object. `:[range]Ask {prompt}` asks the agent,
 sending the range as an `@file#L10-20` mention (`plugins/claudecode.lua`); the
@@ -144,7 +145,7 @@ plugin's `:ClaudeCode…` commands are implementation, and nothing new should bi
 to them.
 
 Namespaces in use: `<leader>s` search · `<leader>r` refactor · `<leader>t` test/toggle ·
-`<leader>g` git · `<leader>c` Claude. `<C-]>` toggles Claude and `<C-\>` toggles a
+`<leader>g` git · `<leader>a` agent. `<C-]>` toggles Claude and `<C-\>` toggles a
 terminal tab, both from any mode; with a visual selection, `<C-]>` sends it to
 Claude instead. Claude always opens on the right. Its width depends on the
 layout it opens into: 3/5 of the screen beside a single editor column, and a
