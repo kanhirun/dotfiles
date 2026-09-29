@@ -151,9 +151,15 @@ return {
         end, '[r]efactor: fix [i]mports')
         map('gD', vim.lsp.buf.declaration, '[g]o to [D]eclaration')
 
-        map('<leader>sr', require('telescope.builtin').lsp_references, '[s]earch [r]eferences')
-        map('<leader>si', require('telescope.builtin').lsp_implementations, '[s]earch [i]mplementations')
-        map('gd', require('telescope.builtin').lsp_definitions, '[g]o to [d]efinition')
+        map('<leader>sr', function()
+          require('telescope.builtin').lsp_references { prompt_title = '[s]earch [r]eferences' }
+        end, '[s]earch [r]eferences')
+        map('<leader>si', function()
+          require('telescope.builtin').lsp_implementations { prompt_title = '[s]earch [i]mplementations' }
+        end, '[s]earch [i]mplementations')
+        map('gd', function()
+          require('telescope.builtin').lsp_definitions { prompt_title = '[g]o to [d]efinition' }
+        end, '[g]o to [d]efinition')
         -- Document and workspace symbols live at <leader>ss / <leader>sS in
         -- telescope.lua, the workspace one with a <C-s> chord. They used to be
         -- bound here too, calling the same builtins with no options -- so the
@@ -162,7 +168,9 @@ return {
         -- Type definition joins gd/gr/gi/gD on bare g rather than sitting alone
         -- under <leader>g, which is now the Git group (git.lua). gt is vim's
         -- next-tab, so this takes gy -- the usual address for it.
-        map('gy', require('telescope.builtin').lsp_type_definitions, '[g]o to t[y]pe')
+        map('gy', function()
+          require('telescope.builtin').lsp_type_definitions { prompt_title = '[g]o to t[y]pe' }
+        end, '[g]o to t[y]pe')
 
         local function client_supports_method(client, method, bufnr)
           if vim.fn.has 'nvim-0.11' == 1 then

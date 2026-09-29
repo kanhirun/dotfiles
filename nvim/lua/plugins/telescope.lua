@@ -84,9 +84,11 @@ return {
     -- action_set.select runs after the file has landed in the editor window
     -- and is reset when the next picker starts, so it stays scoped to this
     -- one picker (see search_recent_files below for the longer note).
+    local ALL_FILES = '[f]ind all [F]iles'
     local function find_files()
       local from_pane = panes.leave_terminal_window()
       builtin.find_files {
+        prompt_title = ALL_FILES,
         hidden = true,
         attach_mappings = function()
           if from_pane then
@@ -100,6 +102,7 @@ return {
     -- The files changed in the working tree: modified, staged, and untracked
     -- but not ignored -- what `git status` reports. git_files was the wrong
     -- list; it returns every file in the repo, which <leader>fF already covers.
+    local GIT_CHANGES = '[f]ind [g]it changes'
     local function find_git_changes()
       local from_pane = panes.leave_terminal_window()
       local function attach()
@@ -113,10 +116,10 @@ return {
       -- scratch directories are; rg covers those the way <leader>fF does.
       local repo = vim.system({ 'git', 'rev-parse', '--is-inside-work-tree' }, { cwd = vim.uv.cwd(), text = true }):wait()
       if repo.code ~= 0 then
-        return builtin.find_files { hidden = true, attach_mappings = attach }
+        return builtin.find_files { prompt_title = GIT_CHANGES, hidden = true, attach_mappings = attach }
       end
 
-      builtin.git_status { attach_mappings = attach }
+      builtin.git_status { prompt_title = GIT_CHANGES, attach_mappings = attach }
     end
 
     -- <C-g> is the git chord: g for git. It held live_grep before, which is
@@ -129,11 +132,12 @@ return {
     --
     -- <leader>fg is the leader twin, and reads as find-git either way round.
     vim.keymap.set({ 'n', 'i', 'v', 'x', 't' }, '<C-g>', find_git_changes, { desc = '[G]it changes' })
-    vim.keymap.set('n', '<leader>fg', find_git_changes, { desc = '[f]ind [g]it changes' })
+    vim.keymap.set('n', '<leader>fg', find_git_changes, { desc = GIT_CHANGES })
 
     -- The cwd's recent files, most recent first. options.lua raises the shada
     -- cap to 1000 precisely so this per-project slice is not starved; there is
     -- no further limit here, and the fuzzy matcher narrows the rest.
+    local RECENT_FILES = '[f]ind recent [f]iles'
     local function search_recent_files()
       local from_pane = panes.leave_terminal_window()
       local cwd = vim.uv.cwd()
@@ -157,7 +161,7 @@ return {
       local conf = require('telescope.config').values
       require('telescope.pickers')
         .new({}, {
-          prompt_title = 'Recent Files',
+          prompt_title = RECENT_FILES,
           finder = require('telescope.finders').new_table {
             results = results,
             entry_maker = require('telescope.make_entry').gen_from_file { cwd = cwd },
@@ -198,12 +202,13 @@ return {
     -- forward-char, which Right also does). <C-f> is a legacy control byte
     -- (0x06), so it arrives through Zellij with no kitty keyboard protocol
     -- support.
-    vim.keymap.set('n', '<leader>ff', search_recent_files, { desc = '[f]ind recent [f]iles' })
-    vim.keymap.set('n', '<leader>fF', find_files, { desc = '[f]ind all [F]iles' })
+    vim.keymap.set('n', '<leader>ff', search_recent_files, { desc = RECENT_FILES })
+    vim.keymap.set('n', '<leader>fF', find_files, { desc = ALL_FILES })
 
     -- Search directories only; selecting one opens it in oil.nvim.
     -- fd respects .gitignore; the 'find' fallback does not, so it will surface
     -- build output (cdk.out, dist, ...) in repos that gitignore it.
+    local ALL_DIRS = '[f]ind all [D]ir'
     local function search_directories()
       local from_pane = panes.leave_terminal_window()
       local find_command = vim.fn.executable 'fd' == 1
@@ -211,7 +216,7 @@ return {
           or { 'find', '.', '(', '-name', '.git', '-o', '-name', 'node_modules', ')', '-prune', '-o', '-type', 'd', '-print' }
 
       builtin.find_files {
-        prompt_title = 'Directories',
+        prompt_title = ALL_DIRS,
         find_command = find_command,
         attach_mappings = function(prompt_bufnr, _)
           local actions = require 'telescope.actions'
@@ -275,6 +280,7 @@ return {
     -- control byte (0x0A, linefeed), so it arrives through Zellij with no kitty
     -- keyboard protocol support. In the shell it was a second Enter, which
     -- Enter still is; Claude Code does not bind it.
+    local FRECENT_DIRS = '[f]ind frecent [d]ir'
     local function jump_to_zoxide_directory()
       local from_pane = panes.leave_terminal_window()
       local entries, score_width = zoxide_entries()
@@ -289,7 +295,7 @@ return {
 
       require('telescope.pickers')
         .new({}, {
-          prompt_title = 'Frecent directories',
+          prompt_title = FRECENT_DIRS,
           finder = require('telescope.finders').new_table {
             results = entries,
             -- Only the path is the ordinal, so the score never fuzzy-matches.
@@ -332,8 +338,8 @@ return {
         :find()
     end
 
-    vim.keymap.set('n', '<leader>fd', jump_to_zoxide_directory, { desc = '[f]ind frecent [d]ir' })
-    vim.keymap.set('n', '<leader>fD', search_directories, { desc = '[f]ind all [D]ir' })
+    vim.keymap.set('n', '<leader>fd', jump_to_zoxide_directory, { desc = FRECENT_DIRS })
+    vim.keymap.set('n', '<leader>fD', search_directories, { desc = ALL_DIRS })
 
     --======================
     -- 2. Content search
@@ -344,9 +350,11 @@ return {
     -- dropped by file_ignore_patterns above. Same pane handling as the file
     -- pickers: launched from the shell or Claude's pane, the match lands in an
     -- editor window and the panes rebalance once one is picked.
+    local GREP = '[s]earch by [g]rep'
     local function live_grep()
       local from_pane = panes.leave_terminal_window()
       builtin.live_grep {
+        prompt_title = GREP,
         additional_args = { '--hidden' },
         attach_mappings = function()
           if from_pane then
@@ -359,7 +367,7 @@ return {
 
     -- Leader-only now that <C-g> carries git changes, and <leader>sg is where the
     -- Find/Search split puts it: a grep searches content, not names.
-    vim.keymap.set('n', '<leader>sg', live_grep, { desc = '[s]earch by [g]rep' })
+    vim.keymap.set('n', '<leader>sg', live_grep, { desc = GREP })
 
     -- Kinds worth jumping to. Telescope lowercases these before comparing, so
     -- they match the LSP kind names; drop the list to get everything back.
@@ -563,7 +571,7 @@ return {
 
       require('telescope.pickers')
         .new({}, {
-          prompt_title = title or 'Workspace Symbols',
+          prompt_title = title or '[f]ind [s]ymbol',
           finder = require('telescope.finders').new_dynamic {
             entry_maker = function(item)
               local entry = inner(item)
@@ -595,8 +603,8 @@ return {
 
     -- Document symbols only ever cover the current buffer, so the gitignore
     -- filter has nothing to do here; the kind list still earns its place.
-    local function search_document_symbols(kinds)
-      builtin.lsp_document_symbols { symbols = kinds or SYMBOL_KINDS, attach_mappings = attach_history }
+    local function search_document_symbols(kinds, title)
+      builtin.lsp_document_symbols { prompt_title = title or '[s]earch [s]ymbols', symbols = kinds or SYMBOL_KINDS, attach_mappings = attach_history }
     end
 
     -- One function per scope. lsp.lua used to bind <leader>gs/<leader>gS to
@@ -616,16 +624,16 @@ return {
     vim.keymap.set('n', '<leader>fs', search_workspace_symbols, { desc = '[f]ind [s]ymbol' })
     vim.keymap.set('n', '<C-M-s>', search_workspace_symbols, { desc = 'all [S]ymbols' })
     vim.keymap.set('n', '<leader>fc', function()
-      search_workspace_symbols(CLASS_KINDS, 'Classes')
+      search_workspace_symbols(CLASS_KINDS, '[f]ind [c]lass')
     end, { desc = '[f]ind [c]lass' })
     vim.keymap.set('n', '<leader>fm', function()
-      search_workspace_symbols(METHOD_KINDS, 'Methods')
+      search_workspace_symbols(METHOD_KINDS, '[f]ind [m]ethod')
     end, { desc = '[f]ind [m]ethod' })
     vim.keymap.set('n', '<leader>sc', function()
-      search_document_symbols(CLASS_KINDS)
+      search_document_symbols(CLASS_KINDS, '[s]earch [c]lasses')
     end, { desc = '[s]earch [c]lasses' })
     vim.keymap.set('n', '<leader>sm', function()
-      search_document_symbols(METHOD_KINDS)
+      search_document_symbols(METHOD_KINDS, '[s]earch [m]ethods')
     end, { desc = '[s]earch [m]ethods' })
 
     -- gd lives in lsp.lua's LspAttach handler, buffer-local. It was bound here
@@ -639,12 +647,14 @@ return {
     -- (lsp.lua), <leader>rx fixes the one under the cursor, and this lists them.
     -- Shift widens scope the same way it does for symbols, so the whole
     -- <leader>s group reads one way.
-    vim.keymap.set('n', '<leader>sx', builtin.diagnostics, { desc = '[s]earch diagnostics [x]' })
+    vim.keymap.set('n', '<leader>sx', function()
+      builtin.diagnostics { prompt_title = '[s]earch diagnostics [x]' }
+    end, { desc = '[s]earch diagnostics [x]' })
     -- Fires workspace/diagnostic first so servers can report on files that were
     -- never opened (gopls supports it; ts_ls is push-only and ignores it), then
     -- scopes the results to cwd.
     vim.keymap.set('n', '<leader>sX', function()
-      builtin.diagnostics { workspace = true, root_dir = true }
+      builtin.diagnostics { prompt_title = '[s]earch all diagnostics [X]', workspace = true, root_dir = true }
     end, { desc = '[s]earch all diagnostics [X]' })
 
   end,

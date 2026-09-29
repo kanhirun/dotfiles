@@ -195,6 +195,8 @@ A letter no honest word contains goes in brackets at the end, `[g]o to fold [z]`
 which marks it as learned rather than spelled. Write the phrase first when adding
 a key; if none fits, the key is probably in the wrong place. The brackets read
 as *move*: `]m` is `move to [m]ethod end`, `[m` `move back to [m]ethod end`.
+A picker's title is the same string as its key's description, defined once
+beside the picker in `telescope.lua`, so the phrase typed is the phrase shown.
 
 Nouns keep one letter across every position they appear in. Diagnostics are `x`:
 `]x`/`[x` move between them, `<leader>sx` lists them, `<leader>rx` fixes the one under
