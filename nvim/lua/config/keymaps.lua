@@ -28,8 +28,8 @@ end
 
 vim.keymap.set({ 'n', 'x' }, 'gz', fold_jump 'zj', { desc = '[g]o to fold [z]' })
 vim.keymap.set({ 'n', 'x' }, 'gZ', fold_jump 'zk[z', { desc = '[g]o to previous fold [Z]' })
-vim.keymap.set({ 'n', 'x' }, ']z', fold_jump 'zj]z', { desc = "forward to a fold's end [z]" })
-vim.keymap.set({ 'n', 'x' }, '[z', fold_jump 'zk', { desc = "back to a fold's end [z]" })
+vim.keymap.set({ 'n', 'x' }, ']z', fold_jump 'zj]z', { desc = 'move to fold end [z]' })
+vim.keymap.set({ 'n', 'x' }, '[z', fold_jump 'zk', { desc = 'move back to fold end [z]' })
 
 pcall(vim.keymap.del, { 'n', 'x', 'o' }, 'gc')
 pcall(vim.keymap.del, 'n', 'gcc')
@@ -74,8 +74,8 @@ local function fold_object(inner)
   end
 end
 
-vim.keymap.set({ 'x', 'o' }, 'iz', fold_object(true), { desc = '[i]nside a fold [z]' })
-vim.keymap.set({ 'x', 'o' }, 'az', fold_object(false), { desc = '[a]round a fold [z]' })
+vim.keymap.set({ 'x', 'o' }, 'iz', fold_object(true), { desc = '[i]nside fold [z]' })
+vim.keymap.set({ 'x', 'o' }, 'az', fold_object(false), { desc = '[a]round fold [z]' })
 
 vim.keymap.set('n', 'p', paste_reindented 'p', { expr = true, desc = '[p]aste after, reindented' })
 vim.keymap.set('n', 'P', paste_reindented 'P', { expr = true, desc = '[P]aste before, reindented' })

@@ -77,8 +77,8 @@ return {
         --
         -- Neovim 0.11+ also ships ]d/[d as defaults; those still work, they
         -- just aren't the address this config teaches.
-        map(']x', vim.diagnostic.goto_next, 'forward to a diagnostic [x]')
-        map('[x', vim.diagnostic.goto_prev, 'back to a diagnostic [x]')
+        map(']x', vim.diagnostic.goto_next, 'move to diagnostic [x]')
+        map('[x', vim.diagnostic.goto_prev, 'move back to diagnostic [x]')
 
         -- <leader>r is Refactor. Every member changes the code rather than
         -- navigating it, which is what keeps it out of the bare `g` namespace.
