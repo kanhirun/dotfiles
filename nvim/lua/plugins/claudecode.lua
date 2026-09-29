@@ -33,6 +33,19 @@ local function split_into_thirds(claude)
   vim.wo[claude].winfixwidth = false
 end
 
+local function open_or_focus_claude()
+  local was_open = claude_window() ~= nil
+  local thirds = editor_columns() >= 2
+  require("claudecode.terminal").focus_toggle {
+    split_side = "right",
+    split_width_percentage = thirds and 1 / 3 or 0.6,
+  }
+  local claude = claude_window()
+  if thirds and claude and not was_open then
+    split_into_thirds(claude)
+  end
+end
+
 local function toggle_claude_or_send()
   local mode = vim.fn.mode()
   if mode == "v" or mode == "V" or mode == "\22" then
@@ -45,16 +58,7 @@ local function toggle_claude_or_send()
   -- focus_toggle, not simple_toggle: the ClaudeCode command this replaced was
   -- focus_toggle, so a visible-but-unfocused pane is focused rather than
   -- hidden. The side is only read when the pane is being opened.
-  local was_open = claude_window() ~= nil
-  local thirds = editor_columns() >= 2
-  require("claudecode.terminal").focus_toggle {
-    split_side = "right",
-    split_width_percentage = thirds and 1 / 3 or 0.6,
-  }
-  local claude = claude_window()
-  if thirds and claude and not was_open then
-    split_into_thirds(claude)
-  end
+  open_or_focus_claude()
 end
 
 return {
