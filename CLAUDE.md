@@ -106,7 +106,10 @@ The rules that matter most when editing this config:
   classes or methods, its outline. The kinds are the `CLASS_KINDS` and
   `METHOD_KINDS` lists in `telescope.lua`, which Go's gopls reports well; lua_ls
   reports no useful kinds for workspace symbols, so the finders find nothing
-  there. Fix imports edits code, so it is `<leader>ri`.
+  there. Grep splits the same way: `<leader>fp` [f]inds by [p]attern across the
+  project and lands in one file, `<leader>sg` [s]earches this buffer's lines by
+  [g]rep (the live buffer, so unsaved edits count; a leading `'` matches
+  exactly). Fix imports edits code, so it is `<leader>ri`.
 - **Shift widens scope, and means nothing else.** `<leader>sx` buffer diagnostics → `<leader>sX` project;
   `<leader>ff` recent files → `<leader>fF` every file;
   `<leader>fd` directories zoxide ranks → `<leader>fD` every directory, both
