@@ -250,7 +250,7 @@ return {
     -- typing narrows it with telescope's fuzzy matcher rather than zoxide's
     -- own query resolution.
     local function zoxide_entries()
-      local out = vim.system({ 'zoxide', 'query', '--list', '--score' }, { text = true }):wait()
+      local out = vim.system({ 'zoxide', 'query', '--list', '--score', '--base-dir', vim.fn.getcwd() }, { text = true }):wait()
       if out.code ~= 0 then
         vim.notify('zoxide query failed: ' .. (out.stderr or ''), vim.log.levels.ERROR)
         return {}, 0
@@ -279,7 +279,7 @@ return {
       local from_pane = panes.leave_terminal_window()
       local entries, score_width = zoxide_entries()
       if #entries == 0 then
-        return vim.notify('zoxide has no directories yet', vim.log.levels.WARN)
+        return vim.notify('No frecent directories under ' .. vim.fn.fnamemodify(vim.fn.getcwd(), ':~'), vim.log.levels.WARN)
       end
 
       local displayer = require('telescope.pickers.entry_display').create {
@@ -289,12 +289,12 @@ return {
 
       require('telescope.pickers')
         .new({}, {
-          prompt_title = 'Zoxide',
+          prompt_title = 'Frecent directories',
           finder = require('telescope.finders').new_table {
             results = entries,
             -- Only the path is the ordinal, so the score never fuzzy-matches.
             entry_maker = function(item)
-              local shown = vim.fn.fnamemodify(item.dir, ':~')
+              local shown = item.dir == vim.fn.getcwd() and '.' or vim.fn.fnamemodify(item.dir, ':.')
               return {
                 value = item.dir,
                 path = item.dir,
@@ -317,12 +317,8 @@ return {
                 return
               end
 
-              -- The cd is what records the jump: the DirChanged autocmd in
-              -- config.autocmds feeds it to zoxide. Launched from a pane, the
-              -- oil listing then shares the screen with it, as a picked file
-              -- does from <C-f>.
               vim.schedule(function()
-                vim.cmd.cd(vim.fn.fnameescape(entry.value))
+                require('config.zoxide').add(entry.value)
                 require('oil').open(entry.value)
                 if from_pane then
                   panes.balance_panes()

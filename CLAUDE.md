@@ -103,7 +103,8 @@ The rules that matter most when editing this config:
 - **Shift widens scope, and means nothing else.** `<leader>ss` document →
   `<leader>sS` workspace; `<leader>sx` buffer diagnostics → `<leader>sX` project;
   `<leader>ff` recent files → `<leader>fF` every file;
-  `<leader>fd` directories zoxide ranks → `<leader>fD` every directory. Bare
+  `<leader>fd` directories zoxide ranks → `<leader>fD` every directory, both
+  under the cwd; a picked directory opens in oil and the cwd stays put. Bare
   `s` searches by text, `S` labels every text object on screen — same pattern, one
   scope wider, and the same letter as the `<leader>s` search group. `S`'s
   inventory is the language's `folds.scm`, gathered by range rather than by line (`config/node_pick.lua`, sharing `fold_pick`'s candidates);
