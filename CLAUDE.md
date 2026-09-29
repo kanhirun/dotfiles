@@ -85,22 +85,25 @@ The rules that matter most when editing this config:
 - **The chord tier is closed.** Roughly a dozen slots exist, permanently, capped by
   vim's own reservations (`<C-o>`, `<C-i>`, `<C-u>`, `<C-d>`, `<C-r>`, `<C-v>`,
   `<C-w>`). Something new belongs on `<leader>`, not on a chord.
-- **A chord is an alias, never a sole address.** Chords are invisible — nothing on
-  screen reveals them. Each one binds the *same function object* as its `<leader>`
-  twin so the two cannot drift apart. See `telescope.lua`: `<C-s>`/`<leader>ss`,
-  `<C-M-s>`/`<leader>sS`, `<C-f>`/`<leader>ff`, `<C-M-f>`/`<leader>fF`,
-  `<C-j>`/`<leader>fp`, `<C-M-j>`/`<leader>fP`. Alt on the chord widens scope
-  the way Shift on the leader letter does — a deliberate split, since
-  Ctrl+Shift is awkward to hold and has no legacy byte.
+- **A chord is a place on screen, and an alias, never a sole address.** The tier
+  holds what a phrase says badly: where something is. `<C-]>` is the pane on the
+  right and `<C-S-[>` the drawer on the left — the bracket points at the side —
+  `<C-\>` the terminal, `<C-Space>` the way out of any mode. Pickers are
+  sequences: the file and directory chords were given back, so each picker has
+  one address. `<C-g>` (`<leader>fg`), `<C-s>` (`<leader>ss`) and `<C-M-s>`
+  (`<leader>sS`) remain. Chords are invisible, so each binds the *same function
+  object* as its `<leader>` twin and the two cannot drift apart. Alt on the chord
+  widens scope the way Shift on the leader letter does, since Ctrl+Shift is
+  awkward to hold and has no legacy byte.
 - **`<C-n>`/`<C-p>` mean next/previous in whatever list is active.** A
   Telescope picker's results, the completion menu, a snippet's placeholders
   (`completion.lua`: the menu first, then the snippet, then vim's own), and vim's
   defaults everywhere else. Neither is a teleport slot, which is why the file
-  picker left `<C-p>` for `<C-j>`, and why snippets have no `<Tab>` jump.
+  picker has no `<C-p>`, and why snippets have no `<Tab>` jump.
 - **Shift widens scope, and means nothing else.** `<leader>ss` document →
   `<leader>sS` workspace; `<leader>sx` buffer diagnostics → `<leader>sX` project;
-  `<leader>ff` folders zoxide ranks → `<leader>fF` every folder;
-  `<leader>fp` recent files → `<leader>fP` every file. Bare
+  `<leader>ff` recent files → `<leader>fF` every file;
+  `<leader>fd` directories zoxide ranks → `<leader>fD` every directory. Bare
   `s` searches by text, `S` labels every text object on screen — same pattern, one
   scope wider, and the same letter as the `<leader>s` search group. `S`'s
   inventory is the language's `folds.scm`, gathered by range rather than by line (`config/node_pick.lua`, sharing `fold_pick`'s candidates);
@@ -128,8 +131,8 @@ The rules that matter most when editing this config:
   simply never delivers them. That is a clean failure rather than a collision —
   `<C-S-[>` does *not* decay to `<Esc>` the way `<C-[>` would — which is what
   makes the exception affordable now that the Zellij layer is gone. The wide
-  picker chords avoid the protocol instead: `<C-M-f>`, `<C-M-j>` and `<C-M-s>`
-  arrive as Esc followed by the Ctrl byte, which Neovim reads as one key in any
+  symbol chord avoids the protocol instead: `<C-M-s>` arrives as Esc followed by
+  the Ctrl byte, which Neovim reads as one key in any
   terminal. They need Option to act as Alt (Ghostty's `macos-option-as-alt`).
   `<C-M-[>` would be Esc Esc, so the compact drawer stays on `<C-S-[>`.
 
@@ -170,16 +173,16 @@ screen's left edge (twin of `<leader>_`). The difference is `leftabove` against
 split it lands mid-screen, and the second always reaches the edge. Either toggle
 closes whichever drawer is open, so the two never stack. `_` marks a variant
 rather than a wider scope, which is the one place Shift means something else.
-`<C-f>`, `<C-M-f>`, `<C-j>` and `<C-M-j>` reach from inside both panes
-and step to an editor window first (`config/panes.lua`), so a picked file or directory
-never replaces a pane; from inside a pane they also move it to the right half of the
-screen, so the file and the pane share it 50/50 side by side. Claude is already a
-vertical split on the right and is only narrowed; the shell
-leaves its bottom split for a full-height column until it is next hidden.
-The same five picker chords — `<C-f>`, `<C-M-f>`, `<C-j>`, `<C-M-j>`, `<C-g>` —
-also work from inside an open Telescope picker: they close it and open theirs,
-so a wrong picker is left by chording to the right one (`telescope.lua`,
-`picker_keys`). That replaces Telescope's own `<C-f>`, preview scroll left.
+The pickers step to an editor window first (`config/panes.lua`), so a picked file
+or directory never replaces a pane; from inside a pane they also move it to the
+right half of the screen, so the file and the pane share it 50/50 side by side.
+Claude is already a vertical split on the right and is only narrowed; the shell
+leaves its bottom split for a full-height column until it is next hidden. Only
+`<C-g>` reaches a picker from inside a pane now; the file and directory pickers
+are `<C-Space>` and then the sequence. `<C-g>` also works from inside an open
+Telescope picker: it closes it and opens the git changes (`telescope.lua`,
+`picker_keys`).
+
 
 Nouns keep one letter across every position they appear in. Diagnostics are `x`:
 `]x`/`[x` move between them, `<leader>sx` lists them, `<leader>rx` fixes the one under

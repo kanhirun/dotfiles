@@ -25,7 +25,7 @@ return {
       i = { ['<C-s>'] = actions.select_vertical },
       n = { ['<C-s>'] = actions.select_vertical },
     }
-    for _, chord in ipairs { '<C-f>', '<C-M-f>', '<C-j>', '<C-M-j>', '<C-g>' } do
+    for _, chord in ipairs { '<C-g>' } do
       local function switch(prompt_bufnr)
         actions.close(prompt_bufnr)
         vim.schedule(function()
@@ -198,10 +198,8 @@ return {
     -- forward-char, which Right also does). <C-f> is a legacy control byte
     -- (0x06), so it arrives through Zellij with no kitty keyboard protocol
     -- support.
-    vim.keymap.set('n', '<leader>fp', search_recent_files, { desc = 'Find Recent Files' })
-    vim.keymap.set({ 'n', 'i', 'v', 'x', 't' }, '<C-j>', search_recent_files, { desc = 'Find Recent Files' })
-    vim.keymap.set('n', '<leader>fP', find_files, { desc = 'Find Files' })
-    vim.keymap.set({ 'n', 'i', 'v', 'x', 't' }, '<C-M-j>', find_files, { desc = 'Find Files' })
+    vim.keymap.set('n', '<leader>ff', search_recent_files, { desc = 'Find Recent Files' })
+    vim.keymap.set('n', '<leader>fF', find_files, { desc = 'Find Files' })
 
     -- Search directories only; selecting one opens it in oil.nvim.
     -- fd respects .gitignore; the 'find' fallback does not, so it will surface
@@ -338,10 +336,8 @@ return {
         :find()
     end
 
-    vim.keymap.set('n', '<leader>ff', jump_to_zoxide_directory, { desc = 'Find Folders (zoxide)' })
-    vim.keymap.set({ 'n', 'i', 'v', 'x', 't' }, '<C-f>', jump_to_zoxide_directory, { desc = 'Find Folders (zoxide)' })
-    vim.keymap.set('n', '<leader>fF', search_directories, { desc = 'Find Folders (all)' })
-    vim.keymap.set({ 'n', 'i', 'v', 'x', 't' }, '<C-M-f>', search_directories, { desc = 'Find Folders (all)' })
+    vim.keymap.set('n', '<leader>fd', jump_to_zoxide_directory, { desc = 'Find Folders (zoxide)' })
+    vim.keymap.set('n', '<leader>fD', search_directories, { desc = 'Find Folders (all)' })
 
     --======================
     -- 2. Content search
