@@ -118,7 +118,7 @@ return {
         -- the next kind is requested, so the second response is computed
         -- against the text the first one produced rather than a stale copy.
         -- pyright offers nothing here; ruff would be needed for Python.
-        map('<leader>fi', function()
+        map('<leader>ri', function()
           local bufnr = vim.api.nvim_get_current_buf()
           local applied = false
           for _, kind in ipairs { 'source.removeUnusedImports', 'source.organizeImports' } do
@@ -148,7 +148,7 @@ return {
           if not applied then
             vim.notify('Imports already clean', vim.log.levels.INFO)
           end
-        end, '[f]ix [i]mports')
+        end, '[r]efactor: fix [i]mports')
         map('gD', vim.lsp.buf.declaration, '[g]o to [D]eclaration')
 
         map('<leader>sr', require('telescope.builtin').lsp_references, '[s]earch [r]eferences')

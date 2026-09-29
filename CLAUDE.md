@@ -103,7 +103,8 @@ The rules that matter most when editing this config:
 - **Find takes a name; search scans.** `<leader>f` is for a thing you name as you
   type, `<leader>s` for content or a list you read down. Symbols fall on both
   sides: `<leader>fs` [f]inds a [s]ymbol across the project by name, and
-  `<leader>ss` [s]earches the [s]ymbols of this file, its outline.
+  `<leader>ss` [s]earches the [s]ymbols of this file, its outline. Fix imports
+  edits code, so it is `<leader>ri`.
 - **Shift widens scope, and means nothing else.** `<leader>sx` buffer diagnostics → `<leader>sX` project;
   `<leader>ff` recent files → `<leader>fF` every file;
   `<leader>fd` directories zoxide ranks → `<leader>fD` every directory, both
