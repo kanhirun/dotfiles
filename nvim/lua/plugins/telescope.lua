@@ -307,7 +307,7 @@ return {
     -- dropped by file_ignore_patterns above. Same pane handling as the file
     -- pickers: launched from the shell or Claude's pane, the match lands in an
     -- editor window and the panes rebalance once one is picked.
-    local GREP = '[f]ind by [p]attern'
+    local GREP = '[f]ind by gre[p]'
     local function live_grep()
       local from_pane = panes.leave_terminal_window()
       builtin.live_grep {
@@ -325,8 +325,8 @@ return {
     -- Leader-only now that <C-g> carries git changes, and <leader>sg is where the
     -- Find/Search split puts it: a grep searches content, not names.
     vim.keymap.set('n', '<leader>fp', live_grep, { desc = GREP })
-    local BUFFER_GREP = '[s]earch by [g]rep'
-    vim.keymap.set('n', '<leader>sg', function()
+    local BUFFER_GREP = '[s]earch by gre[p]'
+    vim.keymap.set('n', '<leader>sp', function()
       builtin.current_buffer_fuzzy_find { prompt_title = BUFFER_GREP }
     end, { desc = BUFFER_GREP })
 

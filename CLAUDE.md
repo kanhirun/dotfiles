@@ -106,10 +106,11 @@ The rules that matter most when editing this config:
   classes or methods, its outline. The kinds are the `CLASS_KINDS` and
   `METHOD_KINDS` lists in `telescope.lua`, which Go's gopls reports well; lua_ls
   reports no useful kinds for workspace symbols, so the finders find nothing
-  there. Grep splits the same way: `<leader>fp` [f]inds by [p]attern across the
-  project and lands in one file, `<leader>sg` [s]earches this buffer's lines by
-  [g]rep (the live buffer, so unsaved edits count; a leading `'` matches
-  exactly). Fix imports edits code, so it is `<leader>ri`.
+  there. Grep splits the same way: `<leader>fp` [f]inds by gre[p] across the
+  project and lands in one file, `<leader>sp` [s]earches this buffer's lines by
+  gre[p] (the live buffer, so unsaved edits count; a leading `'` matches
+  exactly). Grep takes `p` because **`g` in the leader tier is git**: its group
+  letter, and `<leader>fg` for git changes. Fix imports edits code, so it is `<leader>ri`.
 - **Recency is a cue, not a scope.** A finder searches everything under the cwd;
   what was visited recently only orders the list as it opens, and the first
   keystroke hands it to the matcher over the whole scope. So there is one key per
