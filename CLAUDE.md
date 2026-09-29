@@ -145,7 +145,9 @@ plugin's `:ClaudeCode…` commands are implementation, and nothing new should bi
 to them.
 
 Namespaces in use: `<leader>s` search · `<leader>r` refactor · `<leader>t` test/toggle ·
-`<leader>g` git · `<leader>a` agent. `<C-]>` toggles Claude and `<C-\>` toggles a
+`<leader>g` git · `<leader>a` agent. `<leader>` and a delimiter wraps: an operator
+in Normal mode, `<leader>`iw`, which `.` repeats on any word, and the selection in
+visual mode, which cannot repeat (`plugins/editing.lua`). `<C-]>` toggles Claude and `<C-\>` toggles a
 terminal tab, both from any mode; with a visual selection, `<C-]>` sends it to
 Claude instead. Claude always opens on the right. Its width depends on the
 layout it opens into: 3/5 of the screen beside a single editor column, and a
