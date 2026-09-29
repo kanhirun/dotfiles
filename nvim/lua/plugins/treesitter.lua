@@ -51,10 +51,10 @@ return {
     config = function()
       require("nvim-treesitter-textobjects").setup({ select = { lookahead = true } })
       local select = require("nvim-treesitter-textobjects.select")
-      for key, object in pairs({ af = "@function.outer", ["if"] = "@function.inner" }) do
+      for key, object in pairs({ am = "@function.outer", im = "@function.inner" }) do
         vim.keymap.set({ "x", "o" }, key, function()
           select.select_textobject(object, "textobjects")
-        end, { desc = (key == "af" and "[a]round" or "[i]nside") .. " a [f]unction" })
+        end, { desc = (key == "am" and "[a]round" or "[i]nside") .. " a [m]ethod" })
       end
       local class_captures = { go = "@type" }
       for key, part in pairs({ ac = ".outer", ic = ".inner" }) do
@@ -201,10 +201,10 @@ return {
         end, { desc = go[2] })
       end
       for key, go in pairs({
-        gf = { move.goto_next_start, "[g]o to [f]unction" },
-        gF = { move.goto_previous_start, "[g]o to previous [F]unction" },
-        ["]f"] = { move.goto_next_end, "forward to a [f]unction's end" },
-        ["[f"] = { move.goto_previous_end, "back to a [f]unction's end" },
+        gm = { move.goto_next_start, "[g]o to [m]ethod" },
+        gM = { move.goto_previous_start, "[g]o to previous [M]ethod" },
+        ["]m"] = { move.goto_next_end, "forward to a [m]ethod's end" },
+        ["[m"] = { move.goto_previous_end, "back to a [m]ethod's end" },
       }) do
         vim.keymap.set({ "n", "x", "o" }, key, function()
           go[1]("@function.outer", "textobjects")

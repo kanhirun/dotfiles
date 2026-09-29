@@ -369,6 +369,8 @@ return {
     -- top-level `const` as variable and keeps constant for enum-like cases.
     -- `variable` is left out on purpose, since it would bring every `let` in.
     local SYMBOL_KINDS = { 'function', 'method', 'class', 'struct', 'interface', 'constant' }
+    local CLASS_KINDS = { 'class', 'struct', 'interface' }
+    local METHOD_KINDS = { 'function', 'method' }
 
     -- Paths git knows about, absolute. nil when cwd isn't a repo, meaning
     -- "don't filter". --others plus --exclude-standard makes the union of
@@ -403,8 +405,8 @@ return {
       return (item.kind or item.text:match '^%[(.-)%]' or ''):lower()
     end
 
-    local function wanted(item)
-      return vim.tbl_contains(SYMBOL_KINDS, kind_of(item))
+    local function wanted(item, kinds)
+      return vim.tbl_contains(kinds or SYMBOL_KINDS, kind_of(item))
     end
 
     local function record_pick()
@@ -419,7 +421,7 @@ return {
       return true
     end
 
-    local function open_buffer_symbols()
+    local function open_buffer_symbols(kinds)
       local bufs = vim.tbl_filter(function(info)
         return vim.bo[info.bufnr].buftype == ''
           and info.name ~= ''
@@ -458,7 +460,7 @@ return {
       local items = {}
       for _, list in ipairs(per_buf) do
         for _, item in ipairs(list) do
-          if wanted(item) then
+          if wanted(item, kinds) then
             table.insert(items, item)
           end
         end
@@ -466,7 +468,7 @@ return {
       return items
     end
 
-    local function recent_symbols()
+    local function recent_symbols(kinds)
       local seen, seed = {}, {}
       local function add(item)
         local key = vim.fs.normalize(item.filename) .. '\0' .. item.text
@@ -476,9 +478,11 @@ return {
         end
       end
       for _, item in ipairs(require('config.symbol_history').list()) do
-        add(item)
+        if wanted(item, kinds) then
+          add(item)
+        end
       end
-      for _, item in ipairs(open_buffer_symbols()) do
+      for _, item in ipairs(open_buffer_symbols(kinds)) do
         add(item)
       end
       return seed
@@ -523,7 +527,7 @@ return {
       end, keyed)
     end
 
-    local function workspace_requester(bufnr)
+    local function workspace_requester(bufnr, kinds)
       local current_file = vim.fs.normalize(vim.api.nvim_buf_get_name(bufnr))
       local channel = require('plenary.async.control').channel
       local cancel = function() end
@@ -540,7 +544,7 @@ return {
             end)
           elseif res.result and client then
             for _, item in ipairs(vim.lsp.util.symbols_to_items(res.result, bufnr, client.offset_encoding)) do
-              if wanted(item) then
+              if wanted(item, kinds) then
                 table.insert(items, item)
               end
             end
@@ -550,16 +554,16 @@ return {
       end
     end
 
-    local function search_workspace_symbols()
+    local function search_workspace_symbols(kinds, title)
       local git = git_paths()
-      local seed = recent_symbols()
-      local query = workspace_requester(vim.api.nvim_get_current_buf())
+      local seed = recent_symbols(kinds)
+      local query = workspace_requester(vim.api.nvim_get_current_buf(), kinds)
       local inner = require('telescope.make_entry').gen_from_lsp_symbols {}
       local conf = require('telescope.config').values
 
       require('telescope.pickers')
         .new({}, {
-          prompt_title = 'Workspace Symbols',
+          prompt_title = title or 'Workspace Symbols',
           finder = require('telescope.finders').new_dynamic {
             entry_maker = function(item)
               local entry = inner(item)
@@ -591,8 +595,8 @@ return {
 
     -- Document symbols only ever cover the current buffer, so the gitignore
     -- filter has nothing to do here; the kind list still earns its place.
-    local function search_document_symbols()
-      builtin.lsp_document_symbols { symbols = SYMBOL_KINDS, attach_mappings = attach_history }
+    local function search_document_symbols(kinds)
+      builtin.lsp_document_symbols { symbols = kinds or SYMBOL_KINDS, attach_mappings = attach_history }
     end
 
     -- One function per scope. lsp.lua used to bind <leader>gs/<leader>gS to
@@ -611,6 +615,18 @@ return {
     vim.keymap.set('n', '<C-s>', search_document_symbols, { desc = '[S]ymbols in this buffer' })
     vim.keymap.set('n', '<leader>fs', search_workspace_symbols, { desc = '[f]ind a [s]ymbol' })
     vim.keymap.set('n', '<C-M-s>', search_workspace_symbols, { desc = 'all [S]ymbols' })
+    vim.keymap.set('n', '<leader>fc', function()
+      search_workspace_symbols(CLASS_KINDS, 'Classes')
+    end, { desc = '[f]ind a [c]lass' })
+    vim.keymap.set('n', '<leader>fm', function()
+      search_workspace_symbols(METHOD_KINDS, 'Methods')
+    end, { desc = '[f]ind a [m]ethod' })
+    vim.keymap.set('n', '<leader>sc', function()
+      search_document_symbols(CLASS_KINDS)
+    end, { desc = '[s]earch [c]lasses' })
+    vim.keymap.set('n', '<leader>sm', function()
+      search_document_symbols(METHOD_KINDS)
+    end, { desc = '[s]earch [m]ethods' })
 
     -- gd lives in lsp.lua's LspAttach handler, buffer-local. It was bound here
     -- too, globally, to the identical function -- removed.

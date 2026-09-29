@@ -214,9 +214,11 @@ a mapping on `//` would make `/` a prefix and stall it.
 A noun with extent has two edges, and each has one address: `g` and the letter
 go to the start of the next one, `g` and Shift to the start of the previous,
 and the bracket goes to the end. Tests are `gt`/`gT` and `]t`/`[t`, folds
-`gz`/`gZ` and `]z`/`[z`, classes `gc`/`gC` and `]c`/`[c`, functions `gf`/`gF`
-and `]f`/`[f`. `gf` gives up vim's go-to-file, deliberately: `<C-w>f` and
-`:e <cfile>` still do it. In a test file the letters follow what the file
+`gz`/`gZ` and `]z`/`[z`, classes `gc`/`gC` and `]c`/`[c`, methods `gm`/`gM`,
+`]m`/`[m` and `im`/`am`. The method noun is `m`, not `f`, so that `f` means
+*find* everywhere (bare `f`, `<leader>f`) and the find group can take nouns:
+`<leader>fm`, `<leader>fc`. `gf`/`gF` are vim's go-to-file again; `gm`/`gM`
+replace vim's middle-of-line, `]m`/`[m` vim's brace-based method starts. In a test file the letters follow what the file
 shows: `gt` reaches only tests (`It`, `t.Run`, `it`, `test`) and `gc` the
 blocks that group them (`Describe`, `Context`, `When`, `describe`), through the
 `@it.outer` and `@describe.outer` captures in `nvim/after/queries/*/textobjects.scm`.
