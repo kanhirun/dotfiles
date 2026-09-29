@@ -429,69 +429,16 @@ return {
       return true
     end
 
-    local function open_buffer_symbols(kinds)
-      local bufs = vim.tbl_filter(function(info)
-        return vim.bo[info.bufnr].buftype == ''
-          and info.name ~= ''
-          and #vim.lsp.get_clients { bufnr = info.bufnr, method = 'textDocument/documentSymbol' } > 0
-      end, vim.fn.getbufinfo { buflisted = 1, bufloaded = 1 })
-      local current = vim.api.nvim_get_current_buf()
-      table.sort(bufs, function(a, b)
-        if (a.bufnr == current) ~= (b.bufnr == current) then
-          return a.bufnr == current
-        end
-        return a.lastused > b.lastused
-      end)
-
-      local per_buf, pending = {}, #bufs
-      for i, info in ipairs(bufs) do
-        per_buf[i] = {}
-        vim.lsp.buf_request_all(
-          info.bufnr,
-          'textDocument/documentSymbol',
-          { textDocument = vim.lsp.util.make_text_document_params(info.bufnr) },
-          function(results)
-            for client_id, res in pairs(results) do
-              local client = vim.lsp.get_client_by_id(client_id)
-              if res.result and client then
-                vim.list_extend(per_buf[i], vim.lsp.util.symbols_to_items(res.result, info.bufnr, client.offset_encoding))
-              end
-            end
-            pending = pending - 1
-          end
-        )
-      end
-      vim.wait(500, function()
-        return pending == 0
-      end, 10)
-
-      local items = {}
-      for _, list in ipairs(per_buf) do
-        for _, item in ipairs(list) do
-          if wanted(item, kinds) then
-            table.insert(items, item)
-          end
-        end
-      end
-      return items
-    end
-
+    local RECENT_SYMBOLS = 5
     local function recent_symbols(kinds)
-      local seen, seed = {}, {}
-      local function add(item)
-        local key = vim.fs.normalize(item.filename) .. '\0' .. item.text
-        if not seen[key] then
-          seen[key] = true
+      local seed = {}
+      for _, item in ipairs(require('config.symbol_history').list()) do
+        if #seed >= RECENT_SYMBOLS then
+          break
+        end
+        if wanted(item, kinds) then
           table.insert(seed, item)
         end
-      end
-      for _, item in ipairs(require('config.symbol_history').list()) do
-        if wanted(item, kinds) then
-          add(item)
-        end
-      end
-      for _, item in ipairs(open_buffer_symbols(kinds)) do
-        add(item)
       end
       return seed
     end
@@ -619,10 +566,6 @@ return {
     -- so the move gives a mnemonic and frees a chord that had two other jobs.
     -- Terminals send <C-s> as byte 0x13, and Neovim's TUI turns off XON/XOFF
     -- flow control, so it arrives through Zellij like the other chords.
-    vim.keymap.set('n', '<leader>ss', search_document_symbols, { desc = '[s]earch [s]ymbols' })
-    vim.keymap.set('n', '<C-s>', search_document_symbols, { desc = '[S]ymbols in this buffer' })
-    vim.keymap.set('n', '<leader>fs', search_workspace_symbols, { desc = '[f]ind [s]ymbol' })
-    vim.keymap.set('n', '<C-M-s>', search_workspace_symbols, { desc = 'all [S]ymbols' })
     vim.keymap.set('n', '<leader>fc', function()
       search_workspace_symbols(CLASS_KINDS, '[f]ind [c]lass')
     end, { desc = '[f]ind [c]lass' })

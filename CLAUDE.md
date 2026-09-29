@@ -90,21 +90,23 @@ The rules that matter most when editing this config:
   right and `<C-S-[>` the drawer on the left — the bracket points at the side —
   `<C-\>` the terminal, `<C-Space>` the way out of any mode. Pickers are
   sequences: the file and directory chords were given back, so each picker has
-  one address. `<C-g>` (`<leader>fg`), `<C-s>` (`<leader>ss`) and `<C-M-s>`
-  (`<leader>fs`) remain. Chords are invisible, so each binds the *same function
-  object* as its `<leader>` twin and the two cannot drift apart. Alt on the chord
-  widens scope the way Shift on the leader letter does, since Ctrl+Shift is
-  awkward to hold and has no legacy byte.
+  one address. Only `<C-g>` (`<leader>fg`) remains of the picker chords.
+  Chords are invisible, so each binds the *same function object* as its
+  `<leader>` twin and the two cannot drift apart.
 - **`<C-n>`/`<C-p>` mean next/previous in whatever list is active.** A
   Telescope picker's results, the completion menu, a snippet's placeholders
   (`completion.lua`: the menu first, then the snippet, then vim's own), and vim's
   defaults everywhere else. Neither is a teleport slot, which is why the file
   picker has no `<C-p>`, and why snippets have no `<Tab>` jump.
 - **Find takes a name; search scans.** `<leader>f` is for a thing you name as you
-  type, `<leader>s` for content or a list you read down. Symbols fall on both
-  sides: `<leader>fs` [f]inds a [s]ymbol across the project by name, and
-  `<leader>ss` [s]earches the [s]ymbols of this file, its outline. Fix imports
-  edits code, so it is `<leader>ri`.
+  type, `<leader>s` for content or a list you read down. Symbols are asked for by
+  kind, never as "symbols": `<leader>fc`/`<leader>fm` [f]ind a [c]lass or
+  [m]ethod across the project by name (an empty prompt shows the last five
+  picked of that kind), and `<leader>sc`/`<leader>sm` [s]earch this file's
+  classes or methods, its outline. The kinds are the `CLASS_KINDS` and
+  `METHOD_KINDS` lists in `telescope.lua`, which Go's gopls reports well; lua_ls
+  reports no useful kinds for workspace symbols, so the finders find nothing
+  there. Fix imports edits code, so it is `<leader>ri`.
 - **Shift widens scope, and means nothing else.** `<leader>sx` buffer diagnostics → `<leader>sX` project;
   `<leader>ff` recent files → `<leader>fF` every file;
   `<leader>fd` directories zoxide ranks → `<leader>fD` every directory, both
@@ -135,10 +137,9 @@ The rules that matter most when editing this config:
   so Ghostty reports each as its own keycode and a terminal without the protocol
   simply never delivers them. That is a clean failure rather than a collision —
   `<C-S-[>` does *not* decay to `<Esc>` the way `<C-[>` would — which is what
-  makes the exception affordable now that the Zellij layer is gone. The wide
-  symbol chord avoids the protocol instead: `<C-M-s>` arrives as Esc followed by
-  the Ctrl byte, which Neovim reads as one key in any
-  terminal. They need Option to act as Alt (Ghostty's `macos-option-as-alt`).
+  makes the exception affordable now that the Zellij layer is gone. A Ctrl+Alt
+  chord would avoid the protocol instead, arriving as Esc followed by the Ctrl
+  byte, but needs Option to act as Alt (Ghostty's `macos-option-as-alt`), and
   `<C-M-[>` would be Esc Esc, so the compact drawer stays on `<C-S-[>`.
 
 **Keys and commands are named for what they do, never for the tool.** The key is
