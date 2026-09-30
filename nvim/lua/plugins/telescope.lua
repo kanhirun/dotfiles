@@ -22,7 +22,11 @@ return {
     local actions = require 'telescope.actions'
 
     local picker_keys = {
-      i = { ['<C-s>'] = actions.select_vertical },
+      i = {
+        ['<C-s>'] = actions.select_vertical,
+        ['<C-a>'] = { '<Home>', type = 'command' },
+        ['<C-e>'] = { '<End>', type = 'command' },
+      },
       n = { ['<C-s>'] = actions.select_vertical },
     }
     for _, chord in ipairs { '<C-g>' } do
