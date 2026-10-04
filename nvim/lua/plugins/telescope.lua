@@ -24,10 +24,11 @@ return {
     local picker_keys = {
       i = {
         ['<C-s>'] = actions.select_vertical,
+        ['<C-v>'] = false,
         ['<C-a>'] = { '<Home>', type = 'command' },
         ['<C-e>'] = { '<End>', type = 'command' },
       },
-      n = { ['<C-s>'] = actions.select_vertical },
+      n = { ['<C-s>'] = actions.select_vertical, ['<C-v>'] = false },
     }
     for _, chord in ipairs { '<C-g>' } do
       local function switch(prompt_bufnr)
