@@ -157,9 +157,13 @@ return {
         map('<leader>si', function()
           require('telescope.builtin').lsp_implementations { prompt_title = '[s]earch [i]mplementations' }
         end, '[s]earch [i]mplementations')
-        map('gd', function()
-          require('telescope.builtin').lsp_definitions { prompt_title = '[g]o to [d]efinition' }
-        end, '[g]o to [d]efinition')
+        local function definitions(title, jump_type)
+          return function()
+            require('telescope.builtin').lsp_definitions { prompt_title = title, jump_type = jump_type }
+          end
+        end
+        map('gd', definitions '[g]o to [d]efinition', '[g]o to [d]efinition')
+        map('<C-w>gd', definitions('[g]o to [d]efinition in a split', 'vsplit'), '[g]o to [d]efinition in a split')
         -- Document and workspace symbols live at <leader>ss / <leader>sS in
         -- telescope.lua, the workspace one with a <C-s> chord. They used to be
         -- bound here too, calling the same builtins with no options -- so the
