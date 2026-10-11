@@ -17,6 +17,7 @@ return {
       -- Fugitive pages the log into a buffer whose hashes are navigable with
       -- <CR>, so the graph flags cost nothing and make it readable at a glance.
       vim.keymap.set('n', '<leader>gl', ':Git log --oneline --graph --decorate<CR>', { silent = true, desc = "[g]it [l]og" })
+      vim.keymap.set('x', '<leader>gl', ':Gclog<CR>', { silent = true, desc = "[g]it [l]og of the selection" })
       vim.keymap.set('n', '<leader>gc', ':Git commit<CR>', { silent = true, desc = "[g]it [c]ommit" })
       vim.keymap.set('n', '<leader>gd', ':Gdiffsplit<CR>', { silent = true, desc = "[g]it [d]iff" })
     end
