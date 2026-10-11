@@ -118,9 +118,14 @@ return {
     vim.keymap.set({ 'n', 'i', 'v', 'x', 't' }, '<C-g>', find_git_changes, { desc = '[G]it changes' })
     vim.keymap.set('n', '<leader>fg', find_git_changes, { desc = GIT_CHANGES })
 
-    -- The cwd's recent files, most recent first. options.lua raises the shada
-    -- cap to 1000 precisely so this per-project slice is not starved; there is
-    -- no further limit here, and the fuzzy matcher narrows the rest.
+    -- The cwd's recent files, most recent first: this session's buffers by
+    -- last use, then the shada's oldfiles. v:oldfiles is read once at startup
+    -- and never grows while Neovim runs, so on its own it misses every file
+    -- opened since; telescope's oldfiles picker prepends the session for the
+    -- same reason, and skips the current buffer as this does. options.lua
+    -- raises the shada cap to 1000 precisely so this per-project slice is not
+    -- starved; there is no further limit here, and the fuzzy matcher narrows
+    -- the rest.
     local FILES = '[f]ind [f]iles'
     local function find_files()
       local from_pane = panes.leave_terminal_window()
@@ -132,18 +137,31 @@ return {
           table.insert(results, rel)
         end
       end
-
-      for _, path in ipairs(vim.v.oldfiles) do
+      local current = vim.fs.normalize(vim.api.nvim_buf_get_name(0))
+      local function add_recent(path)
         local abs = vim.fs.normalize(path)
         -- oldfiles keeps paths that have since been deleted, hence fs_stat.
         if
-          not path:match '%.git/COMMIT_EDITMSG$'
+          path ~= ''
+          and abs ~= current
+          and not path:match '%.git/COMMIT_EDITMSG$'
           and vim.startswith(abs, cwd .. '/')
           and vim.uv.fs_stat(abs)
         then
           -- gen_from_file joins relative paths against cwd and displays them as-is
           add(abs:sub(#cwd + 2))
         end
+      end
+
+      local buffers = vim.fn.getbufinfo { buflisted = 1 }
+      table.sort(buffers, function(a, b)
+        return a.lastused > b.lastused
+      end)
+      for _, buf in ipairs(buffers) do
+        add_recent(buf.name)
+      end
+      for _, path in ipairs(vim.v.oldfiles) do
+        add_recent(path)
       end
       local listed = vim.system({ 'rg', '--files', '--hidden', '--glob', '!.git' }, { cwd = cwd, text = true }):wait()
       for _, rel in ipairs(vim.split(listed.stdout or '', '\n', { trimempty = true })) do
